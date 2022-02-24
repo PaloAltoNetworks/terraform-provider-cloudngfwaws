@@ -7,6 +7,7 @@ import (
     "github.com/paloaltonetworks/cloud-ngfw-aws-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -103,11 +104,12 @@ func New(version string) func() *schema.Provider {
 
 			DataSourcesMap: map[string]*schema.Resource{
 				//"scaffolding_data_source": dataSourceScaffolding(),
+                "awsngfw_security_rule": dataSourceSecurityRule(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
-				//"scaffolding_resource": resourceScaffolding(),
                 "awsngfw_rulestack": resourceRulestack(),
+                "awsngfw_security_rule": resourceSecurityRule(),
 			},
 		}
 
@@ -119,7 +121,7 @@ func New(version string) func() *schema.Provider {
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-        var logging uint32
+        var lc uint32
 
         lm := map[string] uint32 {
             "quiet": awsngfw.LogQuiet,
@@ -148,7 +150,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
                 if v, ok := lm[s]; !ok {
                     return nil, diag.Errorf("Unknown logging artifact specified: %s", s)
                 } else {
-                    logging |= v
+                    lc |= v
                 }
             }
         }
@@ -164,14 +166,20 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
             Timeout: d.Get("timeout").(int),
             Headers: hdrs,
             SkipVerifyCertificate: d.Get("skip_verify_certificate").(bool),
-            Logging: logging,
+            Logging: lc,
             AuthFile: d.Get("json_config_file").(string),
 
             CheckEnvironment: true,
             Agent: fmt.Sprintf("Terraform/%s", version),
         }
 
-        if err := con.Initialize(); err != nil {
+        if err := con.Setup(); err != nil {
+            return nil, diag.FromErr(err)
+        }
+
+        con.HttpClient.Transport = logging.NewTransport("AwsNgfw", con.HttpClient.Transport)
+
+        if err := con.RefreshJwts(ctx); err != nil {
             return nil, diag.FromErr(err)
         }
 
