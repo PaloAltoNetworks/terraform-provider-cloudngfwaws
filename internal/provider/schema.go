@@ -28,6 +28,19 @@ func ruleListSchema() *schema.Schema {
     }
 }
 
+func configTypeSchema() *schema.Schema {
+    return &schema.Schema{
+        Type: schema.TypeString,
+        Optional: true,
+        Description: "Retrieve either the candidate or running config.",
+        Default: "candidate",
+        ValidateFunc: validation.StringInSlice(
+            []string{"candidate", "running"},
+            false,
+        ),
+    }
+}
+
 func toStringSlice(v interface{}) []string {
     if v == nil {
         return nil
