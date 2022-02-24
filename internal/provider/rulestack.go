@@ -4,9 +4,9 @@ import (
     "context"
 
     "github.com/paloaltonetworks/cloud-ngfw-aws-go"
-    "github.com/paloaltonetworks/cloud-ngfw-aws-go/rulestack"
+    "github.com/paloaltonetworks/cloud-ngfw-aws-go/rule/stack"
 
-    //"github.com/hashicorp/terraform-plugin-log/tflog"
+    "github.com/hashicorp/terraform-plugin-log/tflog"
     "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -32,8 +32,12 @@ func resourceRulestack() *schema.Resource {
 }
 
 func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    svc := rulestack.NewClient(meta.(*awsngfw.Client))
+    svc := stack.NewClient(meta.(*awsngfw.Client))
     o := loadRulestack(d)
+    tflog.Info(
+        ctx, "create rulestack",
+        "name", o.Name,
+    )
 
     if err := svc.Create(ctx, o); err != nil {
         return diag.FromErr(err)
@@ -45,12 +49,16 @@ func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 }
 
 func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    svc := rulestack.NewClient(meta.(*awsngfw.Client))
+    svc := stack.NewClient(meta.(*awsngfw.Client))
     name := d.Id()
-    req := rulestack.ReadInput{
+    req := stack.ReadInput{
         Name: name,
         Candidate: true,
     }
+    tflog.Info(
+        ctx, "read rulestack",
+        "name", name,
+    )
 
     res, err := svc.Read(ctx, req)
     if err != nil {
@@ -61,14 +69,18 @@ func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}
         return diag.FromErr(err)
     }
 
-    saveRulestack(d, res.Response.Name, res.Response.Candidate)
+    saveRulestack(d, res.Response.Name, *res.Response.Candidate)
 
     return nil
 }
 
 func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    svc := rulestack.NewClient(meta.(*awsngfw.Client))
+    svc := stack.NewClient(meta.(*awsngfw.Client))
     o := loadRulestack(d)
+    tflog.Info(
+        ctx, "update rulestack",
+        "name", o.Name,
+    )
 
     if err := svc.Update(ctx, o); err != nil {
         return diag.FromErr(err)
@@ -79,8 +91,12 @@ func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 }
 
 func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-    svc := rulestack.NewClient(meta.(*awsngfw.Client))
+    svc := stack.NewClient(meta.(*awsngfw.Client))
     name := d.Id()
+    tflog.Info(
+        ctx, "delete rulestack",
+        "name", name,
+    )
 
     if err := svc.Delete(ctx, name); err != nil && !isObjectNotFound(err) {
         return diag.FromErr(err)
@@ -196,17 +212,17 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string] *schema.Schem
     return ans
 }
 
-func loadRulestack(d *schema.ResourceData) rulestack.Info {
+func loadRulestack(d *schema.ResourceData) stack.Info {
     p := configFolder(d, "profile_config")
 
-    return rulestack.Info{
+    return stack.Info{
         Name: d.Get("name").(string),
-        Entry: rulestack.Details{
+        Entry: stack.Details{
             Scope: d.Get("scope").(string),
             AccountId: d.Get("account_id").(string),
             AccountGroup: d.Get("account_group").(string),
             MinimumAppIdVersion: d.Get("minimum_app_id_version").(string),
-            Profile: rulestack.ProfileConfig{
+            Profile: stack.ProfileConfig{
                 AntiSpyware: p["anti_spyware"].(string),
                 AntiVirus: p["anti_virus"].(string),
                 Vulnerability: p["vulnerability"].(string),
@@ -219,7 +235,7 @@ func loadRulestack(d *schema.ResourceData) rulestack.Info {
     }
 }
 
-func saveRulestack(d *schema.ResourceData, name string, o *rulestack.Details) {
+func saveRulestack(d *schema.ResourceData, name string, o stack.Details) {
     pc := map[string] interface{}{
         "anti_spyware": o.Profile.AntiSpyware,
         "anti_virus": o.Profile.AntiVirus,
