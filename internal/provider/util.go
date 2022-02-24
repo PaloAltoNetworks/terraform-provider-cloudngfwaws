@@ -1,10 +1,18 @@
 package provider
 
 import (
+    //"context"
+
     "github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
 
+    //"github.com/hashicorp/terraform-plugin-log/tflog"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+const (
+    IdSeparator = ":"
+)
+
 
 func configFolder(d *schema.ResourceData, key string) map[string] interface{} {
     if clist, ok := d.Get(key).([]interface{}); ok {
@@ -65,9 +73,8 @@ func computed(sm map[string]*schema.Schema, parent string, omits []string) {
 }
 
 func isObjectNotFound(e error) bool {
-    e2, ok := e.(api.Status)
-    if ok && e2.ObjectNotFound() {
-        return true
+    if e2, ok := e.(*api.Status); ok {
+        return e2.ObjectNotFound()
     }
 
     return false
