@@ -414,9 +414,9 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
 }
 
 func loadSecurityRule(d *schema.ResourceData) security.Info {
-    src := configFolder(d, "source")
-    dst := configFolder(d, "destination")
-    cat := configFolder(d, "category")
+    src := configFolder(d.Get("source"))
+    dst := configFolder(d.Get("destination"))
+    cat := configFolder(d.Get("category"))
 
     /*
     var tlist []security.TagDetails

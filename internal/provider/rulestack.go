@@ -213,7 +213,7 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string] *schema.Schem
 }
 
 func loadRulestack(d *schema.ResourceData) stack.Info {
-    p := configFolder(d, "profile_config")
+    p := configFolder(d.Get("profile_config"))
 
     return stack.Info{
         Name: d.Get("name").(string),
