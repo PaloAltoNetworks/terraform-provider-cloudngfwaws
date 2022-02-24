@@ -18,5 +18,7 @@
 *.tf
 .terraform
 terraform.tfstate*
-.swp
+*.swp
 terraform-provider-awsngfw
+.terraform.lock.hcl
+*.log
