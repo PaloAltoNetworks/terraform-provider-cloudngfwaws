@@ -1,6 +1,7 @@
 package provider
 
 import (
+    "strings"
     //"context"
 
     "github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
@@ -9,10 +10,10 @@ import (
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-    IdSeparator = ":"
-)
 
+func configTypeId(a, b string) string {
+    return strings.Join([]string{a, b}, IdSeparator)
+}
 
 func configFolder(v interface{}) map[string] interface{} {
     if v != nil {
