@@ -211,7 +211,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
             Elem: &schema.Resource{
                 Schema: map[string] *schema.Schema{
                     "cidrs": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of CIDRs.",
                         Elem: &schema.Schema{
@@ -219,7 +219,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "countries": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of countries.",
                         Elem: &schema.Schema{
@@ -227,7 +227,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "feeds": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of feeds.",
                         Elem: &schema.Schema{
@@ -235,7 +235,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "prefix_lists": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of prefix list.",
                         Elem: &schema.Schema{
@@ -259,7 +259,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
             Elem: &schema.Resource{
                 Schema: map[string] *schema.Schema{
                     "cidrs": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of CIDRs.",
                         Elem: &schema.Schema{
@@ -267,7 +267,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "countries": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of countries.",
                         Elem: &schema.Schema{
@@ -275,7 +275,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "feeds": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of feeds.",
                         Elem: &schema.Schema{
@@ -283,7 +283,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "prefix_lists": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of prefix list.",
                         Elem: &schema.Schema{
@@ -291,7 +291,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "fqdn_lists": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of FQDN lists.",
                         Elem: &schema.Schema{
@@ -307,7 +307,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
             Description: "Negate the destination definition.",
         },
         "applications": {
-            Type: schema.TypeList,
+            Type: schema.TypeSet,
             Required: true,
             Description: "The list of applications.",
             Elem: &schema.Schema{
@@ -323,7 +323,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
             Elem: &schema.Resource{
                 Schema: map[string] *schema.Schema{
                     "url_category_names": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of URL category names.",
                         Elem: &schema.Schema{
@@ -331,7 +331,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
                         },
                     },
                     "feeds": {
-                        Type: schema.TypeList,
+                        Type: schema.TypeSet,
                         Optional: true,
                         Description: "List of feeds.",
                         Elem: &schema.Schema{
@@ -442,24 +442,24 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
             Description: d.Get("description").(string),
             Enabled: d.Get("enabled").(bool),
             Source: security.SourceDetails{
-                Cidrs: toStringSlice(src["cidrs"]),
-                Countries: toStringSlice(src["countries"]),
-                Feeds: toStringSlice(src["feeds"]),
-                PrefixLists: toStringSlice(src["prefix_lists"]),
+                Cidrs: setToSlice(src["cidrs"]),
+                Countries: setToSlice(src["countries"]),
+                Feeds: setToSlice(src["feeds"]),
+                PrefixLists: setToSlice(src["prefix_lists"]),
             },
             NegateSource: d.Get("negate_source").(bool),
             Destination: security.DestinationDetails{
-                Cidrs: toStringSlice(dst["cidrs"]),
-                Countries: toStringSlice(dst["countries"]),
-                Feeds: toStringSlice(dst["feeds"]),
-                PrefixLists: toStringSlice(dst["prefix_lists"]),
-                FqdnLists: toStringSlice(dst["fqdn_lists"]),
+                Cidrs: setToSlice(dst["cidrs"]),
+                Countries: setToSlice(dst["countries"]),
+                Feeds: setToSlice(dst["feeds"]),
+                PrefixLists: setToSlice(dst["prefix_lists"]),
+                FqdnLists: setToSlice(dst["fqdn_lists"]),
             },
             NegateDestination: d.Get("negate_destination").(bool),
-            Applications: toStringSlice(d.Get("applications")),
+            Applications: setToSlice(d.Get("applications")),
             Category: security.CategoryDetails{
-                UrlCategoryNames: toStringSlice(cat["url_category_names"]),
-                Feeds: toStringSlice(cat["feeds"]),
+                UrlCategoryNames: setToSlice(cat["url_category_names"]),
+                Feeds: setToSlice(cat["feeds"]),
             },
             Protocol: d.Get("protocol").(string),
             AuditComment: d.Get("audit_comment").(string),
@@ -474,21 +474,21 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
 
 func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int, o security.Details) {
     src := map[string] interface{}{
-        "cidrs": o.Source.Cidrs,
-        "countries": o.Source.Countries,
-        "feeds": o.Source.Feeds,
-        "prefix_lists": o.Source.PrefixLists,
+        "cidrs": sliceToSet(o.Source.Cidrs),
+        "countries": sliceToSet(o.Source.Countries),
+        "feeds": sliceToSet(o.Source.Feeds),
+        "prefix_lists": sliceToSet(o.Source.PrefixLists),
     }
     dst := map[string] interface{}{
-        "cidrs": o.Destination.Cidrs,
-        "countries": o.Destination.Countries,
-        "feeds": o.Destination.Feeds,
-        "prefix_lists": o.Destination.PrefixLists,
-        "fqdn_lists": o.Destination.FqdnLists,
+        "cidrs": sliceToSet(o.Destination.Cidrs),
+        "countries": sliceToSet(o.Destination.Countries),
+        "feeds": sliceToSet(o.Destination.Feeds),
+        "prefix_lists": sliceToSet(o.Destination.PrefixLists),
+        "fqdn_lists": sliceToSet(o.Destination.FqdnLists),
     }
     cat := map[string] interface{}{
-        "url_category_names": o.Category.UrlCategoryNames,
-        "feeds": o.Category.Feeds,
+        "url_category_names": sliceToSet(o.Category.UrlCategoryNames),
+        "feeds": sliceToSet(o.Category.Feeds),
     }
 
     var tlist []interface{}
@@ -512,7 +512,7 @@ func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int,
     d.Set("negate_source", o.NegateSource)
     d.Set("destination", []interface{}{dst})
     d.Set("negate_destination", o.NegateDestination)
-    d.Set("applications", o.Applications)
+    d.Set("applications", sliceToSet(o.Applications))
     d.Set("category", []interface{}{cat})
     d.Set("protocol", o.Protocol)
     d.Set("audit_comment", o.AuditComment)
