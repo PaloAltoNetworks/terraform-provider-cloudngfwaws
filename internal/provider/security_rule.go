@@ -29,23 +29,33 @@ func dataSourceSecurityRule() *schema.Resource {
 func readSecurityRuleDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
     svc := security.NewClient(meta.(*awsngfw.Client))
 
-    stack := d.Get("rulestack").(string)
-    rlist := d.Get("rule_list").(string)
+    style := d.Get(ConfigTypeName).(string)
+    d.Set(ConfigTypeName, style)
+
+    stack := d.Get(RulestackName).(string)
+    rlist := d.Get(RuleListName).(string)
     priority := d.Get("priority").(int)
 
-    id := buildSecurityRuleId(stack, rlist, priority)
+    id := configTypeId(style, buildSecurityRuleId(stack, rlist, priority))
 
     req := security.ReadInput{
         Rulestack: stack,
         RuleList: rlist,
         Priority: priority,
-        Candidate: true,
     }
+    switch style {
+    case CandidateConfig:
+        req.Candidate = true
+    case RunningConfig:
+        req.Running = true
+    }
+
     tflog.Info(
         ctx, "read security rule",
         "ds", true,
-        "rulestack", req.Rulestack,
-        "rule_list", req.RuleList,
+        ConfigTypeName, style,
+        RulestackName, req.Rulestack,
+        RuleListName, req.RuleList,
         "priority", req.Priority,
     )
 
@@ -59,7 +69,16 @@ func readSecurityRuleDataSource(ctx context.Context, d *schema.ResourceData, met
     }
 
     d.SetId(id)
-    saveSecurityRule(d, stack, rlist, priority, *res.Response.Candidate)
+
+    var info *security.Details
+    switch style {
+    case CandidateConfig:
+        info = res.Response.Candidate
+    case RunningConfig:
+        info = res.Response.Running
+    }
+
+    saveSecurityRule(d, stack, rlist, priority, *info)
 
     return nil
 }
@@ -78,7 +97,7 @@ func resourceSecurityRule() *schema.Resource {
             State: schema.ImportStatePassthrough,
         },
 
-        Schema: securityRuleSchema(true, nil),
+        Schema: securityRuleSchema(true, []string{ConfigTypeName}),
     }
 }
 
@@ -87,8 +106,8 @@ func createSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
     o := loadSecurityRule(d)
     tflog.Info(
         ctx, "create security rule",
-        "rulestack", o.Rulestack,
-        "rule_list", o.RuleList,
+        RulestackName, o.Rulestack,
+        RuleListName, o.RuleList,
         "priority", o.Priority,
         "name", o.Entry.Name,
     )
@@ -117,8 +136,8 @@ func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interfac
     }
     tflog.Info(
         ctx, "read security rule",
-        "rulestack", req.Rulestack,
-        "rule_list", req.RuleList,
+        RulestackName, req.Rulestack,
+        RuleListName, req.RuleList,
         "priority", req.Priority,
     )
 
@@ -141,8 +160,8 @@ func updateSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
     o := loadSecurityRule(d)
     tflog.Info(
         ctx, "update security rule",
-        "rulestack", o.Rulestack,
-        "rule_list", o.RuleList,
+        RulestackName, o.Rulestack,
+        RuleListName, o.RuleList,
         "priority", o.Priority,
     )
 
@@ -161,9 +180,9 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
     }
 
     tflog.Info(
-        ctx, "delete rulestack",
-        "rulestack", stack,
-        "rule_list", rlist,
+        ctx, "delete security rule",
+        RulestackName, stack,
+        RuleListName, rlist,
         "priority", priority,
     )
 
@@ -178,8 +197,9 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 // Schema handling.
 func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Schema {
     ans := map[string] *schema.Schema{
-        "rulestack": rsSchema(),
-        "rule_list": ruleListSchema(),
+        ConfigTypeName: configTypeSchema(),
+        RulestackName: rsSchema(),
+        RuleListName: ruleListSchema(),
         "priority": {
             Type: schema.TypeInt,
             Required: true,
@@ -407,7 +427,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string] *schema.Sc
     }
 
     if !isResource {
-        computed(ans, "", []string{"rulestack", "rule_list", "priority"})
+        computed(ans, "", []string{RulestackName, RuleListName, "priority"})
     }
 
     return ans
@@ -434,8 +454,8 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
     */
 
     return security.Info{
-        Rulestack: d.Get("rulestack").(string),
-        RuleList: d.Get("rule_list").(string),
+        Rulestack: d.Get(RulestackName).(string),
+        RuleList: d.Get(RuleListName).(string),
         Priority: d.Get("priority").(int),
         Entry: security.Details{
             Name: d.Get("name").(string),
@@ -502,8 +522,8 @@ func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int,
         }
     }
 
-    d.Set("rulestack", stack)
-    d.Set("rule_list", rlist)
+    d.Set(RulestackName, stack)
+    d.Set(RuleListName, rlist)
     d.Set("priority", priority)
     d.Set("name", o.Name)
     d.Set("description", o.Description)
