@@ -14,11 +14,10 @@ const (
 )
 
 
-func configFolder(d *schema.ResourceData, key string) map[string] interface{} {
-    if clist, ok := d.Get(key).([]interface{}); ok {
-        if clist != nil && len(clist) == 1 {
-            ans, ok := clist[0].(map[string] interface{})
-            if ok && ans != nil {
+func configFolder(v interface{}) map[string] interface{} {
+    if v != nil {
+        if ilist, ok := v.([]interface{}); ok && ilist != nil && len(ilist) == 1 {
+            if ans, ok := ilist[0].(map[string] interface{}); ok && ans != nil {
                 return ans
             }
         }
