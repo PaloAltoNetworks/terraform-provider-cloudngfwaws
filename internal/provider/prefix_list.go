@@ -224,7 +224,7 @@ func prefixListSchema(isResource bool, rmKeys []string) map[string] *schema.Sche
     }
 
     if !isResource {
-        computed(ans, "", []string{RulestackName, "name"})
+        computed(ans, "", []string{ConfigTypeName, RulestackName, "name"})
     }
 
     return ans
