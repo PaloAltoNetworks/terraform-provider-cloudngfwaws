@@ -103,13 +103,14 @@ func New(version string) func() *schema.Provider {
             },
 
 			DataSourcesMap: map[string]*schema.Resource{
-				//"scaffolding_data_source": dataSourceScaffolding(),
+                "awsngfw_custom_url_category": dataSourceCustomUrlCategory(),
                 "awsngfw_fqdn_list": dataSourceFqdnList(),
                 "awsngfw_prefix_list": dataSourcePrefixList(),
                 "awsngfw_security_rule": dataSourceSecurityRule(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
+                "awsngfw_custom_url_category": resourceCustomUrlCategory(),
                 "awsngfw_fqdn_list": resourceFqdnList(),
                 "awsngfw_prefix_list": resourcePrefixList(),
                 "awsngfw_rulestack": resourceRulestack(),
