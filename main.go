@@ -1,12 +1,12 @@
 package main
 
 import (
-    "context"
-    "flag"
-    "log"
+	"context"
+	"flag"
+	"log"
 
-    "github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-    "github.com/paloaltonetworks/terraform-provider-awsngfw/internal/provider"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/paloaltonetworks/terraform-provider-awsngfw/internal/provider"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -29,20 +29,20 @@ var (
 )
 
 func main() {
-    var debugMode bool
+	var debugMode bool
 
-    flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
-    flag.Parse()
+	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	flag.Parse()
 
-    opts := &plugin.ServeOpts{ProviderFunc: provider.New(version)}
+	opts := &plugin.ServeOpts{ProviderFunc: provider.New(version)}
 
-    if debugMode {
-        err := plugin.Debug(context.Background(), "registry.terraform.io/paloaltonetworks/awsngfw", opts)
-        if err != nil {
-            log.Fatal(err.Error())
-        }
-        return
-    }
+	if debugMode {
+		err := plugin.Debug(context.Background(), "registry.terraform.io/paloaltonetworks/awsngfw", opts)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		return
+	}
 
-    plugin.Serve(opts)
+	plugin.Serve(opts)
 }
