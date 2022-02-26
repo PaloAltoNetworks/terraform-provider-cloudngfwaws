@@ -12,6 +12,64 @@ import (
 )
 
 // Data source.
+func dataSourceRulestack() *schema.Resource {
+	return &schema.Resource{
+		Description: "Data source for retrieving rulestack information.",
+
+		ReadContext: readRulestackDataSource,
+
+		Schema: rulestackSchema(false, nil),
+	}
+}
+
+func readRulestackDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := stack.NewClient(meta.(*awsngfw.Client))
+
+	style := d.Get(ConfigTypeName).(string)
+	d.Set(ConfigTypeName, style)
+
+	name := d.Get("name").(string)
+
+	id := configTypeId(style, name)
+
+	req := stack.ReadInput{
+		Name: name,
+	}
+	switch style {
+	case CandidateConfig:
+		req.Candidate = true
+	case RunningConfig:
+		req.Running = true
+	}
+
+	tflog.Info(
+		ctx, "read rulestack",
+		"ds", true,
+		"name", name,
+	)
+
+	res, err := svc.Read(ctx, req)
+	if err != nil {
+		if isObjectNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	d.SetId(id)
+
+	var info *stack.Details
+	switch style {
+	case CandidateConfig:
+		info = res.Response.Candidate
+	case RunningConfig:
+		info = res.Response.Running
+	}
+	saveRulestack(d, name, *info)
+
+	return nil
+}
 
 // Resource.
 func resourceRulestack() *schema.Resource {
@@ -27,7 +85,7 @@ func resourceRulestack() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: rulestackSchema(true, nil),
+		Schema: rulestackSchema(true, []string{ConfigTypeName}),
 	}
 }
 
@@ -109,6 +167,7 @@ func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 // Schema handling.
 func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 	ans := map[string]*schema.Schema{
+		ConfigTypeName: configTypeSchema(),
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,

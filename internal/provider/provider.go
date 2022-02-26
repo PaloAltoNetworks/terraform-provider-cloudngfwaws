@@ -108,6 +108,7 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_fqdn_list":           dataSourceFqdnList(),
 				"awsngfw_intelligent_feed":    dataSourceIntelligentFeed(),
 				"awsngfw_prefix_list":         dataSourcePrefixList(),
+				"awsngfw_rulestack":           dataSourceRulestack(),
 				"awsngfw_security_rule":       dataSourceSecurityRule(),
 			},
 
