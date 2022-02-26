@@ -15,7 +15,7 @@
 # vendor/
 
 # Custom ignores
-*.tf
+/*.tf
 .terraform
 terraform.tfstate*
 *.swp
