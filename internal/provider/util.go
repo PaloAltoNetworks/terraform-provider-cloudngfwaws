@@ -1,14 +1,43 @@
 package provider
 
 import (
+    "fmt"
 	"strings"
-	//"context"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
 
-	//"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+func addStringInSliceValidation(desc string, values []string) string {
+    var b strings.Builder
+    b.Grow(len(desc) + 20*len(values))
+    b.WriteString(desc)
+
+    if len(values) > 0 {
+        b.WriteString(" Valid values are")
+
+        for i := range values {
+            if i != 0 {
+                b.WriteString(",")
+            }
+            b.WriteString(" ")
+            if i == len(values) - 1 {
+                b.WriteString("or ")
+            }
+            b.WriteString("`")
+            b.WriteString(values[i])
+            b.WriteString("`")
+        }
+        b.WriteString(".")
+    }
+
+    return b.String()
+}
+
+func addIntBetweenValidation(desc string, low, high int) string {
+    return fmt.Sprintf("%s The number must be between [%d, %d] incluside.", desc, low, high)
+}
 
 func configTypeId(a, b string) string {
 	return strings.Join([]string{a, b}, IdSeparator)
