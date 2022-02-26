@@ -196,6 +196,9 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 
 // Schema handling.
 func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
+    action_values := []string{"Allow", "DenySilent", "DenyResetServer", "DenyResetBoth"}
+    decryption_values := []string{"", "SSLOutboundInspection"}
+
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
@@ -375,11 +378,8 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 		"action": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The action to take.",
-			ValidateFunc: validation.StringInSlice(
-				[]string{"Allow", "DenySilent", "DenyResetServer", "DenyResetBoth"},
-				false,
-			),
+			Description: addStringInSliceValidation("The action to take.", action_values),
+			ValidateFunc: validation.StringInSlice(action_values, false),
 		},
 		"logging": {
 			Type:        schema.TypeBool,
@@ -390,11 +390,8 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 		"decryption_rule_type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Decryption rule type.",
-			ValidateFunc: validation.StringInSlice(
-				[]string{"", "SSLOutboundInspection"},
-				false,
-			),
+			Description: addStringInSliceValidation("Decryption rule type.", decryption_values),
+			ValidateFunc: validation.StringInSlice(decryption_values, false),
 		},
 		"tag": {
 			Type:        schema.TypeList,

@@ -185,6 +185,10 @@ func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 
 // Schema handling.
 func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
+    type_values := []string{"IP_LIST", "URL_LIST"}
+    frequency_values := []string{"HOURLY", "DAILY"}
+    time_low := 0
+    time_high := 23
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
@@ -212,28 +216,22 @@ func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.
 		"type": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "The intelligent feed type.",
+			Description: addStringInSliceValidation("The intelligent feed type.", type_values),
 			Default:     "IP_LIST",
-			ValidateFunc: validation.StringInSlice(
-				[]string{"IP_LIST", "URL_LIST"},
-				false,
-			),
+			ValidateFunc: validation.StringInSlice(type_values, false),
 		},
 		"frequency": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Update frequency.",
+			Description: addStringInSliceValidation("Update frequency.", frequency_values),
 			Default:     "HOURLY",
-			ValidateFunc: validation.StringInSlice(
-				[]string{"HOURLY", "DAILY"},
-				false,
-			),
+			ValidateFunc: validation.StringInSlice(frequency_values, false),
 		},
 		"time": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Description:  "The time to poll for updates if frequency is daily.",
-			ValidateFunc: validation.IntBetween(0, 23),
+			Description:  addIntBetweenValidation("The time to poll for updates if frequency is daily.", time_low, time_high),
+			ValidateFunc: validation.IntBetween(time_low, time_high),
 		},
 		"audit_comment": {
 			Type:        schema.TypeString,
