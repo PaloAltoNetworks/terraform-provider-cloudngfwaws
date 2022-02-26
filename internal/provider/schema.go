@@ -15,29 +15,27 @@ func rsSchema() *schema.Schema {
 }
 
 func ruleListSchema() *schema.Schema {
+    opts := []string{"PreRule", "PostRule", "LocalRule"}
+
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "The rulebase.",
+		Description: addStringInSliceValidation("The rulebase.", opts),
 		Default:     "PreRule",
-		ValidateFunc: validation.StringInSlice(
-			[]string{"PreRule", "PostRule", "LocalRule"},
-			false,
-		),
+		ValidateFunc: validation.StringInSlice(opts, false),
 		ForceNew: true,
 	}
 }
 
 func configTypeSchema() *schema.Schema {
+    opts := []string{"candidate", "running"}
+
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Retrieve either the candidate or running config.",
+		Description: addStringInSliceValidation("Retrieve either the candidate or running config.", opts),
 		Default:     "candidate",
-		ValidateFunc: validation.StringInSlice(
-			[]string{"candidate", "running"},
-			false,
-		),
+		ValidateFunc: validation.StringInSlice(opts, false),
 	}
 }
 
