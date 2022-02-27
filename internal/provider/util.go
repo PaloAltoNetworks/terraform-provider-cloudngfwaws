@@ -18,7 +18,7 @@ func addStringInSliceValidation(desc string, values []string) string {
         b.WriteString(" Valid values are")
 
         for i := range values {
-            if i != 0 {
+            if i != 0 && len(values) > 2 {
                 b.WriteString(",")
             }
             b.WriteString(" ")
