@@ -61,7 +61,7 @@ resource "awsngfw_rulestack" "r" {
 ### Optional
 
 - **audit_comment** (String) The audit comment.
-- **decryption_rule_type** (String) Decryption rule type. Valid values are ``, or `SSLOutboundInspection`.
+- **decryption_rule_type** (String) Decryption rule type. Valid values are `` or `SSLOutboundInspection`.
 - **description** (String) The description.
 - **enabled** (Boolean) Set to false to disable this rule. Defaults to `true`.
 - **id** (String) The ID of this resource.
