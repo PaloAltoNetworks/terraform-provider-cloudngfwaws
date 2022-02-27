@@ -33,7 +33,7 @@ data "awsngfw_rulestack" "example" {
 
 - **account_group** (String) Account group.
 - **account_id** (String) The account ID.
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate`, or `running`.
+- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`.
 - **description** (String) The description.
 - **minimum_app_id_version** (String) Minimum App-ID version number.
 - **profile_config** (List of Object) (see [below for nested schema](#nestedatt--profile_config))

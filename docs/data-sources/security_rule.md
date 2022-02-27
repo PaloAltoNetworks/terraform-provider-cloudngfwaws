@@ -48,8 +48,8 @@ resource "awsngfw_rulestack" "r" {
 - **applications** (Set of String) The list of applications.
 - **audit_comment** (String) The audit comment.
 - **category** (List of Object) The category spec. (see [below for nested schema](#nestedatt--category))
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate`, or `running`.
-- **decryption_rule_type** (String) Decryption rule type. Valid values are ``, or `SSLOutboundInspection`.
+- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`.
+- **decryption_rule_type** (String) Decryption rule type. Valid values are `` or `SSLOutboundInspection`.
 - **description** (String) The description.
 - **destination** (List of Object) The destination spec. (see [below for nested schema](#nestedatt--destination))
 - **enabled** (Boolean) Set to false to disable this rule.

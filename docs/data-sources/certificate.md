@@ -39,7 +39,7 @@ resource "awsngfw_rulestack" "r" {
 
 ### Optional
 
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate`, or `running`. Defaults to `candidate`.
+- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
 - **id** (String) The ID of this resource.
 
 ### Read-Only
