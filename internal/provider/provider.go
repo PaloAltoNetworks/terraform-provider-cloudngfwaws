@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-    "strings"
+	"strings"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
 
@@ -15,19 +15,19 @@ import (
 func init() {
 	schema.DescriptionKind = schema.StringMarkdown
 
-    schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
-        desc := s.Description
+	schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
+		desc := s.Description
 
-        if s.Default != nil {
-            desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
-        }
+		if s.Default != nil {
+			desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
+		}
 
-        if s.Deprecated != "" {
-            desc += " " + s.Deprecated
-        }
+		if s.Deprecated != "" {
+			desc += " " + s.Deprecated
+		}
 
-        return strings.TrimSpace(desc)
-    }
+		return strings.TrimSpace(desc)
+	}
 }
 
 func New(version string) func() *schema.Provider {
@@ -113,6 +113,7 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_prefix_list":         dataSourcePrefixList(),
 				"awsngfw_rulestack":           dataSourceRulestack(),
 				"awsngfw_security_rule":       dataSourceSecurityRule(),
+				"awsngfw_firewall":            dataSourceFirewall(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
@@ -123,6 +124,7 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_prefix_list":         resourcePrefixList(),
 				"awsngfw_rulestack":           resourceRulestack(),
 				"awsngfw_security_rule":       resourceSecurityRule(),
+				"awsngfw_firewall":            resourceFirewall(),
 			},
 		}
 

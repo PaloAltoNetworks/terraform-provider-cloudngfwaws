@@ -14,27 +14,48 @@ func rsSchema() *schema.Schema {
 	}
 }
 
-func ruleListSchema() *schema.Schema {
-    opts := []string{"PreRule", "PostRule", "LocalRule"}
-
+func gRsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: addStringInSliceValidation("The rulebase.", opts),
-		Default:     "PreRule",
+		Description: "The global rulestack.",
+		ForceNew:    true,
+	}
+}
+
+func ruleListSchema() *schema.Schema {
+	opts := []string{"PreRule", "PostRule", "LocalRule"}
+
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  addStringInSliceValidation("The rulebase.", opts),
+		Default:      "PreRule",
 		ValidateFunc: validation.StringInSlice(opts, false),
-		ForceNew: true,
+		ForceNew:     true,
 	}
 }
 
 func configTypeSchema() *schema.Schema {
-    opts := []string{"candidate", "running"}
+	opts := []string{"candidate", "running"}
 
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: addStringInSliceValidation("Retrieve either the candidate or running config.", opts),
-		Default:     "candidate",
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  addStringInSliceValidation("Retrieve either the candidate or running config.", opts),
+		Default:      "candidate",
+		ValidateFunc: validation.StringInSlice(opts, false),
+	}
+}
+
+func endpointModeSchema() *schema.Schema {
+	opts := []string{"ServiceManaged", "CustomerManaged"}
+
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Required:     true,
+		Description:  addStringInSliceValidation("Set endpoint mode from the following options", opts),
+		ForceNew:     true,
 		ValidateFunc: validation.StringInSlice(opts, false),
 	}
 }

@@ -1,7 +1,7 @@
 package provider
 
 import (
-    "fmt"
+	"fmt"
 	"strings"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
@@ -10,37 +10,41 @@ import (
 )
 
 func addStringInSliceValidation(desc string, values []string) string {
-    var b strings.Builder
-    b.Grow(len(desc) + 20*len(values))
-    b.WriteString(desc)
+	var b strings.Builder
+	b.Grow(len(desc) + 20*len(values))
+	b.WriteString(desc)
 
-    if len(values) > 0 {
-        b.WriteString(" Valid values are")
+	if len(values) > 0 {
+		b.WriteString(" Valid values are")
 
-        for i := range values {
-            if i != 0 && len(values) > 2 {
-                b.WriteString(",")
-            }
-            b.WriteString(" ")
-            if i == len(values) - 1 {
-                b.WriteString("or ")
-            }
-            b.WriteString("`")
-            b.WriteString(values[i])
-            b.WriteString("`")
-        }
-        b.WriteString(".")
-    }
+		for i := range values {
+			if i != 0 && len(values) > 2 {
+				b.WriteString(",")
+			}
+			b.WriteString(" ")
+			if i == len(values)-1 {
+				b.WriteString("or ")
+			}
+			b.WriteString("`")
+			b.WriteString(values[i])
+			b.WriteString("`")
+		}
+		b.WriteString(".")
+	}
 
-    return b.String()
+	return b.String()
 }
 
 func addIntBetweenValidation(desc string, low, high int) string {
-    return fmt.Sprintf("%s The number must be between [%d, %d] incluside.", desc, low, high)
+	return fmt.Sprintf("%s The number must be between [%d, %d] incluside.", desc, low, high)
 }
 
 func configTypeId(a, b string) string {
 	return strings.Join([]string{a, b}, IdSeparator)
+}
+
+func firewallId(accountID, region, name string) string {
+	return strings.Join([]string{accountID, region, name}, IdSeparator)
 }
 
 func configFolder(v interface{}) map[string]interface{} {
@@ -106,4 +110,18 @@ func isObjectNotFound(e error) bool {
 	}
 
 	return false
+}
+
+func sliceDiff(a, b []string) []string {
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
 }
