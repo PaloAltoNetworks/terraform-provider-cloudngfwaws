@@ -93,8 +93,9 @@ func createFirewall(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.FromErr(err)
 	}
 
-	fw := res.Response.Firewall
-	id := firewallId(fw.AccountId, region, fw.Name)
+	account_id := res.Response.Firewall.AccountId
+	name := res.Response.Firewall.Name
+	id := firewallId(account_id, region, name)
 	d.SetId(id)
 
 	return readFirewall(ctx, d, meta)
@@ -138,6 +139,7 @@ func updateFirewall(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Info(
 		ctx, "update firewall",
 		"name", o.Name,
+		"app_id", d.Get("app_id_version"),
 	)
 
 	if d.HasChange("description") {
@@ -147,6 +149,11 @@ func updateFirewall(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("app_id_version") && d.Get("app_id_version") != "" {
+		tflog.Info(
+			ctx, "update firewall inside appid",
+			"name", o.Name,
+			"app_id", d.Get("app_id_version"),
+		)
 		if err := svc.UpdateNGFirewallContentVersion(ctx, o); err != nil {
 			return diag.FromErr(err)
 		}
@@ -280,6 +287,7 @@ func firewallSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "App-ID version number.",
+			Default:     "latest",
 		},
 		"automatic_upgrade_app_id_version": {
 			Type:        schema.TypeBool,
@@ -369,6 +377,10 @@ func firewallSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 }
 
 func loadFirewall(ctx context.Context, d *schema.ResourceData) firewall.Info {
+	app_id_version := ""
+	if d.Get("app_id_version").(string) != "latest" {
+		app_id_version = d.Get("app_id_version").(string)
+	}
 
 	return firewall.Info{
 		Name:                         d.Get("name").(string),
@@ -377,7 +389,7 @@ func loadFirewall(ctx context.Context, d *schema.ResourceData) firewall.Info {
 		Description:                  d.Get("description").(string),
 		EndpointMode:                 d.Get("endpoint_mode").(string),
 		SubnetMappings:               loadSubnetMappings(ctx, d.Get("subnet_mapping").([]interface{})),
-		AppIdVersion:                 d.Get("app_id_version").(string),
+		AppIdVersion:                 app_id_version,
 		AutomaticUpgradeAppIdVersion: d.Get("automatic_upgrade_app_id_version").(bool),
 		RuleStackName:                d.Get(RulestackName).(string),
 		GlobalRuleStackName:          d.Get(GlobalRulestackName).(string),
