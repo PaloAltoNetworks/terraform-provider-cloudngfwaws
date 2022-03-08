@@ -1,4 +1,4 @@
-module github.com/paloaltonetworks/terraform-provider-awsngfw
+module github.com/paloaltonetworks/terraform-provider-cloudngfwaws
 
 require (
 	github.com/hashicorp/terraform-plugin-log v0.2.1
