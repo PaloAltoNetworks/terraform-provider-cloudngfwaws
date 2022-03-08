@@ -200,14 +200,7 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 			Computed:    true,
 			Description: "Minimum App-ID version number.",
 		},
-		"tags": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "Tags.",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
+		TagsName: tagsSchema(true, false),
 		"profile_config": {
 			Type:     schema.TypeList,
 			Required: true,
@@ -258,11 +251,11 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 				},
 			},
 		},
-        "state": {
-            Type: schema.TypeString,
-            Computed: true,
-            Description: "The rulestack state.",
-        },
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The rulestack state.",
+		},
 	}
 
 	for _, rmKey := range rmKeys {
@@ -286,6 +279,7 @@ func loadRulestack(d *schema.ResourceData) stack.Info {
 			AccountId:           d.Get("account_id").(string),
 			AccountGroup:        d.Get("account_group").(string),
 			MinimumAppIdVersion: d.Get("minimum_app_id_version").(string),
+			Tags:                loadTags(d.Get(TagsName)),
 			Profile: stack.ProfileConfig{
 				AntiSpyware:                p["anti_spyware"].(string),
 				AntiVirus:                  p["anti_virus"].(string),
@@ -316,5 +310,6 @@ func saveRulestack(d *schema.ResourceData, name, state string, o stack.Details) 
 	d.Set("account_group", o.AccountGroup)
 	d.Set("minimum_app_id_version", o.MinimumAppIdVersion)
 	d.Set("profile_config", []interface{}{pc})
-    d.Set("state", state)
+	d.Set(TagsName, dumpTags(o.Tags))
+	d.Set("state", state)
 }

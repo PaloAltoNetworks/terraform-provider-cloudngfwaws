@@ -329,15 +329,7 @@ func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 		},
 		RulestackName:       rsSchema(),
 		GlobalRulestackName: gRsSchema(),
-		"tags": {
-			Type:        schema.TypeMap,
-			Optional:    true,
-			Description: "Tags.",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-			ForceNew: true,
-		},
+		TagsName:            tagsSchema(true, true),
 		"update_token": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -422,7 +414,7 @@ func loadInstance(ctx context.Context, d *schema.ResourceData) firewall.Info {
 		AutomaticUpgradeAppIdVersion: d.Get("automatic_upgrade_app_id_version").(bool),
 		RuleStackName:                d.Get(RulestackName).(string),
 		GlobalRuleStackName:          d.Get(GlobalRulestackName).(string),
-		Tags:                         loadTags(ctx, d.Get("tags").(map[string]interface{})),
+		Tags:                         loadTags(d.Get(TagsName)),
 	}
 }
 
@@ -439,7 +431,7 @@ func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o fi
 	d.Set("automatic_upgrade_app_id_version", o.Firewall.AutomaticUpgradeAppIdVersion)
 	d.Set(RulestackName, o.Firewall.RuleStackName)
 	d.Set(GlobalRulestackName, o.Firewall.GlobalRuleStackName)
-	d.Set("tags", saveTags(ctx, o.Firewall.Tags))
+	d.Set(TagsName, dumpTags(o.Firewall.Tags))
 	d.Set("update_token", o.Firewall.UpdateToken)
 	if o.Status != nil {
 		d.Set("status", saveStatus(ctx, *o.Status))
@@ -481,36 +473,6 @@ func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []fir
 	}
 
 	return make([]firewall.SubnetMapping, 0)
-}
-
-func saveTags(ctx context.Context, tags []firewall.TagDetails) map[string]interface{} {
-	if tags != nil {
-		t := make(map[string]interface{})
-		for _, v := range tags {
-			t[v.Key] = v.Value
-		}
-		return t
-	}
-
-	return make(map[string]interface{})
-}
-
-func loadTags(ctx context.Context, tags map[string]interface{}) []firewall.TagDetails {
-	if tags != nil {
-		_tags := []firewall.TagDetails{}
-
-		for k, v := range tags {
-			t := firewall.TagDetails{
-				Key:   k,
-				Value: v.(string),
-			}
-			_tags = append(_tags, t)
-		}
-
-		return _tags
-	}
-
-	return make([]firewall.TagDetails, 0)
 }
 
 func saveStatus(ctx context.Context, status firewall.FirewallStatus) []interface{} {

@@ -196,8 +196,8 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 
 // Schema handling.
 func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
-    action_values := []string{"Allow", "DenySilent", "DenyResetServer", "DenyResetBoth"}
-    decryption_values := []string{"", "SSLOutboundInspection"}
+	action_values := []string{"Allow", "DenySilent", "DenyResetServer", "DenyResetBoth"}
+	decryption_values := []string{"", "SSLOutboundInspection"}
 
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
@@ -376,9 +376,9 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 			Description: "The audit comment.",
 		},
 		"action": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: addStringInSliceValidation("The action to take.", action_values),
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  addStringInSliceValidation("The action to take.", action_values),
 			ValidateFunc: validation.StringInSlice(action_values, false),
 		},
 		"logging": {
@@ -388,30 +388,12 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 			Default:     true,
 		},
 		"decryption_rule_type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addStringInSliceValidation("Decryption rule type.", decryption_values),
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  addStringInSliceValidation("Decryption rule type.", decryption_values),
 			ValidateFunc: validation.StringInSlice(decryption_values, false),
 		},
-		"tag": {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Tags.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "The key.",
-					},
-					"value": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "The value.",
-					},
-				},
-			},
-		},
+		TagsName: tagsSchema(false, false),
 		"update_token": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -434,21 +416,6 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
 	src := configFolder(d.Get("source"))
 	dst := configFolder(d.Get("destination"))
 	cat := configFolder(d.Get("category"))
-
-	/*
-	   var tlist []security.TagDetails
-	   ts := d.Get("tag").([]interface{})
-	   if len(ts) > 0 {
-	       tlist = make([]security.TagDetails, 0, len(ts))
-	       for i := range ts {
-	           x := ts[i].(map[string] interface{})
-	           tlist = append(tlist, security.TagDetails{
-	               Key: x["key"].(string),
-	               Value: x["value"].(string),
-	           })
-	       }
-	   }
-	*/
 
 	return security.Info{
 		Rulestack: d.Get(RulestackName).(string),
@@ -508,17 +475,6 @@ func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int,
 		"feeds":              sliceToSet(o.Category.Feeds),
 	}
 
-	var tlist []interface{}
-	if len(o.Tags) > 0 {
-		tlist = make([]interface{}, 0, len(o.Tags))
-		for _, x := range o.Tags {
-			tlist = append(tlist, map[string]interface{}{
-				"key":   x.Key,
-				"value": x.Value,
-			})
-		}
-	}
-
 	d.Set(RulestackName, stack)
 	d.Set(RuleListName, rlist)
 	d.Set("priority", priority)
@@ -536,7 +492,7 @@ func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int,
 	d.Set("action", o.Action)
 	d.Set("logging", o.Logging)
 	d.Set("decryption_rule_type", o.DecryptionRuleType)
-	d.Set("tag", tlist)
+	d.Set(TagsName, dumpTags(o.Tags))
 	d.Set("update_token", o.UpdateToken)
 }
 
