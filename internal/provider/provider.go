@@ -55,14 +55,19 @@ func New(version string) func() *schema.Provider {
 					Required:    true,
 					Description: "AWS region.",
 				},
+				"arn": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The ARN allowing both firewall and rulestack admin permissions.",
+				},
 				"lfa_arn": {
 					Type:        schema.TypeString,
-					Required:    true,
+					Optional:    true,
 					Description: "The ARN allowing firewall admin permissions.",
 				},
 				"lra_arn": {
 					Type:        schema.TypeString,
-					Required:    true,
+					Optional:    true,
 					Description: "The ARN allowing rulestack admin permissions.",
 				},
 				"protocol": {
