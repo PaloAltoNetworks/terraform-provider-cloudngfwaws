@@ -109,22 +109,24 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_certificate":         dataSourceCertificate(),
 				"awsngfw_custom_url_category": dataSourceCustomUrlCategory(),
 				"awsngfw_fqdn_list":           dataSourceFqdnList(),
+				"awsngfw_instance":            dataSourceInstance(),
 				"awsngfw_intelligent_feed":    dataSourceIntelligentFeed(),
 				"awsngfw_prefix_list":         dataSourcePrefixList(),
 				"awsngfw_rulestack":           dataSourceRulestack(),
 				"awsngfw_security_rule":       dataSourceSecurityRule(),
-				"awsngfw_instance":            dataSourceInstance(),
+                "awsngfw_validate_rulestack": dataSourceValidateRulestack(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
 				"awsngfw_certificate":         resourceCertificate(),
+                "awsngfw_commit_rulestack": resourceCommitRulestack(),
 				"awsngfw_custom_url_category": resourceCustomUrlCategory(),
 				"awsngfw_fqdn_list":           resourceFqdnList(),
+				"awsngfw_instance":            resourceInstance(),
 				"awsngfw_intelligent_feed":    resourceIntelligentFeed(),
 				"awsngfw_prefix_list":         resourcePrefixList(),
 				"awsngfw_rulestack":           resourceRulestack(),
 				"awsngfw_security_rule":       resourceSecurityRule(),
-				"awsngfw_instance":            resourceInstance(),
 			},
 		}
 
