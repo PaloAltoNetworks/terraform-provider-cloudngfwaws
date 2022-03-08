@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/tag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -113,4 +115,51 @@ func sliceToSet(s []string) *schema.Set {
 	}
 
 	return schema.NewSet(schema.HashString, items)
+}
+
+func tagsSchema(isOptional, forceNew bool) *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeMap,
+		Optional:    isOptional,
+		Computed:    !isOptional,
+		Description: "The tags.",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		ForceNew: forceNew,
+	}
+}
+
+func loadTags(v interface{}) []tag.Details {
+	if v == nil {
+		return nil
+	}
+
+	v2, ok := v.(map[string]interface{})
+	if !ok || len(v2) == 0 {
+		return nil
+	}
+
+	ans := make([]tag.Details, 0, len(v2))
+	for k, v := range v2 {
+		ans = append(ans, tag.Details{
+			Key:   k,
+			Value: v.(string),
+		})
+	}
+
+	return ans
+}
+
+func dumpTags(list []tag.Details) map[string]interface{} {
+	if len(list) == 0 {
+		return nil
+	}
+
+	ans := make(map[string]interface{})
+	for _, x := range list {
+		ans[x.Key] = x.Value
+	}
+
+	return ans
 }

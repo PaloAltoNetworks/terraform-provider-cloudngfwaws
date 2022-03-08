@@ -9,6 +9,7 @@ const (
 	GlobalRulestackName = "globalrulestack"
 	RuleListName        = "rule_list"
 	ConfigTypeName      = "config_type"
+	TagsName            = "tags"
 )
 
 // Valid values for ConfigTypeName within data sources.
