@@ -14,7 +14,7 @@ import (
 // Data source for a single firewall.
 func dataSourceInstance() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source for retrieving firewall information.",
+		Description: "Data source for retrieving instance information.",
 
 		ReadContext: readInstanceDataSource,
 
@@ -61,7 +61,7 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 // Resource.
 func resourceInstance() *schema.Resource {
 	return &schema.Resource{
-		Description: "Resource for firewall manipulation.",
+		Description: "Resource for instance manipulation.",
 
 		CreateContext: createInstance,
 		ReadContext:   readInstance,
