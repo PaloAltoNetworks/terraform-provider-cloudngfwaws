@@ -111,6 +111,8 @@ func New(version string) func() *schema.Provider {
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
+				"cloudngfwaws_app_id_version":      dataSourceAppIdVersion(),
+				"cloudngfwaws_app_id_versions":     dataSourceAppIdVersions(),
 				"cloudngfwaws_certificate":         dataSourceCertificate(),
 				"cloudngfwaws_custom_url_category": dataSourceCustomUrlCategory(),
 				"cloudngfwaws_fqdn_list":           dataSourceFqdnList(),
