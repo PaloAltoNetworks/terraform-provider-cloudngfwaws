@@ -1,6 +1,6 @@
 # Retrieve the feed information every day at midnight.
-resource "awsngfw_intelligent_feed" "example" {
-  rulestack   = awsngfw_rulestack.r.name
+resource "cloudngfwaws_intelligent_feed" "example" {
+  rulestack   = cloudngfwaws_rulestack.r.name
   name        = "tf-feed"
   description = "Also configured by Terraform"
   url         = "https://foobar.net"
@@ -9,7 +9,7 @@ resource "awsngfw_intelligent_feed" "example" {
   time        = 0
 }
 
-resource "awsngfw_rulestack" "r" {
+resource "cloudngfwaws_rulestack" "r" {
   name        = "terraform-rulestack"
   scope       = "Local"
   account_id  = "123456789"

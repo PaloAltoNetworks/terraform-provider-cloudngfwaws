@@ -1,5 +1,5 @@
-resource "awsngfw_custom_url_category" "example" {
-  rulestack   = awsngfw_rulestack.r.name
+resource "cloudngfwaws_custom_url_category" "example" {
+  rulestack   = cloudngfwaws_rulestack.r.name
   name        = "tf-custom-category"
   description = "Also configured by Terraform"
   url_list = [
@@ -10,7 +10,7 @@ resource "awsngfw_custom_url_category" "example" {
   action = "alert"
 }
 
-resource "awsngfw_rulestack" "r" {
+resource "cloudngfwaws_rulestack" "r" {
   name        = "terraform-rulestack"
   scope       = "Local"
   account_id  = "123456789"

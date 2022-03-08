@@ -1,4 +1,4 @@
-resource "awsngfw_rulestack" "example" {
+resource "cloudngfwaws_rulestack" "example" {
   name        = "terraform-rulestack"
   scope       = "Local"
   account_id  = "123456789"

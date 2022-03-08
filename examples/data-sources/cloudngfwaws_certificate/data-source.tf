@@ -1,9 +1,9 @@
-data "awsngfw_custom_url_category" "example" {
-  rulestack = awsngfw_rulestack.r.name
+data "cloudngfwaws_certificate" "example" {
+  rulestack = cloudngfwaws_rulestack.r.name
   name      = "foobar"
 }
 
-resource "awsngfw_rulestack" "r" {
+resource "cloudngfwaws_rulestack" "r" {
   name        = "my-rulestack"
   scope       = "Local"
   account_id  = "12345"

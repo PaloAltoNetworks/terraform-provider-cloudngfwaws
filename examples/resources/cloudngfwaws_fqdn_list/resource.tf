@@ -1,5 +1,5 @@
-resource "awsngfw_fqdn_list" "example" {
-  rulestack   = awsngfw_rulestack.r.name
+resource "cloudngfwaws_fqdn_list" "example" {
+  rulestack   = cloudngfwaws_rulestack.r.name
   name        = "tf-fqdn-list"
   description = "Also configured by Terraform"
   fqdn_list = [
@@ -9,7 +9,7 @@ resource "awsngfw_fqdn_list" "example" {
   audit_comment = "initial config"
 }
 
-resource "awsngfw_rulestack" "r" {
+resource "cloudngfwaws_rulestack" "r" {
   name        = "terraform-rulestack"
   scope       = "Local"
   account_id  = "123456789"

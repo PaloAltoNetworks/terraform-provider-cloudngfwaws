@@ -1,5 +1,5 @@
-resource "awsngfw_security_rule" "example" {
-  rulestack   = awsngfw_rulestack.r.name
+resource "cloudngfwaws_security_rule" "example" {
+  rulestack   = cloudngfwaws_rulestack.r.name
   rule_list   = "LocalRule"
   priority    = 3
   name        = "tf-security-rule"
@@ -18,7 +18,7 @@ resource "awsngfw_security_rule" "example" {
   audit_comment = "initial config"
 }
 
-resource "awsngfw_rulestack" "r" {
+resource "cloudngfwaws_rulestack" "r" {
   name        = "terraform-rulestack"
   scope       = "Local"
   account_id  = "123456789"

@@ -1,9 +1,9 @@
-data "awsngfw_prefix_list" "example" {
-  rulestack = awsngfw_rulestack.r.name
+data "cloudngfwaws_fqdn_list" "example" {
+  rulestack = cloudngfwaws_rulestack.r.name
   name      = "foobar"
 }
 
-resource "awsngfw_rulestack" "r" {
+resource "cloudngfwaws_rulestack" "r" {
   name        = "my-rulestack"
   scope       = "Local"
   account_id  = "12345"
