@@ -1,3 +1,3 @@
 provider "cloudngfwaws" {
-  json_config_file = "~/.awsngfw_creds.json"
+  json_config_file = "~/.cloudngfwaws_creds.json"
 }
