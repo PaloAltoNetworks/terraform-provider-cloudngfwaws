@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall"
+	instance "github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Data source for a single firewall.
+// Data source for a single instance.
 func dataSourceInstance() *schema.Resource {
 	return &schema.Resource{
 		Description: "Data source for retrieving instance information.",
@@ -23,13 +23,13 @@ func dataSourceInstance() *schema.Resource {
 }
 
 func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := firewall.NewClient(meta.(*awsngfw.Client))
+	svc := instance.NewClient(meta.(*awsngfw.Client))
 	region := meta.(*awsngfw.Client).Region
 
 	name := d.Get("name").(string)
 	account_id := d.Get("account_id").(string)
 
-	req := firewall.ReadInput{
+	req := instance.ReadInput{
 		Name:      name,
 		AccountId: account_id,
 	}
@@ -77,7 +77,7 @@ func resourceInstance() *schema.Resource {
 }
 
 func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := firewall.NewClient(meta.(*awsngfw.Client))
+	svc := instance.NewClient(meta.(*awsngfw.Client))
 	region := meta.(*awsngfw.Client).Region
 	name := d.Get("name").(string)
 	o := loadInstance(ctx, d)
@@ -102,12 +102,12 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := firewall.NewClient(meta.(*awsngfw.Client))
+	svc := instance.NewClient(meta.(*awsngfw.Client))
 
 	name := d.Get("name").(string)
 	account_id := d.Get("account_id").(string)
 
-	req := firewall.ReadInput{
+	req := instance.ReadInput{
 		Name:      name,
 		AccountId: account_id,
 	}
@@ -132,7 +132,7 @@ func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := firewall.NewClient(meta.(*awsngfw.Client))
+	svc := instance.NewClient(meta.(*awsngfw.Client))
 	o := loadInstance(ctx, d)
 
 	tflog.Info(
@@ -140,7 +140,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		"name", o.Name,
 	)
 
-	req := firewall.ReadInput{
+	req := instance.ReadInput{
 		Name:      o.Name,
 		AccountId: o.AccountId,
 	}
@@ -151,7 +151,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("description") {
-		input := firewall.Info{
+		input := instance.Info{
 			Name:        o.Name,
 			Description: o.Description,
 			AccountId:   o.AccountId,
@@ -162,7 +162,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("app_id_version") || d.HasChange("automatic_upgrade_app_id_version") {
-		input := firewall.Info{
+		input := instance.Info{
 			Name:                         o.Name,
 			AccountId:                    o.AccountId,
 			AppIdVersion:                 o.AppIdVersion,
@@ -173,8 +173,8 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	assoc := make([]firewall.SubnetMapping, 0, len(o.SubnetMappings))
-	disassoc := make([]firewall.SubnetMapping, 0, len(res.Response.Firewall.SubnetMappings))
+	assoc := make([]instance.SubnetMapping, 0, len(o.SubnetMappings))
+	disassoc := make([]instance.SubnetMapping, 0, len(res.Response.Firewall.SubnetMappings))
 
 	for _, x := range o.SubnetMappings {
 		found := false
@@ -187,7 +187,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		if !found {
-			assoc = append(assoc, firewall.SubnetMapping{
+			assoc = append(assoc, instance.SubnetMapping{
 				SubnetId: x.SubnetId,
 			})
 		}
@@ -204,7 +204,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		if !found {
-			disassoc = append(disassoc, firewall.SubnetMapping{
+			disassoc = append(disassoc, instance.SubnetMapping{
 				SubnetId: x.SubnetId,
 			})
 		}
@@ -218,7 +218,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 			disassoc = nil
 		}
 
-		input := firewall.Info{
+		input := instance.Info{
 			Name:                       o.Name,
 			AccountId:                  o.AccountId,
 			AssociateSubnetMappings:    assoc,
@@ -233,7 +233,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := firewall.NewClient(meta.(*awsngfw.Client))
+	svc := instance.NewClient(meta.(*awsngfw.Client))
 	name := d.Get("name").(string)
 	var account_id string
 	if acc_id, ok := d.GetOk("account_id"); ok {
@@ -245,7 +245,7 @@ func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		"name", name,
 	)
 
-	fw := firewall.ReadInput{
+	fw := instance.ReadInput{
 		Name:      name,
 		AccountId: account_id,
 	}
@@ -401,9 +401,9 @@ func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 	return ans
 }
 
-func loadInstance(ctx context.Context, d *schema.ResourceData) firewall.Info {
+func loadInstance(ctx context.Context, d *schema.ResourceData) instance.Info {
 
-	return firewall.Info{
+	return instance.Info{
 		Name:                         d.Get("name").(string),
 		VpcId:                        d.Get("vpc_id").(string),
 		AccountId:                    d.Get("account_id").(string),
@@ -418,7 +418,7 @@ func loadInstance(ctx context.Context, d *schema.ResourceData) firewall.Info {
 	}
 }
 
-func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o firewall.ReadResponse) {
+func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o instance.ReadResponse) {
 
 	d.Set("name", name)
 	d.Set("vpc_id", o.Firewall.VpcId)
@@ -439,7 +439,7 @@ func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o fi
 
 }
 
-func saveSubnetMappings(ctx context.Context, subnetMappings []firewall.SubnetMapping) []interface{} {
+func saveSubnetMappings(ctx context.Context, subnetMappings []instance.SubnetMapping) []interface{} {
 	if subnetMappings != nil {
 		mappings := make([]interface{}, len(subnetMappings), len(subnetMappings))
 
@@ -456,13 +456,13 @@ func saveSubnetMappings(ctx context.Context, subnetMappings []firewall.SubnetMap
 	return make([]interface{}, 0)
 }
 
-func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []firewall.SubnetMapping {
+func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []instance.SubnetMapping {
 	if subnetMappings != nil {
-		mappings := make([]firewall.SubnetMapping, len(subnetMappings), len(subnetMappings))
+		mappings := make([]instance.SubnetMapping, len(subnetMappings), len(subnetMappings))
 
 		for i, sm := range subnetMappings {
 			_smi := sm.(map[string]interface{})
-			_sm := firewall.SubnetMapping{
+			_sm := instance.SubnetMapping{
 				SubnetId:         _smi["subnet_id"].(string),
 				AvailabilityZone: _smi["az"].(string),
 			}
@@ -472,10 +472,10 @@ func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []fir
 		return mappings
 	}
 
-	return make([]firewall.SubnetMapping, 0)
+	return make([]instance.SubnetMapping, 0)
 }
 
-func saveStatus(ctx context.Context, status firewall.FirewallStatus) []interface{} {
+func saveStatus(ctx context.Context, status instance.FirewallStatus) []interface{} {
 
 	s := make([]interface{}, 1, 1)
 
