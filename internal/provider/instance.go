@@ -35,7 +35,7 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	tflog.Info(
-		ctx, "read firewall",
+		ctx, "read instance",
 		"ds", true,
 		"name", name,
 	)
@@ -50,10 +50,10 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	account_id = res.Response.Firewall.AccountId
-	id := firewallId(account_id, region, name)
+	id := instanceId(account_id, region, name)
 	d.SetId(id)
 
-	saveFirewall(ctx, d, name, *res.Response)
+	saveInstance(ctx, d, name, *res.Response)
 
 	return nil
 }
@@ -80,10 +80,10 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 	svc := firewall.NewClient(meta.(*awsngfw.Client))
 	region := meta.(*awsngfw.Client).Region
 	name := d.Get("name").(string)
-	o := loadFirewall(ctx, d)
+	o := loadInstance(ctx, d)
 
 	tflog.Info(
-		ctx, "create firewall",
+		ctx, "create instance",
 		"name", o.Name,
 		"payload", o,
 	)
@@ -95,7 +95,7 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	account_id := res.Response.AccountId
 
-	id := firewallId(account_id, region, name)
+	id := instanceId(account_id, region, name)
 	d.SetId(id)
 
 	return readInstance(ctx, d, meta)
@@ -113,7 +113,7 @@ func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 
 	tflog.Info(
-		ctx, "read firewall",
+		ctx, "read instance",
 		"name", name,
 	)
 
@@ -126,17 +126,17 @@ func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.FromErr(err)
 	}
 
-	saveFirewall(ctx, d, name, *res.Response)
+	saveInstance(ctx, d, name, *res.Response)
 
 	return nil
 }
 
 func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := firewall.NewClient(meta.(*awsngfw.Client))
-	o := loadFirewall(ctx, d)
+	o := loadInstance(ctx, d)
 
 	tflog.Info(
-		ctx, "update firewall",
+		ctx, "update instance",
 		"name", o.Name,
 	)
 
@@ -241,7 +241,7 @@ func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	tflog.Info(
-		ctx, "delete firewall",
+		ctx, "delete instance",
 		"name", name,
 	)
 
@@ -409,7 +409,7 @@ func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 	return ans
 }
 
-func loadFirewall(ctx context.Context, d *schema.ResourceData) firewall.Info {
+func loadInstance(ctx context.Context, d *schema.ResourceData) firewall.Info {
 
 	return firewall.Info{
 		Name:                         d.Get("name").(string),
@@ -426,7 +426,7 @@ func loadFirewall(ctx context.Context, d *schema.ResourceData) firewall.Info {
 	}
 }
 
-func saveFirewall(ctx context.Context, d *schema.ResourceData, name string, o firewall.ReadResponse) {
+func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o firewall.ReadResponse) {
 
 	d.Set("name", name)
 	d.Set("vpc_id", o.Firewall.VpcId)

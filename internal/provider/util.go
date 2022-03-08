@@ -43,7 +43,7 @@ func configTypeId(a, b string) string {
 	return strings.Join([]string{a, b}, IdSeparator)
 }
 
-func firewallId(accountID, region, name string) string {
+func instanceId(accountID, region, name string) string {
 	return strings.Join([]string{accountID, region, name}, IdSeparator)
 }
 
