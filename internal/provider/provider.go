@@ -113,7 +113,7 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_prefix_list":         dataSourcePrefixList(),
 				"awsngfw_rulestack":           dataSourceRulestack(),
 				"awsngfw_security_rule":       dataSourceSecurityRule(),
-				"awsngfw_firewall":            dataSourceFirewall(),
+				"awsngfw_instance":            dataSourceInstance(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
@@ -124,7 +124,7 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_prefix_list":         resourcePrefixList(),
 				"awsngfw_rulestack":           resourceRulestack(),
 				"awsngfw_security_rule":       resourceSecurityRule(),
-				"awsngfw_firewall":            resourceFirewall(),
+				"awsngfw_instance":            resourceInstance(),
 			},
 		}
 
