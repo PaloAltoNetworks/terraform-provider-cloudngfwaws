@@ -66,7 +66,7 @@ func readRulestackDataSource(ctx context.Context, d *schema.ResourceData, meta i
 	case RunningConfig:
 		info = res.Response.Running
 	}
-	saveRulestack(d, name, *info)
+	saveRulestack(d, name, res.Response.State, *info)
 
 	return nil
 }
@@ -127,7 +127,7 @@ func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}
 		return diag.FromErr(err)
 	}
 
-	saveRulestack(d, res.Response.Name, *res.Response.Candidate)
+	saveRulestack(d, res.Response.Name, res.Response.State, *res.Response.Candidate)
 
 	return nil
 }
@@ -258,6 +258,11 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 				},
 			},
 		},
+        "state": {
+            Type: schema.TypeString,
+            Computed: true,
+            Description: "The rulestack state.",
+        },
 	}
 
 	for _, rmKey := range rmKeys {
@@ -265,7 +270,7 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 	}
 
 	if !isResource {
-		computed(ans, "", []string{"name"})
+		computed(ans, "", []string{"name", ConfigTypeName})
 	}
 
 	return ans
@@ -294,7 +299,7 @@ func loadRulestack(d *schema.ResourceData) stack.Info {
 	}
 }
 
-func saveRulestack(d *schema.ResourceData, name string, o stack.Details) {
+func saveRulestack(d *schema.ResourceData, name, state string, o stack.Details) {
 	pc := map[string]interface{}{
 		"anti_spyware":                 o.Profile.AntiSpyware,
 		"anti_virus":                   o.Profile.AntiVirus,
@@ -311,4 +316,5 @@ func saveRulestack(d *schema.ResourceData, name string, o stack.Details) {
 	d.Set("account_group", o.AccountGroup)
 	d.Set("minimum_app_id_version", o.MinimumAppIdVersion)
 	d.Set("profile_config", []interface{}{pc})
+    d.Set("state", state)
 }
