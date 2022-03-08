@@ -114,12 +114,12 @@ func New(version string) func() *schema.Provider {
 				"awsngfw_prefix_list":         dataSourcePrefixList(),
 				"awsngfw_rulestack":           dataSourceRulestack(),
 				"awsngfw_security_rule":       dataSourceSecurityRule(),
-                "awsngfw_validate_rulestack": dataSourceValidateRulestack(),
+				"awsngfw_validate_rulestack":  dataSourceValidateRulestack(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
 				"awsngfw_certificate":         resourceCertificate(),
-                "awsngfw_commit_rulestack": resourceCommitRulestack(),
+				"awsngfw_commit_rulestack":    resourceCommitRulestack(),
 				"awsngfw_custom_url_category": resourceCustomUrlCategory(),
 				"awsngfw_fqdn_list":           resourceFqdnList(),
 				"awsngfw_instance":            resourceInstance(),

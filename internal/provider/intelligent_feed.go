@@ -185,10 +185,10 @@ func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 
 // Schema handling.
 func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
-    type_values := []string{"IP_LIST", "URL_LIST"}
-    frequency_values := []string{"HOURLY", "DAILY"}
-    time_low := 0
-    time_high := 23
+	type_values := []string{"IP_LIST", "URL_LIST"}
+	frequency_values := []string{"HOURLY", "DAILY"}
+	time_low := 0
+	time_high := 23
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
@@ -214,17 +214,17 @@ func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.
 			Description: "The intelligent feed source.",
 		},
 		"type": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addStringInSliceValidation("The intelligent feed type.", type_values),
-			Default:     "IP_LIST",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  addStringInSliceValidation("The intelligent feed type.", type_values),
+			Default:      "IP_LIST",
 			ValidateFunc: validation.StringInSlice(type_values, false),
 		},
 		"frequency": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addStringInSliceValidation("Update frequency.", frequency_values),
-			Default:     "HOURLY",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  addStringInSliceValidation("Update frequency.", frequency_values),
+			Default:      "HOURLY",
 			ValidateFunc: validation.StringInSlice(frequency_values, false),
 		},
 		"time": {

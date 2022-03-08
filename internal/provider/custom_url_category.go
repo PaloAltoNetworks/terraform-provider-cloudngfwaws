@@ -185,7 +185,7 @@ func deleteCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 
 // Schema handling.
 func customUrlCategorySchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
-    action_values := []string{"none", "alert", "allow", "block", "continue", "override"}
+	action_values := []string{"none", "alert", "allow", "block", "continue", "override"}
 
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
@@ -211,10 +211,10 @@ func customUrlCategorySchema(isResource bool, rmKeys []string) map[string]*schem
 			},
 		},
 		"action": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addStringInSliceValidation("The action to take.", action_values),
-			Default:     "none",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  addStringInSliceValidation("The action to take.", action_values),
+			Default:      "none",
 			ValidateFunc: validation.StringInSlice(action_values, false),
 		},
 		"audit_comment": {
