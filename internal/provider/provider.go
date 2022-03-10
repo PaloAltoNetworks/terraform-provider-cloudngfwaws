@@ -117,6 +117,7 @@ func New(version string) func() *schema.Provider {
 				"cloudngfwaws_custom_url_category":              dataSourceCustomUrlCategory(),
 				"cloudngfwaws_fqdn_list":                        dataSourceFqdnList(),
 				"cloudngfwaws_instance":                         dataSourceInstance(),
+				"cloudngfwaws_instances":                        dataSourceInstances(),
 				"cloudngfwaws_intelligent_feed":                 dataSourceIntelligentFeed(),
 				"cloudngfwaws_predefined_url_categories":        dataSourcePredefinedUrlCategories(),
 				"cloudngfwaws_predefined_url_category_override": dataSourcePredefinedUrlCategoryOverride(),

@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
 	instance "github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall"
@@ -10,6 +12,56 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// Data source (list instances).
+func dataSourceInstances() *schema.Resource {
+	return &schema.Resource{
+		Description: "Data source get a list of instances.",
+
+		ReadContext: readInstances,
+
+		Schema: map[string]*schema.Schema{
+			"max_results": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Max number of results.",
+				Default:     100,
+			},
+			"next_token": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Token for the next page of results.",
+			},
+			"vpc_ids": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "List of vpc ids.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"instances": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of instances.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The instance name.",
+						},
+						"account_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The account id.",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 // Data source for a single instance.
 func dataSourceInstance() *schema.Resource {
@@ -54,6 +106,59 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	d.SetId(id)
 
 	saveInstance(ctx, d, name, *res.Response)
+
+	return nil
+}
+
+func readInstances(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := instance.NewClient(meta.(*awsngfw.Client))
+
+	vpc_ids := make([]string, len(d.Get("vpc_ids").([]interface{})), len(d.Get("vpc_ids").([]interface{})))
+	for i, id := range d.Get("vpc_ids").([]interface{}) {
+		vpc_ids[i] = id.(string)
+	}
+
+	input := instance.ListInput{
+		MaxResults: d.Get("max_results").(int),
+		NextToken:  d.Get("next_token").(string),
+		VpcIds:     vpc_ids,
+	}
+
+	d.Set("max_results", input.MaxResults)
+	d.Set("next_token", input.NextToken)
+
+	tflog.Info(
+		ctx, "read instances",
+		"ds", true,
+		"vpc_ids", vpc_ids,
+	)
+
+	ans, err := svc.List(ctx, input)
+	if err != nil {
+		if isObjectNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	d.SetId(strings.Join(
+		append([]string{strconv.Itoa(input.MaxResults), input.NextToken}, input.VpcIds...),
+		IdSeparator,
+	))
+
+	d.Set("next_token", ans.Response.NextToken)
+
+	instances := make([]interface{}, len(ans.Response.Firewalls), len(ans.Response.Firewalls))
+	for i, instance := range ans.Response.Firewalls {
+
+		instances[i] = map[string]interface{}{
+			"name":       instance.Name,
+			"account_id": instance.AccountId,
+		}
+	}
+
+	d.Set("instances", instances)
 
 	return nil
 }
