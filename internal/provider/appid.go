@@ -25,7 +25,7 @@ func dataSourceAppIdVersions() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "Max number of results.",
-				Default:     1000,
+				Default:     100,
 			},
 			"token": {
 				Type:        schema.TypeString,
