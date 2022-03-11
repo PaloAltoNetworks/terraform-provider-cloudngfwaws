@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-    "fmt"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -103,7 +103,7 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	account_id = res.Response.Firewall.AccountId
-    id := buildInstanceId(account_id, name)
+	id := buildInstanceId(account_id, name)
 	d.SetId(id)
 
 	saveInstance(ctx, d, name, *res.Response)
@@ -200,7 +200,7 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	account_id := res.Response.AccountId
 
-    id := buildInstanceId(account_id, name)
+	id := buildInstanceId(account_id, name)
 	d.SetId(id)
 
 	return readInstance(ctx, d, meta)
@@ -209,10 +209,10 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
 
-    account_id, name, err := parseInstanceId(d.Id())
-    if err != nil {
-        return diag.FromErr(err)
-    }
+	account_id, name, err := parseInstanceId(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	req := instance.ReadInput{
 		Name:      name,
@@ -342,15 +342,15 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
 
-    account_id, name, err := parseInstanceId(d.Id())
-    if err != nil {
-        return diag.FromErr(err)
-    }
+	account_id, name, err := parseInstanceId(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tflog.Info(
 		ctx, "delete instance",
 		"name", name,
-        "account_id", account_id,
+		"account_id", account_id,
 	)
 
 	fw := instance.ReadInput{
@@ -395,12 +395,12 @@ func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 			Description: "The description.",
 		},
 		"endpoint_mode": {
-            Type:         schema.TypeString,
-            Required:     true,
-            Description:  addStringInSliceValidation("Set endpoint mode from the following options", endpoint_mode_opts),
-            ForceNew:     true,
-            ValidateFunc: validation.StringInSlice(endpoint_mode_opts, false),
-        },
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  addStringInSliceValidation("Set endpoint mode from the following options", endpoint_mode_opts),
+			ForceNew:     true,
+			ValidateFunc: validation.StringInSlice(endpoint_mode_opts, false),
+		},
 		"endpoint_service_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -621,14 +621,14 @@ func saveStatus(ctx context.Context, status instance.FirewallStatus) []interface
 
 // Id functions.
 func buildInstanceId(a, b string) string {
-    return strings.Join([]string{a, b}, IdSeparator)
+	return strings.Join([]string{a, b}, IdSeparator)
 }
 
 func parseInstanceId(v string) (string, string, error) {
-    tok := strings.Split(v, IdSeparator)
-    if len(tok) != 2 {
-        return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
-    }
+	tok := strings.Split(v, IdSeparator)
+	if len(tok) != 2 {
+		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+	}
 
-    return tok[0], tok[1], nil
+	return tok[0], tok[1], nil
 }
