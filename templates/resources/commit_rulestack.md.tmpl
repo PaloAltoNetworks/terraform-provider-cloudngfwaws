@@ -1,0 +1,29 @@
+---
+page_title: "{{ .ProviderName }}: cloudngfwaws_commit_rulestack Resource"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# cloudngfwaws_commit_rulestack
+
+{{ .Description | trimspace }}
+
+This resource should be in a plan file by itself (having other
+rulestack commits is fine).
+
+!> **NOTE:** This resource does not error if the commit failed.  To see if the
+commit failed, check the commit status attribute.
+
+
+## Admin Permission Type
+
+* `Rulestack`
+
+
+## Example Usage
+
+{{ tffile "examples/resources/cloudngfwaws_commit_rulestack/resource.tf" }}
+
+
+{{ .SchemaMarkdown | trimspace }}
