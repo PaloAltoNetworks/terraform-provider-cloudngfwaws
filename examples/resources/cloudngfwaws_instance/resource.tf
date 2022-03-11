@@ -1,7 +1,7 @@
 resource "cloudngfwaws_instance" "example" {
   name        = "example-instance"
   vpc_id      = aws_vpc.example.id
-  account_id  = "<aws-account-id>"
+  account_id  = "12345678"
   description = "Example description"
 
   endpoint_mode = "ServiceManaged"
