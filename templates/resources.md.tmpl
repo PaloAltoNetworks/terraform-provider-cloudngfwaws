@@ -1,0 +1,37 @@
+---
+page_title: "{{ .ProviderName }}: {{ .Name }} Resource"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{ .Name }}
+
+{{ .Description | trimspace }}
+
+
+## Admin Permission Type
+
+{{ if eq .Name "cloudngfwaws_instance" -}}
+* `Firewall`
+{{- else -}}
+* `Rulestack`
+{{- end }}
+
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ printf "{{tffile %q}}" .ExampleFile }}
+{{- end }}
+
+
+{{ .SchemaMarkdown | trimspace }}
+{{ if .HasImport }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{ printf "{{codefile \"shell\" %q}}" .ImportFile }}
+{{- end }}
