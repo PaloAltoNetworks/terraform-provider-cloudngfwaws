@@ -339,20 +339,15 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
-	name := d.Get("name").(string)
-	var account_id string
-	if acc_id, ok := d.GetOk("account_id"); ok {
-		account_id = acc_id.(string)
-	}
 
 	tflog.Info(
 		ctx, "delete instance",
-		"name", name,
+		"name", d.Get("name").(string),
 	)
 
 	fw := instance.ReadInput{
-		Name:      name,
-		AccountId: account_id,
+		Name:      d.Get("name").(string),
+		AccountId: d.Get("account_id").(string),
 	}
 
 	if err := svc.Delete(ctx, fw); err != nil && !isObjectNotFound(err) {
