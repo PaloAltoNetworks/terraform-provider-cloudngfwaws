@@ -9,10 +9,21 @@ description: |-
 
 {{ .Description | trimspace }}
 
+
+## Admin Permission Type
+
+{{ if or (eq .Name "cloudngfwaws_instance") (eq .Name "cloudngfwaws_instances") -}}
+* `Firewall`
+{{- else -}}
+* `Rulestack`
+{{- end }}
+
+
 {{ if .HasExample -}}
 ## Example Usage
 
 {{ printf "{{tffile %q}}" .ExampleFile }}
 {{- end }}
+
 
 {{ .SchemaMarkdown | trimspace }}
