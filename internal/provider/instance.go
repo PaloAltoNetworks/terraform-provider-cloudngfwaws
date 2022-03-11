@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+    "fmt"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 // Data source (list instances).
@@ -76,7 +78,6 @@ func dataSourceInstance() *schema.Resource {
 
 func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
-	region := meta.(*awsngfw.Client).Region
 
 	name := d.Get("name").(string)
 	account_id := d.Get("account_id").(string)
@@ -102,7 +103,7 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	account_id = res.Response.Firewall.AccountId
-	id := instanceId(account_id, region, name)
+    id := buildInstanceId(account_id, name)
 	d.SetId(id)
 
 	saveInstance(ctx, d, name, *res.Response)
@@ -183,7 +184,6 @@ func resourceInstance() *schema.Resource {
 
 func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
-	region := meta.(*awsngfw.Client).Region
 	name := d.Get("name").(string)
 	o := loadInstance(ctx, d)
 
@@ -200,7 +200,7 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	account_id := res.Response.AccountId
 
-	id := instanceId(account_id, region, name)
+    id := buildInstanceId(account_id, name)
 	d.SetId(id)
 
 	return readInstance(ctx, d, meta)
@@ -209,8 +209,10 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
 
-	name := d.Get("name").(string)
-	account_id := d.Get("account_id").(string)
+    account_id, name, err := parseInstanceId(d.Id())
+    if err != nil {
+        return diag.FromErr(err)
+    }
 
 	req := instance.ReadInput{
 		Name:      name,
@@ -340,17 +342,23 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := instance.NewClient(meta.(*awsngfw.Client))
 
+    account_id, name, err := parseInstanceId(d.Id())
+    if err != nil {
+        return diag.FromErr(err)
+    }
+
 	tflog.Info(
 		ctx, "delete instance",
-		"name", d.Get("name").(string),
+		"name", name,
+        "account_id", account_id,
 	)
 
 	fw := instance.ReadInput{
-		Name:      d.Get("name").(string),
-		AccountId: d.Get("account_id").(string),
+		Name:      name,
+		AccountId: account_id,
 	}
 
-	if err := svc.Delete(ctx, fw); err != nil && !isObjectNotFound(err) {
+	if err = svc.Delete(ctx, fw); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -360,6 +368,8 @@ func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 
 // Schema handling.
 func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
+	endpoint_mode_opts := []string{"ServiceManaged", "CustomerManaged"}
+
 	ans := map[string]*schema.Schema{
 		"name": {
 			Type:        schema.TypeString,
@@ -384,7 +394,13 @@ func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 			Optional:    true,
 			Description: "The description.",
 		},
-		"endpoint_mode": endpointModeSchema(),
+		"endpoint_mode": {
+            Type:         schema.TypeString,
+            Required:     true,
+            Description:  addStringInSliceValidation("Set endpoint mode from the following options", endpoint_mode_opts),
+            ForceNew:     true,
+            ValidateFunc: validation.StringInSlice(endpoint_mode_opts, false),
+        },
 		"endpoint_service_name": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -601,4 +617,18 @@ func saveStatus(ctx context.Context, status instance.FirewallStatus) []interface
 
 	return s
 
+}
+
+// Id functions.
+func buildInstanceId(a, b string) string {
+    return strings.Join([]string{a, b}, IdSeparator)
+}
+
+func parseInstanceId(v string) (string, string, error) {
+    tok := strings.Split(v, IdSeparator)
+    if len(tok) != 2 {
+        return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+    }
+
+    return tok[0], tok[1], nil
 }

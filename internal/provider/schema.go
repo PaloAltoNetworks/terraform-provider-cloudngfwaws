@@ -50,18 +50,6 @@ func configTypeSchema() *schema.Schema {
 	}
 }
 
-func endpointModeSchema() *schema.Schema {
-	opts := []string{"ServiceManaged", "CustomerManaged"}
-
-	return &schema.Schema{
-		Type:         schema.TypeString,
-		Required:     true,
-		Description:  addStringInSliceValidation("Set endpoint mode from the following options", opts),
-		ForceNew:     true,
-		ValidateFunc: validation.StringInSlice(opts, false),
-	}
-}
-
 func toStringSlice(v interface{}) []string {
 	if v == nil {
 		return nil

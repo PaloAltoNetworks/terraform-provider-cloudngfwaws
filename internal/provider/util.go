@@ -43,10 +43,6 @@ func configTypeId(a, b string) string {
 	return strings.Join([]string{a, b}, IdSeparator)
 }
 
-func instanceId(accountID, region, name string) string {
-	return strings.Join([]string{accountID, region, name}, IdSeparator)
-}
-
 func configFolder(v interface{}) map[string]interface{} {
 	if v != nil {
 		if ilist, ok := v.([]interface{}); ok && ilist != nil && len(ilist) == 1 {
