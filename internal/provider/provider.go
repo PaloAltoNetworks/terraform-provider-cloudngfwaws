@@ -37,55 +37,55 @@ func New(version string) func() *schema.Provider {
 				"host": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The hostname of the API.",
+					Description: addEv("The hostname of the API.", "CLOUD_NGFW_HOST"),
 					Default:     "api.us-east-1.aws.cloudngfw.com",
 				},
 				"access_key": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "AWS access key.",
+					Description: "(Used for the initial `sts assume role`) AWS access key.",
 				},
 				"secret_key": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "AWS secret key.",
+					Description: "(Used for the initial `sts assume role`) AWS secret key.",
 				},
 				"region": {
 					Type:        schema.TypeString,
 					Required:    true,
-					Description: "AWS region.",
+					Description: addEv("AWS region.", "CLOUD_NGFW_REGION"),
 				},
 				"arn": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The ARN allowing both firewall and rulestack admin permissions.",
+					Description: addEv("The ARN allowing both firewall and rulestack admin permissions.", "CLOUD_NGFW_ARN"),
 				},
 				"lfa_arn": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The ARN allowing firewall admin permissions.",
+					Description: addEv("The ARN allowing firewall admin permissions.", "CLOUD_NGFW_LFA_ARN"),
 				},
 				"lra_arn": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The ARN allowing rulestack admin permissions.",
+					Description: addEv("The ARN allowing rulestack admin permissions.", "CLOUD_NGFW_LRA_ARN"),
 				},
 				"protocol": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The protocol.",
+					Description: addEv("The protocol.", "CLOUD_NGFW_PROTOCOL"),
 					Default:     "https",
 				},
 				"timeout": {
 					Type:        schema.TypeInt,
 					Optional:    true,
-					Description: "The timeout for any single API call.",
+					Description: addEv("The timeout for any single API call.", "CLOUD_NGFW_TIMEOUT"),
 					Default:     30,
 				},
 				"headers": {
 					Type:        schema.TypeMap,
 					Optional:    true,
-					Description: "Additional HTTP headers to send with API calls.",
+					Description: addEv("Additional HTTP headers to send with API calls.", "CLOUD_NGFW_HEADERS"),
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -93,12 +93,12 @@ func New(version string) func() *schema.Provider {
 				"skip_verify_certificate": {
 					Type:        schema.TypeBool,
 					Optional:    true,
-					Description: "Skip verifying the SSL certificate.",
+					Description: addEv("Skip verifying the SSL certificate.", "CLOUD_NGFW_SKIP_VERIFY_CERTIFICATE"),
 				},
 				"logging": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "The logging options for the provider.",
+					Description: addEv("The logging options for the provider.", "CLOUD_NGFW_LOGGING"),
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
