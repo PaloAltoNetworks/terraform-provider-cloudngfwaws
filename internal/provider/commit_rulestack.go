@@ -18,10 +18,7 @@ func resourceCommitRulestack() *schema.Resource {
 	s := "Running"
 
 	return &schema.Resource{
-		Description: `Resource for committing the rulestack config.
-
-This resource should not be in the same plan that configures the rulestack that
-needs to be committed.`,
+		Description: "Resource for committing the rulestack config.",
 
 		CreateContext: createUpdateCommitRulestack,
 		ReadContext:   readCommitRulestack,
