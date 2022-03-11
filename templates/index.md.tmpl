@@ -1,0 +1,45 @@
+---
+page_title: "Provider: cloudngfwaws"
+description: |-
+    The Palo Alto Networks Cloud NGFW for AWS provider.
+---
+
+# Provider cloudngfwaws
+
+The cloudngfwaws provider provides resources to manage your Palo Alto Networks
+Cloud Next-Gen Firewalls for AWS.
+
+
+## Authentication Workflow
+
+This provider first authenticates against AWS, performing STS assume role. After
+that is successful, it then retrieves the JWTs for firewall and rulestack
+administration.
+
+The AWS access key and secret key can be statically specified in the `provider`
+block or they will be picked up from the shared credentials file.
+
+
+## Example Usage
+
+Terraform 0.13 and later:
+
+{{tffile "examples/provider/provider.tf"}}
+
+
+## Provider Parameter Priority
+
+There are multiple ways to specify the provider's parameters.  If overlapping
+values are configured for the provider, then this is the resolution order:
+
+1. Statically configured in the `provider` block
+2. Environment variable (where applicable)
+3. Taken from the JSON config file
+
+
+{{ .SchemaMarkdown | trimspace }}
+
+
+## Support
+
+TODO
