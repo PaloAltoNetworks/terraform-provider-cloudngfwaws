@@ -19,6 +19,6 @@
 .terraform
 terraform.tfstate*
 *.swp
-terraform-provider-awsngfw
+terraform-provider-cloudngfwaws
 .terraform.lock.hcl
 *.log
