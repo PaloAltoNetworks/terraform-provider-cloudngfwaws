@@ -37,7 +37,7 @@ To do this, populate a Terraform CLI configuration file (`~/.terraformrc` for al
 ```hcl
 provider_installation {
   dev_overrides {
-    "paloaltonetworks/cloudngfwaws" = "/your/path/here/terraform-provider-cloudngfwaws"
+    "registry.terraform.io/paloaltonetworks/cloudngfwaws" = "/directory/containing/the/cloudngfwaws/binary/here"
   }
 
   direct {}
