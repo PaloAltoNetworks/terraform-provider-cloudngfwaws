@@ -198,7 +198,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			AuthFile:              d.Get("json_config_file").(string),
 
 			CheckEnvironment: true,
-			Agent:            fmt.Sprintf("Terraform/%s", version),
+			Agent:            p.UserAgent("terraform-provider-cloudngfwaws", version),
 		}
 
 		if err := con.Setup(); err != nil {
