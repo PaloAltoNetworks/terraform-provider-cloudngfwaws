@@ -6,18 +6,16 @@ description: |-
 
 # Provider cloudngfwaws
 
-The cloudngfwaws provider provides resources to manage your Palo Alto Networks
-Cloud Next-Gen Firewalls for AWS.
+The cloudngfwaws provider provides resources to manage your Palo Alto Networks Cloud Next-Gen Firewalls for AWS.
+
+Palo Alto Networks Cloud NGFW combines best-in-class network security with cloud ease of use and delivers the leading ML-powered NGFW as a cloud-native service on AWS.
 
 
 ## Authentication Workflow
 
-This provider first authenticates against AWS, performing STS assume role. After
-that is successful, it then retrieves the JWTs for firewall and rulestack
-administration.
+This provider first authenticates against AWS, performing STS assume role. After that is successful, it then retrieves the JWTs for firewall and rulestack administration.
 
-The AWS access key and secret key can be statically specified in the `provider`
-block or they will be picked up from the shared credentials file.
+The AWS access key and secret key can be statically specified in the `provider` block or they will be picked up from the shared credentials file.
 
 
 ## Example Usage
@@ -43,8 +41,7 @@ provider "cloudngfwaws" {
 
 ## Provider Parameter Priority
 
-There are multiple ways to specify the provider's parameters.  If overlapping
-values are configured for the provider, then this is the resolution order:
+There are multiple ways to specify the provider's parameters.  If overlapping values are configured for the provider, then this is the resolution order:
 
 1. Statically configured in the `provider` block
 2. Environment variable (where applicable)
@@ -76,4 +73,4 @@ values are configured for the provider, then this is the resolution order:
 
 ## Support
 
-TODO
+This provider is officially supported by Palo Alto Networks TAC.  If you encounter any issues with the provider, you can either open a Github issue or contact Palo Alto Networks TAC.
