@@ -23,9 +23,27 @@ make test
 Building the Provider
 ---------------------
 
+1. Install [GoLang](https://go.dev/dl/)
+
+2. Clone the needed repositories side-by-side to a new directory
+
 ```sh
+mkdir cloudngfwaws-terraform
+cd cloudngfwaws-terraform
+git clone https://github.com/PaloAltoNetworks/cloud-ngfw-aws-go.git
+git clone https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws
+```
+
+3. Build the provider
+
+```sh
+cd terraform-provider-cloudngfwaws
 make
 ```
+
+4. Specify the `dev_overrides` configuration per the next section below. This tells Terraform where to find the provider you just built. The directory to specify is the full path to the cloned provider repo. For example: `/home/myuser/cloudngfwaws-terraform/terraform-provider-cloudngfwaws`
+
+When using the provider, refer to the documentation in the `./docs` directory for all resources and parameters.
 
 Developing the Provider
 -----------------------
