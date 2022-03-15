@@ -24,7 +24,7 @@ Building the Provider
 ---------------------
 
 ```sh
-go build
+make
 ```
 
 Developing the Provider
