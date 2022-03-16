@@ -29,33 +29,33 @@ data "cloudngfwaws_rulestack" "example" {
 
 ### Required
 
-- **name** (String) The name.
+- `name` (String) The name.
 
 ### Optional
 
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- **id** (String) The ID of this resource.
+- `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **account_group** (String) Account group.
-- **account_id** (String) The account ID.
-- **description** (String) The description.
-- **minimum_app_id_version** (String) Minimum App-ID version number.
-- **profile_config** (List of Object) (see [below for nested schema](#nestedatt--profile_config))
-- **scope** (String) The scope.
-- **state** (String) The rulestack state.
-- **tags** (Map of String) The tags.
+- `account_group` (String) Account group.
+- `account_id` (String) The account ID.
+- `description` (String) The description.
+- `minimum_app_id_version` (String) Minimum App-ID version number.
+- `profile_config` (List of Object) (see [below for nested schema](#nestedatt--profile_config))
+- `scope` (String) The scope.
+- `state` (String) The rulestack state.
+- `tags` (Map of String) The tags.
 
 <a id="nestedatt--profile_config"></a>
 ### Nested Schema for `profile_config`
 
 Read-Only:
 
-- **anti_spyware** (String)
-- **anti_virus** (String)
-- **file_blocking** (String)
-- **outbound_trust_certificate** (String)
-- **outbound_untrust_certificate** (String)
-- **url_filtering** (String)
-- **vulnerability** (String)
+- `anti_spyware` (String)
+- `anti_virus` (String)
+- `file_blocking` (String)
+- `outbound_trust_certificate` (String)
+- `outbound_untrust_certificate` (String)
+- `url_filtering` (String)
+- `vulnerability` (String)

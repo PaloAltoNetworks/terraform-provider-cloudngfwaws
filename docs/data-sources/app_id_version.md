@@ -29,15 +29,15 @@ data "cloudngfwaws_app_id_version" "example" {
 
 ### Required
 
-- **version** (String) The AppId version.
+- `version` (String) The AppId version.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **max_results** (Number) Max results. Defaults to `100`.
-- **token** (String) Pagination token.
+- `id` (String) The ID of this resource.
+- `max_results` (Number) Max results. Defaults to `100`.
+- `token` (String) Pagination token.
 
 ### Read-Only
 
-- **applications** (List of String) List of applications.
-- **next_token** (String) Token for the next page of results.
+- `applications` (List of String) List of applications.
+- `next_token` (String) Token for the next page of results.

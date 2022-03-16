@@ -35,35 +35,35 @@ resource "cloudngfwaws_rulestack" "example" {
 
 ### Required
 
-- **name** (String) The name.
-- **profile_config** (Block List, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--profile_config))
+- `name` (String) The name.
+- `profile_config` (Block List, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--profile_config))
 
 ### Optional
 
-- **account_group** (String) Account group.
-- **account_id** (String) The account ID.
-- **description** (String) The description.
-- **id** (String) The ID of this resource.
-- **minimum_app_id_version** (String) Minimum App-ID version number.
-- **scope** (String) The scope.
-- **tags** (Map of String) The tags.
+- `account_group` (String) Account group.
+- `account_id` (String) The account ID.
+- `description` (String) The description.
+- `id` (String) The ID of this resource.
+- `minimum_app_id_version` (String) Minimum App-ID version number.
+- `scope` (String) The scope.
+- `tags` (Map of String) The tags.
 
 ### Read-Only
 
-- **state** (String) The rulestack state.
+- `state` (String) The rulestack state.
 
 <a id="nestedblock--profile_config"></a>
 ### Nested Schema for `profile_config`
 
 Optional:
 
-- **anti_spyware** (String) Anti-spyware profile setting. Defaults to `BestPractice`.
-- **anti_virus** (String) Anti-virus profile setting. Defaults to `BestPractice`.
-- **file_blocking** (String) File blocking profile setting. Defaults to `BestPractice`.
-- **outbound_trust_certificate** (String) Outbound trust certificate.
-- **outbound_untrust_certificate** (String) Outbound untrust certificate.
-- **url_filtering** (String) URL filtering profile setting. Defaults to `None`.
-- **vulnerability** (String) Vulnerability profile setting. Defaults to `BestPractice`.
+- `anti_spyware` (String) Anti-spyware profile setting. Defaults to `BestPractice`.
+- `anti_virus` (String) Anti-virus profile setting. Defaults to `BestPractice`.
+- `file_blocking` (String) File blocking profile setting. Defaults to `BestPractice`.
+- `outbound_trust_certificate` (String) Outbound trust certificate.
+- `outbound_untrust_certificate` (String) Outbound untrust certificate.
+- `url_filtering` (String) URL filtering profile setting. Defaults to `None`.
+- `vulnerability` (String) Vulnerability profile setting. Defaults to `BestPractice`.
 
 
 ## Import

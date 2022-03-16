@@ -27,19 +27,19 @@ data "cloudngfwaws_instances" "example" {}
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **max_results** (Number) Max number of results. Defaults to `100`.
-- **vpc_ids** (List of String) List of vpc ids.
+- `id` (String) The ID of this resource.
+- `max_results` (Number) Max number of results. Defaults to `100`.
+- `vpc_ids` (List of String) List of vpc ids.
 
 ### Read-Only
 
-- **instances** (List of Object) List of instances. (see [below for nested schema](#nestedatt--instances))
-- **next_token** (String) Token for the next page of results.
+- `instances` (List of Object) List of instances. (see [below for nested schema](#nestedatt--instances))
+- `next_token` (String) Token for the next page of results.
 
 <a id="nestedatt--instances"></a>
 ### Nested Schema for `instances`
 
 Read-Only:
 
-- **account_id** (String)
-- **name** (String)
+- `account_id` (String)
+- `name` (String)

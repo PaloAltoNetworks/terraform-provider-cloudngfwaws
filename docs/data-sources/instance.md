@@ -29,47 +29,47 @@ data "cloudngfwaws_instance" "example" {
 
 ### Required
 
-- **name** (String) The name.
+- `name` (String) The name.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **account_id** (String) The account ID.
-- **app_id_version** (String) App-ID version number.
-- **automatic_upgrade_app_id_version** (Boolean) Automatic App-ID upgrade version number.
-- **description** (String) The description.
-- **endpoint_mode** (String) Set endpoint mode from the following options Valid values are `ServiceManaged` or `CustomerManaged`.
-- **endpoint_service_name** (String) The endpoint service name.
-- **globalrulestack** (String) The global rulestack.
-- **rulestack** (String) The rulestack.
-- **status** (List of Object) (see [below for nested schema](#nestedatt--status))
-- **subnet_mapping** (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))
-- **tags** (Map of String) The tags.
-- **update_token** (String) The update token.
-- **vpc_id** (String) The vpc id.
+- `account_id` (String) The account ID.
+- `app_id_version` (String) App-ID version number.
+- `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number.
+- `description` (String) The description.
+- `endpoint_mode` (String) Set endpoint mode from the following options Valid values are `ServiceManaged` or `CustomerManaged`.
+- `endpoint_service_name` (String) The endpoint service name.
+- `globalrulestack` (String) The global rulestack.
+- `rulestack` (String) The rulestack.
+- `status` (List of Object) (see [below for nested schema](#nestedatt--status))
+- `subnet_mapping` (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))
+- `tags` (Map of String) The tags.
+- `update_token` (String) The update token.
+- `vpc_id` (String) The vpc id.
 
 <a id="nestedatt--status"></a>
 ### Nested Schema for `status`
 
 Read-Only:
 
-- **attachments** (List of Object) (see [below for nested schema](#nestedobjatt--status--attachments))
-- **failure_reason** (String)
-- **firewall_status** (String)
-- **rulestack_status** (String)
+- `attachments` (List of Object) (see [below for nested schema](#nestedobjatt--status--attachments))
+- `failure_reason` (String)
+- `firewall_status` (String)
+- `rulestack_status` (String)
 
 <a id="nestedobjatt--status--attachments"></a>
 ### Nested Schema for `status.attachments`
 
 Read-Only:
 
-- **endpoint_id** (String)
-- **rejected_reason** (String)
-- **status** (String)
-- **subnet_id** (String)
+- `endpoint_id` (String)
+- `rejected_reason` (String)
+- `status` (String)
+- `subnet_id` (String)
 
 
 
@@ -78,5 +78,5 @@ Read-Only:
 
 Read-Only:
 
-- **az** (String)
-- **subnet_id** (String)
+- `az` (String)
+- `subnet_id` (String)

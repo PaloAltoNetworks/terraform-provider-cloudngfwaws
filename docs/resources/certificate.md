@@ -43,20 +43,20 @@ resource "cloudngfwaws_rulestack" "r" {
 
 ### Required
 
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **audit_comment** (String) The audit comment.
-- **description** (String) The description.
-- **id** (String) The ID of this resource.
-- **self_signed** (Boolean) Set to true if certificate is self-signed.
-- **signer_arn** (String) The certificate signer ARN.
+- `audit_comment` (String) The audit comment.
+- `description` (String) The description.
+- `id` (String) The ID of this resource.
+- `self_signed` (Boolean) Set to true if certificate is self-signed.
+- `signer_arn` (String) The certificate signer ARN.
 
 ### Read-Only
 
-- **update_token** (String) The update token.
+- `update_token` (String) The update token.
 
 
 ## Import

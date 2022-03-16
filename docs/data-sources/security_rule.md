@@ -40,41 +40,41 @@ resource "cloudngfwaws_rulestack" "r" {
 
 ### Required
 
-- **priority** (Number) The rule priority.
-- **rulestack** (String) The rulestack.
+- `priority` (Number) The rule priority.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **rule_list** (String) The rulebase. Valid values are `PreRule`, `PostRule`, or `LocalRule`. Defaults to `PreRule`.
+- `id` (String) The ID of this resource.
+- `rule_list` (String) The rulebase. Valid values are `PreRule`, `PostRule`, or `LocalRule`. Defaults to `PreRule`.
 
 ### Read-Only
 
-- **action** (String) The action to take. Valid values are `Allow`, `DenySilent`, `DenyResetServer`, or `DenyResetBoth`.
-- **applications** (Set of String) The list of applications.
-- **audit_comment** (String) The audit comment.
-- **category** (List of Object) The category spec. (see [below for nested schema](#nestedatt--category))
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`.
-- **decryption_rule_type** (String) Decryption rule type. Valid values are `` or `SSLOutboundInspection`.
-- **description** (String) The description.
-- **destination** (List of Object) The destination spec. (see [below for nested schema](#nestedatt--destination))
-- **enabled** (Boolean) Set to false to disable this rule.
-- **logging** (Boolean) Enable logging at end.
-- **name** (String) The name.
-- **negate_destination** (Boolean) Negate the destination definition.
-- **negate_source** (Boolean) Negate the source definition.
-- **protocol** (String) The protocol.
-- **source** (List of Object) The source spec. (see [below for nested schema](#nestedatt--source))
-- **tags** (Map of String) The tags.
-- **update_token** (String) The update token.
+- `action` (String) The action to take. Valid values are `Allow`, `DenySilent`, `DenyResetServer`, or `DenyResetBoth`.
+- `applications` (Set of String) The list of applications.
+- `audit_comment` (String) The audit comment.
+- `category` (List of Object) The category spec. (see [below for nested schema](#nestedatt--category))
+- `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`.
+- `decryption_rule_type` (String) Decryption rule type. Valid values are `` or `SSLOutboundInspection`.
+- `description` (String) The description.
+- `destination` (List of Object) The destination spec. (see [below for nested schema](#nestedatt--destination))
+- `enabled` (Boolean) Set to false to disable this rule.
+- `logging` (Boolean) Enable logging at end.
+- `name` (String) The name.
+- `negate_destination` (Boolean) Negate the destination definition.
+- `negate_source` (Boolean) Negate the source definition.
+- `protocol` (String) The protocol.
+- `source` (List of Object) The source spec. (see [below for nested schema](#nestedatt--source))
+- `tags` (Map of String) The tags.
+- `update_token` (String) The update token.
 
 <a id="nestedatt--category"></a>
 ### Nested Schema for `category`
 
 Read-Only:
 
-- **feeds** (Set of String)
-- **url_category_names** (Set of String)
+- `feeds` (Set of String)
+- `url_category_names` (Set of String)
 
 
 <a id="nestedatt--destination"></a>
@@ -82,11 +82,11 @@ Read-Only:
 
 Read-Only:
 
-- **cidrs** (Set of String)
-- **countries** (Set of String)
-- **feeds** (Set of String)
-- **fqdn_lists** (Set of String)
-- **prefix_lists** (Set of String)
+- `cidrs` (Set of String)
+- `countries` (Set of String)
+- `feeds` (Set of String)
+- `fqdn_lists` (Set of String)
+- `prefix_lists` (Set of String)
 
 
 <a id="nestedatt--source"></a>
@@ -94,7 +94,7 @@ Read-Only:
 
 Read-Only:
 
-- **cidrs** (Set of String)
-- **countries** (Set of String)
-- **feeds** (Set of String)
-- **prefix_lists** (Set of String)
+- `cidrs` (Set of String)
+- `countries` (Set of String)
+- `feeds` (Set of String)
+- `prefix_lists` (Set of String)

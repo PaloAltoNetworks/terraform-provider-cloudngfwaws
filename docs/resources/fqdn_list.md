@@ -46,19 +46,19 @@ resource "cloudngfwaws_rulestack" "r" {
 
 ### Required
 
-- **fqdn_list** (Set of String) The fqdn list.
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
+- `fqdn_list` (Set of String) The fqdn list.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **audit_comment** (String) The audit comment.
-- **description** (String) The description.
-- **id** (String) The ID of this resource.
+- `audit_comment` (String) The audit comment.
+- `description` (String) The description.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **update_token** (String) The update token.
+- `update_token` (String) The update token.
 
 
 ## Import

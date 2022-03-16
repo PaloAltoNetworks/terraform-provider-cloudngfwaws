@@ -27,11 +27,11 @@ data "cloudngfwaws_predefined_url_categories" "example" {}
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **max_results** (Number) Max results. Defaults to `100`.
-- **token** (String) Pagination token.
+- `id` (String) The ID of this resource.
+- `max_results` (Number) Max results. Defaults to `100`.
+- `token` (String) Pagination token.
 
 ### Read-Only
 
-- **categories** (List of String) List of predefined URL categories.
-- **next_token** (String) Next pagination token.
+- `categories` (List of String) List of predefined URL categories.
+- `next_token` (String) Next pagination token.

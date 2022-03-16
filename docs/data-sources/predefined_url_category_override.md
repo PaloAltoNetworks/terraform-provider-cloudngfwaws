@@ -40,16 +40,16 @@ resource "cloudngfwaws_rulestack" "r" {
 
 ### Required
 
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- **id** (String) The ID of this resource.
+- `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **action** (String) The action to take. Valid values are `none`, `allow`, `alert`, or `block`.
-- **audit_comment** (String) The audit comment.
-- **update_token** (String) Update token.
+- `action` (String) The action to take. Valid values are `none`, `allow`, `alert`, or `block`.
+- `audit_comment` (String) The audit comment.
+- `update_token` (String) Update token.

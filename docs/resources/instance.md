@@ -76,33 +76,33 @@ resource "aws_subnet" "subnet2" {
 
 ### Required
 
-- **endpoint_mode** (String) Set endpoint mode from the following options Valid values are `ServiceManaged` or `CustomerManaged`.
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
-- **subnet_mapping** (Block List, Min: 1) Subnet mappings. (see [below for nested schema](#nestedblock--subnet_mapping))
-- **vpc_id** (String) The vpc id.
+- `endpoint_mode` (String) Set endpoint mode from the following options Valid values are `ServiceManaged` or `CustomerManaged`.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
+- `subnet_mapping` (Block List, Min: 1) Subnet mappings. (see [below for nested schema](#nestedblock--subnet_mapping))
+- `vpc_id` (String) The vpc id.
 
 ### Optional
 
-- **account_id** (String) The account ID.
-- **app_id_version** (String) App-ID version number.
-- **automatic_upgrade_app_id_version** (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
-- **description** (String) The description.
-- **globalrulestack** (String) The global rulestack.
-- **id** (String) The ID of this resource.
-- **tags** (Map of String) The tags.
+- `account_id` (String) The account ID.
+- `app_id_version` (String) App-ID version number.
+- `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
+- `description` (String) The description.
+- `globalrulestack` (String) The global rulestack.
+- `id` (String) The ID of this resource.
+- `tags` (Map of String) The tags.
 
 ### Read-Only
 
-- **update_token** (String) The update token.
+- `update_token` (String) The update token.
 
 <a id="nestedblock--subnet_mapping"></a>
 ### Nested Schema for `subnet_mapping`
 
 Optional:
 
-- **az** (String) The availability zone.
-- **subnet_id** (String) The subnet id.
+- `az` (String) The availability zone.
+- `subnet_id` (String) The subnet id.
 
 
 ## Import

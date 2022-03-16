@@ -35,25 +35,25 @@ resource "cloudngfwaws_commit_rulestack" "example" {
 
 ### Required
 
-- **rulestack** (String) The rulestack.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **state** (String) The rulestack state. This can only be the default value. Defaults to `Running`.
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `id` (String) The ID of this resource.
+- `state` (String) The rulestack state. This can only be the default value. Defaults to `Running`.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
-- **commit_errors** (List of String) Commit error messages.
-- **commit_status** (String) The commit status.
-- **validation_errors** (List of String) Validation error messages.
-- **validation_status** (String) The validation status.
+- `commit_errors` (List of String) Commit error messages.
+- `commit_status` (String) The commit status.
+- `validation_errors` (List of String) Validation error messages.
+- `validation_status` (String) The validation status.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
 Optional:
 
-- **create** (String)
-- **update** (String)
+- `create` (String)
+- `update` (String)

@@ -23,21 +23,21 @@ Resource for intelligent feed manipulation.
 
 ### Required
 
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
-- **url** (String) The intelligent feed source.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
+- `url` (String) The intelligent feed source.
 
 ### Optional
 
-- **audit_comment** (String) The audit comment.
-- **certificate** (String) The certificate profile.
-- **description** (String) The description.
-- **frequency** (String) Update frequency. Valid values are `HOURLY` or `DAILY`. Defaults to `HOURLY`.
-- **id** (String) The ID of this resource.
-- **time** (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
-- **type** (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`. Defaults to `IP_LIST`.
+- `audit_comment` (String) The audit comment.
+- `certificate` (String) The certificate profile.
+- `description` (String) The description.
+- `frequency` (String) Update frequency. Valid values are `HOURLY` or `DAILY`. Defaults to `HOURLY`.
+- `id` (String) The ID of this resource.
+- `time` (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
+- `type` (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`. Defaults to `IP_LIST`.
 
 ### Read-Only
 
-- **update_token** (String) The update token.
+- `update_token` (String) The update token.
 

@@ -23,24 +23,24 @@ Data source to validate the rulestack config.
 
 ### Required
 
-- **rulestack** (String) The rulestack.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `id` (String) The ID of this resource.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
-- **commit_errors** (List of String) Commit error messages.
-- **commit_status** (String) The commit status.
-- **state** (String) The rulestack state.
-- **validation_errors** (List of String) Validation error messages.
-- **validation_status** (String) The validation status.
+- `commit_errors` (List of String) Commit error messages.
+- `commit_status` (String) The commit status.
+- `state` (String) The rulestack state.
+- `validation_errors` (List of String) Validation error messages.
+- `validation_status` (String) The validation status.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
 Optional:
 
-- **create** (String)
+- `create` (String)

@@ -40,21 +40,21 @@ resource "cloudngfwaws_rulestack" "r" {
 
 ### Required
 
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
 
 ### Optional
 
-- **config_type** (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- **id** (String) The ID of this resource.
+- `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **audit_comment** (String) The audit comment.
-- **certificate** (String) The certificate profile.
-- **description** (String) The description.
-- **frequency** (String) Update frequency. Valid values are `HOURLY` or `DAILY`.
-- **time** (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
-- **type** (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`.
-- **update_token** (String) The update token.
-- **url** (String) The intelligent feed source.
+- `audit_comment` (String) The audit comment.
+- `certificate` (String) The certificate profile.
+- `description` (String) The description.
+- `frequency` (String) Update frequency. Valid values are `HOURLY` or `DAILY`.
+- `time` (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
+- `type` (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`.
+- `update_token` (String) The update token.
+- `url` (String) The intelligent feed source.

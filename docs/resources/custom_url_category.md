@@ -47,20 +47,20 @@ resource "cloudngfwaws_rulestack" "r" {
 
 ### Required
 
-- **name** (String) The name.
-- **rulestack** (String) The rulestack.
-- **url_list** (Set of String) The URL list for this custom URL category.
+- `name` (String) The name.
+- `rulestack` (String) The rulestack.
+- `url_list` (Set of String) The URL list for this custom URL category.
 
 ### Optional
 
-- **action** (String) The action to take. Valid values are `none`, `alert`, `allow`, `block`, `continue`, or `override`. Defaults to `none`.
-- **audit_comment** (String) The audit comment.
-- **description** (String) The description.
-- **id** (String) The ID of this resource.
+- `action` (String) The action to take. Valid values are `none`, `alert`, `allow`, `block`, `continue`, or `override`. Defaults to `none`.
+- `audit_comment` (String) The audit comment.
+- `description` (String) The description.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **update_token** (String) The update token.
+- `update_token` (String) The update token.
 
 
 ## Import
