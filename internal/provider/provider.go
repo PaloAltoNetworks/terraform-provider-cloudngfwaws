@@ -78,71 +78,119 @@ func providerSchema() map[string]*schema.Schema {
 
 	return map[string]*schema.Schema{
 		"host": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`).", "CLOUDNGFWAWS_HOST"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`).",
+				"CLOUDNGFWAWS_HOST",
+				"host",
+			),
 		},
 		"access_key": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("(Used for the initial `sts assume role`) AWS access key.", "CLOUDNGFWAWS_ACCESS_KEY"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"(Used for the initial `sts assume role`) AWS access key.",
+				"CLOUDNGFWAWS_ACCESS_KEY",
+				"access-key",
+			),
 		},
 		"secret_key": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("(Used for the initial `sts assume role`) AWS secret key.", "CLOUDNGFWAWS_SECRET_KEY"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"(Used for the initial `sts assume role`) AWS secret key.",
+				"CLOUDNGFWAWS_SECRET_KEY",
+				"secret-key",
+			),
 		},
 		"region": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("AWS region.", "CLOUDNGFWAWS_REGION"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"AWS region.",
+				"CLOUDNGFWAWS_REGION",
+				"region",
+			),
 		},
 		"arn": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("The ARN allowing both firewall and rulestack admin permissions.", "CLOUDNGFWAWS_ARN"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The ARN allowing both firewall and rulestack admin permissions.",
+				"CLOUDNGFWAWS_ARN",
+				"arn",
+			),
 		},
 		"lfa_arn": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("The ARN allowing firewall admin permissions.", "CLOUDNGFWAWS_LFA_ARN"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The ARN allowing firewall admin permissions.",
+				"CLOUDNGFWAWS_LFA_ARN",
+				"lfa-arn",
+			),
 		},
 		"lra_arn": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: addEv("The ARN allowing rulestack admin permissions.", "CLOUDNGFWAWS_LRA_ARN"),
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The ARN allowing rulestack admin permissions.",
+				"CLOUDNGFWAWS_LRA_ARN",
+				"lra-arn",
+			),
 		},
 		"protocol": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Description: addStringInSliceValidation(
-				addEv("The protocol (defaults to `https`).", "CLOUDNGFWAWS_PROTOCOL"),
+				addProviderParamDescription(
+					"The protocol (defaults to `https`).",
+					"CLOUDNGFWAWS_PROTOCOL",
+					"protocol",
+				),
 				protoOpts,
 			),
 			ValidateFunc: validation.StringInSlice(protoOpts, false),
 		},
 		"timeout": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Description: addEv("The timeout for any single API call (default: `30`).", "CLOUDNGFWAWS_TIMEOUT"),
+			Type:     schema.TypeInt,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The timeout for any single API call (default: `30`).",
+				"CLOUDNGFWAWS_TIMEOUT",
+				"timeout",
+			),
 		},
 		"headers": {
-			Type:        schema.TypeMap,
-			Optional:    true,
-			Description: addEv("Additional HTTP headers to send with API calls.", "CLOUDNGFWAWS_HEADERS"),
+			Type:     schema.TypeMap,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"Additional HTTP headers to send with API calls.",
+				"CLOUDNGFWAWS_HEADERS",
+				"headers",
+			),
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
 		},
 		"skip_verify_certificate": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Description: addEv("Skip verifying the SSL certificate.", "CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE"),
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"Skip verifying the SSL certificate.",
+				"CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE",
+				"skip-verify-certificate",
+			),
 		},
 		"logging": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: addEv("The logging options for the provider.", "CLOUDNGFWAWS_LOGGING"),
+			Type:     schema.TypeList,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The logging options for the provider.",
+				"CLOUDNGFWAWS_LOGGING",
+				"logging",
+			),
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},

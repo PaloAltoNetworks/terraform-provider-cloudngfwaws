@@ -39,8 +39,22 @@ func addIntBetweenValidation(desc string, low, high int) string {
 	return fmt.Sprintf("%s The number must be between [%d, %d] incluside.", desc, low, high)
 }
 
-func addEv(desc, varName string) string {
-	return fmt.Sprintf("%s Environment variable: `%s`.", desc, varName)
+func addProviderParamDescription(desc, envName, jsonName string) string {
+	var buf strings.Builder
+
+	buf.WriteString(desc)
+	if envName != "" {
+		buf.WriteString(" Environment variable: `")
+		buf.WriteString(envName)
+		buf.WriteString("`.")
+	}
+	if jsonName != "" {
+		buf.WriteString(" JSON conf file variable: `")
+		buf.WriteString(jsonName)
+		buf.WriteString("`.")
+	}
+
+	return buf.String()
 }
 
 func configTypeId(a, b string) string {
