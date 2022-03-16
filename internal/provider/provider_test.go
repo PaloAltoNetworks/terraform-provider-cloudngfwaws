@@ -9,35 +9,34 @@ import (
 )
 
 var (
-	testAccAccountId string
-)
-
-const (
-	TestAccAccountIdNotDefined = "Missing environment variable: CLOUDNGFWAWS_ACCOUNT_ID"
+	testAccAccountId, testAccAccountGroup string
 )
 
 func init() {
 	// Uncomment if we need runtime info later.
 	/*
-	   var err error
-	   ctx := context.TODO()
+			   var err error
+			   ctx := context.TODO()
 
-	   con := awsngfw.Client{
-	       Host: os.Getenv("CLOUDNGFWAWS_HOST"),
-	       Region: os.Getenv("CLOUDNGFWAWS_REGION"),
-	       Arn: os.Getenv("CLOUDNGFWAWS_ARN"),
-	       LfaArn: os.Getenv("CLOUDNGFWAWS_LFA_ARN"),
-	       LraArn: os.Getenv("CLOUDNGFWAWS_LRA_ARN"),
-	       Logging: awsngfw.LogQuiet,
-	   }
-	   if err = con.Setup(); err != nil {
-	       return
-	   } else if err = con.RefreshJwts(ctx); err != nil {
-	       return
-	   }
+			   con := awsngfw.Client{
+			       Host: os.Getenv("CLOUDNGFWAWS_HOST"),
+			       Region: os.Getenv("CLOUDNGFWAWS_REGION"),
+		           AccessKey: os.Getenv("CLOUDNGFWAWS_ACCESS_KEY"),
+		           SecretKey: os.Getenv("CLOUDNGFWAWS_SECRET_KEY"),
+			       Arn: os.Getenv("CLOUDNGFWAWS_ARN"),
+			       LfaArn: os.Getenv("CLOUDNGFWAWS_LFA_ARN"),
+			       LraArn: os.Getenv("CLOUDNGFWAWS_LRA_ARN"),
+			       Logging: awsngfw.LogQuiet,
+			   }
+			   if err = con.Setup(); err != nil {
+			       return
+			   } else if err = con.RefreshJwts(ctx); err != nil {
+			       return
+			   }
 	*/
 
 	testAccAccountId = os.Getenv("CLOUDNGFWAWS_ACCOUNT_ID")
+	testAccAccountGroup = os.Getenv("CLOUDNGFWAWS_ACCOUNT_GROUP")
 }
 
 var providerFactories = map[string]func() (*schema.Provider, error){
@@ -73,5 +72,9 @@ func testAccPreCheck(t *testing.T) {
 		if os.Getenv(shared_arn) == "" && os.Getenv(arn) == "" {
 			t.Fatal(fmt.Sprintf("One of %q or %q must be specified", shared_arn, arn))
 		}
+	}
+
+	if testAccAccountId == "" && testAccAccountGroup == "" {
+		t.Fatal("Either CLOUDNGFWAWS_ACCOUNT_ID or CLOUDNGFWAWS_ACCOUNT_GROUP should be defined")
 	}
 }
