@@ -13,7 +13,7 @@ var (
 )
 
 const (
-	TestAccAccountIdNotDefined = "Missing environment variable: CLOUD_NGFW_ACCOUNT_ID"
+	TestAccAccountIdNotDefined = "Missing environment variable: CLOUDNGFWAWS_ACCOUNT_ID"
 )
 
 func init() {
@@ -23,11 +23,11 @@ func init() {
 	   ctx := context.TODO()
 
 	   con := awsngfw.Client{
-	       Host: os.Getenv("CLOUD_NGFW_HOST"),
-	       Region: os.Getenv("CLOUD_NGFW_REGION"),
-	       Arn: os.Getenv("CLOUD_NGFW_ARN"),
-	       LfaArn: os.Getenv("CLOUD_NGFW_LFA_ARN"),
-	       LraArn: os.Getenv("CLOUD_NGFW_LRA_ARN"),
+	       Host: os.Getenv("CLOUDNGFWAWS_HOST"),
+	       Region: os.Getenv("CLOUDNGFWAWS_REGION"),
+	       Arn: os.Getenv("CLOUDNGFWAWS_ARN"),
+	       LfaArn: os.Getenv("CLOUDNGFWAWS_LFA_ARN"),
+	       LraArn: os.Getenv("CLOUDNGFWAWS_LRA_ARN"),
 	       Logging: awsngfw.LogQuiet,
 	   }
 	   if err = con.Setup(); err != nil {
@@ -37,7 +37,7 @@ func init() {
 	   }
 	*/
 
-	testAccAccountId = os.Getenv("CLOUD_NGFW_ACCOUNT_ID")
+	testAccAccountId = os.Getenv("CLOUDNGFWAWS_ACCOUNT_ID")
 }
 
 var providerFactories = map[string]func() (*schema.Provider, error){
@@ -58,8 +58,8 @@ func TestProvider_impl(t *testing.T) {
 
 func testAccPreCheck(t *testing.T) {
 	opts := []string{
-		"CLOUD_NGFW_HOST",
-		"CLOUD_NGFW_REGION",
+		"CLOUDNGFWAWS_HOST",
+		"CLOUDNGFWAWS_REGION",
 	}
 	for _, x := range opts {
 		if os.Getenv(x) == "" {
@@ -67,8 +67,8 @@ func testAccPreCheck(t *testing.T) {
 		}
 	}
 
-	shared_arn := "CLOUD_NGFW_ARN"
-	arns := []string{"CLOUD_NGFW_LFA_ARN", "CLOUD_NGFW_LRA_ARN"}
+	shared_arn := "CLOUDNGFWAWS_ARN"
+	arns := []string{"CLOUDNGFWAWS_LFA_ARN", "CLOUDNGFWAWS_LRA_ARN"}
 	for _, arn := range arns {
 		if os.Getenv(shared_arn) == "" && os.Getenv(arn) == "" {
 			t.Fatal(fmt.Sprintf("One of %q or %q must be specified", shared_arn, arn))
