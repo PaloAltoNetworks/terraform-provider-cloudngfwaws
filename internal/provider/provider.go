@@ -80,43 +80,43 @@ func providerSchema() map[string]*schema.Schema {
 		"host": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: addEv("The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`).", "CLOUD_NGFW_HOST"),
+			Description: addEv("The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`).", "CLOUDNGFWAWS_HOST"),
 		},
 		"access_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "(Used for the initial `sts assume role`) AWS access key.",
+			Description: addEv("(Used for the initial `sts assume role`) AWS access key.", "CLOUDNGFWAWS_ACCESS_KEY"),
 		},
 		"secret_key": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "(Used for the initial `sts assume role`) AWS secret key.",
+			Description: addEv("(Used for the initial `sts assume role`) AWS secret key.", "CLOUDNGFWAWS_SECRET_KEY"),
 		},
 		"region": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: addEv("AWS region.", "CLOUD_NGFW_REGION"),
+			Description: addEv("AWS region.", "CLOUDNGFWAWS_REGION"),
 		},
 		"arn": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: addEv("The ARN allowing both firewall and rulestack admin permissions.", "CLOUD_NGFW_ARN"),
+			Description: addEv("The ARN allowing both firewall and rulestack admin permissions.", "CLOUDNGFWAWS_ARN"),
 		},
 		"lfa_arn": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: addEv("The ARN allowing firewall admin permissions.", "CLOUD_NGFW_LFA_ARN"),
+			Description: addEv("The ARN allowing firewall admin permissions.", "CLOUDNGFWAWS_LFA_ARN"),
 		},
 		"lra_arn": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: addEv("The ARN allowing rulestack admin permissions.", "CLOUD_NGFW_LRA_ARN"),
+			Description: addEv("The ARN allowing rulestack admin permissions.", "CLOUDNGFWAWS_LRA_ARN"),
 		},
 		"protocol": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Description: addStringInSliceValidation(
-				addEv("The protocol (defaults to `https`).", "CLOUD_NGFW_PROTOCOL"),
+				addEv("The protocol (defaults to `https`).", "CLOUDNGFWAWS_PROTOCOL"),
 				protoOpts,
 			),
 			ValidateFunc: validation.StringInSlice(protoOpts, false),
@@ -124,12 +124,12 @@ func providerSchema() map[string]*schema.Schema {
 		"timeout": {
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Description: addEv("The timeout for any single API call (default: `30`).", "CLOUD_NGFW_TIMEOUT"),
+			Description: addEv("The timeout for any single API call (default: `30`).", "CLOUDNGFWAWS_TIMEOUT"),
 		},
 		"headers": {
 			Type:        schema.TypeMap,
 			Optional:    true,
-			Description: addEv("Additional HTTP headers to send with API calls.", "CLOUD_NGFW_HEADERS"),
+			Description: addEv("Additional HTTP headers to send with API calls.", "CLOUDNGFWAWS_HEADERS"),
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -137,12 +137,12 @@ func providerSchema() map[string]*schema.Schema {
 		"skip_verify_certificate": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: addEv("Skip verifying the SSL certificate.", "CLOUD_NGFW_SKIP_VERIFY_CERTIFICATE"),
+			Description: addEv("Skip verifying the SSL certificate.", "CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE"),
 		},
 		"logging": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: addEv("The logging options for the provider.", "CLOUD_NGFW_LOGGING"),
+			Description: addEv("The logging options for the provider.", "CLOUDNGFWAWS_LOGGING"),
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
