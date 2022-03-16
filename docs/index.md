@@ -33,8 +33,18 @@ terraform {
 }
 
 provider "cloudngfwaws" {
-  region           = "eu-west-1"
   json_config_file = "~/.cloudngfwaws_creds.json"
+}
+```
+
+Example JSON config file:
+
+```shell
+{
+  "host": "api.us-east-1.aws.cloudngfw.com",
+  "region": "us-east-1",
+  "lfa-arn": "arn:aws:iam::123456789:role/FirewallAdmin",
+  "lra-arn": "arn:aws:iam::123456789:role/RulestackAdmin"
 }
 ```
 
@@ -53,19 +63,19 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 
 ### Optional
 
-- `access_key` (String) (Used for the initial `sts assume role`) AWS access key. Environment variable: `CLOUDNGFWAWS_ACCESS_KEY`.
-- `arn` (String) The ARN allowing both firewall and rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_ARN`.
-- `headers` (Map of String) Additional HTTP headers to send with API calls. Environment variable: `CLOUDNGFWAWS_HEADERS`.
-- `host` (String) The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`). Environment variable: `CLOUDNGFWAWS_HOST`.
+- `access_key` (String) (Used for the initial `sts assume role`) AWS access key. Environment variable: `CLOUDNGFWAWS_ACCESS_KEY`. JSON conf file variable: `access-key`.
+- `arn` (String) The ARN allowing both firewall and rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_ARN`. JSON conf file variable: `arn`.
+- `headers` (Map of String) Additional HTTP headers to send with API calls. Environment variable: `CLOUDNGFWAWS_HEADERS`. JSON conf file variable: `headers`.
+- `host` (String) The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`). Environment variable: `CLOUDNGFWAWS_HOST`. JSON conf file variable: `host`.
 - `json_config_file` (String) Retrieve provider configuration from this JSON file.
-- `lfa_arn` (String) The ARN allowing firewall admin permissions. Environment variable: `CLOUDNGFWAWS_LFA_ARN`.
-- `logging` (List of String) The logging options for the provider. Environment variable: `CLOUDNGFWAWS_LOGGING`.
-- `lra_arn` (String) The ARN allowing rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_LRA_ARN`.
-- `protocol` (String) The protocol (defaults to `https`). Environment variable: `CLOUDNGFWAWS_PROTOCOL`. Valid values are `https` or `http`.
-- `region` (String) AWS region. Environment variable: `CLOUDNGFWAWS_REGION`.
-- `secret_key` (String) (Used for the initial `sts assume role`) AWS secret key. Environment variable: `CLOUDNGFWAWS_SECRET_KEY`.
-- `skip_verify_certificate` (Boolean) Skip verifying the SSL certificate. Environment variable: `CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE`.
-- `timeout` (Number) The timeout for any single API call (default: `30`). Environment variable: `CLOUDNGFWAWS_TIMEOUT`.
+- `lfa_arn` (String) The ARN allowing firewall admin permissions. Environment variable: `CLOUDNGFWAWS_LFA_ARN`. JSON conf file variable: `lfa-arn`.
+- `logging` (List of String) The logging options for the provider. Environment variable: `CLOUDNGFWAWS_LOGGING`. JSON conf file variable: `logging`.
+- `lra_arn` (String) The ARN allowing rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_LRA_ARN`. JSON conf file variable: `lra-arn`.
+- `protocol` (String) The protocol (defaults to `https`). Environment variable: `CLOUDNGFWAWS_PROTOCOL`. JSON conf file variable: `protocol`. Valid values are `https` or `http`.
+- `region` (String) AWS region. Environment variable: `CLOUDNGFWAWS_REGION`. JSON conf file variable: `region`.
+- `secret_key` (String) (Used for the initial `sts assume role`) AWS secret key. Environment variable: `CLOUDNGFWAWS_SECRET_KEY`. JSON conf file variable: `secret-key`.
+- `skip_verify_certificate` (Boolean) Skip verifying the SSL certificate. Environment variable: `CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE`. JSON conf file variable: `skip-verify-certificate`.
+- `timeout` (Number) The timeout for any single API call (default: `30`). Environment variable: `CLOUDNGFWAWS_TIMEOUT`. JSON conf file variable: `timeout`.
 
 
 ## Support
