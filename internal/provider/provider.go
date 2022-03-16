@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func init() {
@@ -33,82 +34,7 @@ func init() {
 func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
-			Schema: map[string]*schema.Schema{
-				"host": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: addEv("The hostname of the API.", "CLOUD_NGFW_HOST"),
-					Default:     "api.us-east-1.aws.cloudngfw.com",
-				},
-				"access_key": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "(Used for the initial `sts assume role`) AWS access key.",
-				},
-				"secret_key": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "(Used for the initial `sts assume role`) AWS secret key.",
-				},
-				"region": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: addEv("AWS region.", "CLOUD_NGFW_REGION"),
-				},
-				"arn": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: addEv("The ARN allowing both firewall and rulestack admin permissions.", "CLOUD_NGFW_ARN"),
-				},
-				"lfa_arn": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: addEv("The ARN allowing firewall admin permissions.", "CLOUD_NGFW_LFA_ARN"),
-				},
-				"lra_arn": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: addEv("The ARN allowing rulestack admin permissions.", "CLOUD_NGFW_LRA_ARN"),
-				},
-				"protocol": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: addEv("The protocol.", "CLOUD_NGFW_PROTOCOL"),
-					Default:     "https",
-				},
-				"timeout": {
-					Type:        schema.TypeInt,
-					Optional:    true,
-					Description: addEv("The timeout for any single API call.", "CLOUD_NGFW_TIMEOUT"),
-					Default:     30,
-				},
-				"headers": {
-					Type:        schema.TypeMap,
-					Optional:    true,
-					Description: addEv("Additional HTTP headers to send with API calls.", "CLOUD_NGFW_HEADERS"),
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-				},
-				"skip_verify_certificate": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Description: addEv("Skip verifying the SSL certificate.", "CLOUD_NGFW_SKIP_VERIFY_CERTIFICATE"),
-				},
-				"logging": {
-					Type:        schema.TypeList,
-					Optional:    true,
-					Description: addEv("The logging options for the provider.", "CLOUD_NGFW_LOGGING"),
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-				},
-				"json_config_file": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Retrieve provider configuration from this JSON file.",
-				},
-			},
+			Schema: providerSchema(),
 
 			DataSourcesMap: map[string]*schema.Resource{
 				"cloudngfwaws_app_id_version":                   dataSourceAppIdVersion(),
@@ -144,6 +70,88 @@ func New(version string) func() *schema.Provider {
 		p.ConfigureContextFunc = configure(version, p)
 
 		return p
+	}
+}
+
+func providerSchema() map[string]*schema.Schema {
+	protoOpts := []string{"https", "http"}
+
+	return map[string]*schema.Schema{
+		"host": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: addEv("The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`).", "CLOUD_NGFW_HOST"),
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "(Used for the initial `sts assume role`) AWS access key.",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "(Used for the initial `sts assume role`) AWS secret key.",
+		},
+		"region": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: addEv("AWS region.", "CLOUD_NGFW_REGION"),
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: addEv("The ARN allowing both firewall and rulestack admin permissions.", "CLOUD_NGFW_ARN"),
+		},
+		"lfa_arn": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: addEv("The ARN allowing firewall admin permissions.", "CLOUD_NGFW_LFA_ARN"),
+		},
+		"lra_arn": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: addEv("The ARN allowing rulestack admin permissions.", "CLOUD_NGFW_LRA_ARN"),
+		},
+		"protocol": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addStringInSliceValidation(
+				addEv("The protocol (defaults to `https`).", "CLOUD_NGFW_PROTOCOL"),
+				protoOpts,
+			),
+			ValidateFunc: validation.StringInSlice(protoOpts, false),
+		},
+		"timeout": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: addEv("The timeout for any single API call (default: `30`).", "CLOUD_NGFW_TIMEOUT"),
+		},
+		"headers": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: addEv("Additional HTTP headers to send with API calls.", "CLOUD_NGFW_HEADERS"),
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"skip_verify_certificate": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: addEv("Skip verifying the SSL certificate.", "CLOUD_NGFW_SKIP_VERIFY_CERTIFICATE"),
+		},
+		"logging": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: addEv("The logging options for the provider.", "CLOUD_NGFW_LOGGING"),
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"json_config_file": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Retrieve provider configuration from this JSON file.",
+		},
 	}
 }
 
@@ -188,6 +196,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			AccessKey:             d.Get("access_key").(string),
 			SecretKey:             d.Get("secret_key").(string),
 			Region:                d.Get("region").(string),
+			Arn:                   d.Get("arn").(string),
 			LfaArn:                d.Get("lfa_arn").(string),
 			LraArn:                d.Get("lra_arn").(string),
 			Protocol:              d.Get("protocol").(string),
@@ -205,7 +214,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			return nil, diag.FromErr(err)
 		}
 
-		con.HttpClient.Transport = logging.NewTransport("AwsNgfw", con.HttpClient.Transport)
+		con.HttpClient.Transport = logging.NewTransport("CloudNgfwAws", con.HttpClient.Transport)
 
 		if err := con.RefreshJwts(ctx); err != nil {
 			return nil, diag.FromErr(err)
