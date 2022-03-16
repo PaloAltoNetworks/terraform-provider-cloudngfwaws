@@ -8,6 +8,5 @@ terraform {
 }
 
 provider "cloudngfwaws" {
-  region           = "eu-west-1"
   json_config_file = "~/.cloudngfwaws_creds.json"
 }
