@@ -275,6 +275,7 @@ func loadRulestack(d *schema.ResourceData) stack.Info {
 	return stack.Info{
 		Name: d.Get("name").(string),
 		Entry: stack.Details{
+			Description:         d.Get("description").(string),
 			Scope:               d.Get("scope").(string),
 			AccountId:           d.Get("account_id").(string),
 			AccountGroup:        d.Get("account_group").(string),
@@ -305,6 +306,7 @@ func saveRulestack(d *schema.ResourceData, name, state string, o stack.Details) 
 	}
 
 	d.Set("name", name)
+	d.Set("description", o.Description)
 	d.Set("scope", o.Scope)
 	d.Set("account_id", o.AccountId)
 	d.Set("account_group", o.AccountGroup)

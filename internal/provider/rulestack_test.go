@@ -11,23 +11,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccResourceRulestack_LocalWithAccountId(t *testing.T) {
-	if testAccAccountId == "" {
-		t.Skip(TestAccAccountIdNotDefined)
+// Data source.
+func TestAccDataSourceRulestack(t *testing.T) {
+	o1 := stack.Details{
+		Description: "This is my first description",
+		Profile: stack.ProfileConfig{
+			AntiSpyware: "BestPractice",
+		},
 	}
 
-	name := fmt.Sprintf("tf%s", acctest.RandString(6))
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRulestackConfig("test", &o1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"data.cloudngfwaws_rulestack.test", "name",
+					),
+					resource.TestCheckResourceAttr(
+						"data.cloudngfwaws_rulestack.test", "scope", "Local",
+					),
+					resource.TestCheckResourceAttr(
+						"data.cloudngfwaws_rulestack.test", "account_id", testAccAccountId,
+					),
+					resource.TestCheckResourceAttr(
+						"data.cloudngfwaws_rulestack.test", "account_group", testAccAccountGroup,
+					),
+					resource.TestCheckResourceAttr(
+						"data.cloudngfwaws_rulestack.test", "description", o1.Description,
+					),
+				),
+			},
+		},
+	})
+}
+
+// Resource.
+func TestAccResourceRulestack(t *testing.T) {
 	o1 := stack.Details{
-		Scope:       "Local",
-		AccountId:   testAccAccountId,
 		Description: "This is my first description",
 		Profile: stack.ProfileConfig{
 			AntiSpyware: "BestPractice",
 		},
 	}
 	o2 := stack.Details{
-		Scope:       o1.Scope,
-		AccountId:   testAccAccountId,
 		Description: "Second description",
 		Profile: stack.ProfileConfig{
 			AntiVirus: "BestPractice",
@@ -39,16 +68,16 @@ func TestAccResourceRulestack_LocalWithAccountId(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRulestackConfig(name, o1),
+				Config: testAccRulestackConfig("test", &o1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "name", name,
+						"cloudngfwaws_rulestack.test", "scope", "Local",
 					),
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "scope", o1.Scope,
+						"data.cloudngfwaws_rulestack.test", "account_id", testAccAccountId,
 					),
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "account_id", o1.AccountId,
+						"data.cloudngfwaws_rulestack.test", "account_group", testAccAccountGroup,
 					),
 					resource.TestCheckResourceAttr(
 						"cloudngfwaws_rulestack.test", "description", o1.Description,
@@ -56,16 +85,16 @@ func TestAccResourceRulestack_LocalWithAccountId(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRulestackConfig(name, o2),
+				Config: testAccRulestackConfig("test", &o2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "name", name,
+						"cloudngfwaws_rulestack.test", "scope", "Local",
 					),
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "scope", o2.Scope,
+						"data.cloudngfwaws_rulestack.test", "account_id", testAccAccountId,
 					),
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "account_id", o2.AccountId,
+						"data.cloudngfwaws_rulestack.test", "account_group", testAccAccountGroup,
 					),
 					resource.TestCheckResourceAttr(
 						"cloudngfwaws_rulestack.test", "description", o2.Description,
@@ -76,16 +105,35 @@ func TestAccResourceRulestack_LocalWithAccountId(t *testing.T) {
 	})
 }
 
-func testAccRulestackConfig(name string, x stack.Details) string {
+func testAccRulestackConfig(id string, x *stack.Details) string {
 	var buf strings.Builder
 
+	name := fmt.Sprintf("tf%s", acctest.RandString(8))
+
+	if x == nil {
+		x = &stack.Details{
+			Description: "Acctest description",
+			Profile: stack.ProfileConfig{
+				AntiSpyware: "BestPractice",
+			},
+		}
+	}
+
+	if id == "test" {
+		buf.WriteString(`
+data "cloudngfwaws_rulestack" "test" {
+    name = cloudngfwaws_rulestack.test.name
+}`)
+	}
+
 	buf.WriteString(fmt.Sprintf(`
-resource "cloudngfwaws_rulestack" "test" {
+resource "cloudngfwaws_rulestack" %q {
     name = %q
-    scope = %q
+    scope = "Local"
     account_id = %q
+    account_group = %q
     description = %q
-    profile_config {`, name, x.Scope, x.AccountId, x.Description))
+    profile_config {`, id, name, testAccAccountId, testAccAccountGroup, x.Description))
 
 	if x.Profile.AntiSpyware != "" {
 		buf.WriteString(fmt.Sprintf("\n        anti_spyware = %q", x.Profile.AntiSpyware))
