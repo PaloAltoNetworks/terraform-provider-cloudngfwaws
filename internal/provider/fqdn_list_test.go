@@ -96,16 +96,6 @@ func TestAccResourceFqdnList(t *testing.T) {
 
 func testAccFqdnListConfig(name string, x fqdn.Info) string {
 	var buf strings.Builder
-	var list strings.Builder
-
-	list.WriteString("[")
-	for i, y := range x.FqdnList {
-		if i > 0 {
-			list.WriteString(", ")
-		}
-		list.WriteString(fmt.Sprintf("%q", y))
-	}
-	list.WriteString("]")
 
 	buf.WriteString(testAccRulestackConfig("r", nil))
 
@@ -121,7 +111,7 @@ resource "cloudngfwaws_fqdn_list" "test" {
     description = %q
     fqdn_list = %s
     audit_comment = %q
-}`, RulestackName, RulestackName, name, x.Description, list.String(), x.AuditComment))
+}`, RulestackName, RulestackName, name, x.Description, sliceToString(x.FqdnList), x.AuditComment))
 
 	return buf.String()
 }

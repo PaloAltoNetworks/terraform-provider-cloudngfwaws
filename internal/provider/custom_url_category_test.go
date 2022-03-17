@@ -105,16 +105,6 @@ func TestAccResourceCustomUrlCategory(t *testing.T) {
 
 func testAccCustomUrlCategoryConfig(name string, x url.Info) string {
 	var buf strings.Builder
-	var url_list strings.Builder
-
-	url_list.WriteString("[")
-	for i, y := range x.UrlList {
-		if i > 0 {
-			url_list.WriteString(", ")
-		}
-		url_list.WriteString(fmt.Sprintf("%q", y))
-	}
-	url_list.WriteString("]")
 
 	buf.WriteString(testAccRulestackConfig("r", nil))
 
@@ -131,7 +121,7 @@ resource "cloudngfwaws_custom_url_category" "test" {
     url_list = %s
     action = %q
     audit_comment = %q
-}`, RulestackName, RulestackName, name, x.Description, url_list.String(), x.Action, x.AuditComment))
+}`, RulestackName, RulestackName, name, x.Description, sliceToString(x.UrlList), x.Action, x.AuditComment))
 
 	return buf.String()
 }
