@@ -12,7 +12,7 @@ import (
 )
 
 // Data source.
-func TestAccDataSourceRulestack(t *testing.T) {
+func TestAccDataSourceCertificate(t *testing.T) {
 	name := fmt.Sprintf("tf%s", acctest.RandString(8))
 
 	o1 := certificate.Info{
@@ -44,7 +44,7 @@ func TestAccDataSourceRulestack(t *testing.T) {
 }
 
 // Resource.
-func TestAccResourceRulestack(t *testing.T) {
+func TestAccResourceCertificate(t *testing.T) {
 	name := fmt.Sprintf("tf%s", acctest.RandString(8))
 
 	o1 := certificate.Info{
