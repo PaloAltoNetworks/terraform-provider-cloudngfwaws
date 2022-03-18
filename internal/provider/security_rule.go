@@ -406,7 +406,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 	}
 
 	if !isResource {
-		computed(ans, "", []string{RulestackName, RuleListName, "priority"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, RuleListName, "priority"})
 	}
 
 	return ans
