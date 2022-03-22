@@ -4,6 +4,7 @@ New Data Sources:
 
 * `cloudngfwaws_app_id_version` / `cloudngfwaws_app_id_versions`
 * `cloudngfwaws_certificate`
+* `cloudngfwaws_country`
 * `cloudngfwaws_custom_url_category`
 * `cloudngfwaws_fqdn_list`
 * `cloudngfwaws_instance` / `cloudngfwaws_instances`
