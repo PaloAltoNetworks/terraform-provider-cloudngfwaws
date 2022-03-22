@@ -8,6 +8,12 @@ description: |-
 # {{ .Name }}
 
 {{ .Description | trimspace }}
+{{- if eq .Name "cloudngfwaws_commit_rulestack" }}
+
+This resource should be in a plan file by itself (having other rulestack commits is fine).
+
+!> **NOTE:** This resource does not error if the commit failed.  To see if th commit failed, check the commit status attribute.
+{{- end }}
 
 
 ## Admin Permission Type
@@ -27,7 +33,8 @@ description: |-
 
 
 {{ .SchemaMarkdown | trimspace }}
-{{ if .HasImport }}
+{{- if .HasImport }}
+
 
 ## Import
 
