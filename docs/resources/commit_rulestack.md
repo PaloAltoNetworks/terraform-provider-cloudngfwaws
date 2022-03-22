@@ -9,11 +9,9 @@ description: |-
 
 Resource for committing the rulestack config.
 
-This resource should be in a plan file by itself (having other
-rulestack commits is fine).
+This resource should be in a plan file by itself (having other rulestack commits is fine).
 
-!> **NOTE:** This resource does not error if the commit failed.  To see if the
-commit failed, check the commit status attribute.
+!> **NOTE:** This resource does not error if the commit failed.  To see if th commit failed, check the commit status attribute.
 
 
 ## Admin Permission Type
