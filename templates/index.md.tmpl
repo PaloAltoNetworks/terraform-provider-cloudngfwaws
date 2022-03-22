@@ -18,6 +18,11 @@ This provider first authenticates against AWS, performing STS assume role. After
 The AWS access key and secret key can be statically specified in the `provider` block or they will be picked up from the shared credentials file.
 
 
+## AWS Config
+
+The initial portion of the authentication workflow uses the AWS Go SDK, and as such control over the AWS portion of the authentication can be controlled using AWS environment variables (e.g. - `AWS_PROFILE` to specific a specific profile if multiple are present in your shared credentials file).  Please refer to the AWS documentation for more control on the AWS authentication.
+
+
 ## Example Usage
 
 Terraform 0.13 and later:
