@@ -1,4 +1,4 @@
-resource "cloudngfwaws_instance" "example" {
+resource "cloudngfwaws_ngfw" "example" {
   name        = "example-instance"
   vpc_id      = aws_vpc.example.id
   account_id  = "12345678"

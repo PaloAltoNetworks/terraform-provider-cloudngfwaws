@@ -1,13 +1,13 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_instance Data Source"
+page_title: "cloudngfwaws: cloudngfwaws_ngfw Data Source"
 subcategory: ""
 description: |-
-  Data source for retrieving instance information.
+  Data source for retrieving NGFW information.
 ---
 
-# cloudngfwaws_instance
+# cloudngfwaws_ngfw
 
-Data source for retrieving instance information.
+Data source for retrieving NGFW information.
 
 
 ## Admin Permission Type
@@ -18,7 +18,7 @@ Data source for retrieving instance information.
 ## Example Usage
 
 ```terraform
-data "cloudngfwaws_instance" "example" {
+data "cloudngfwaws_ngfw" "example" {
   name = "example-instance"
 }
 ```

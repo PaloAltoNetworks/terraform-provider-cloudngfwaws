@@ -1,13 +1,13 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_instance Resource"
+page_title: "cloudngfwaws: cloudngfwaws_ngfw Resource"
 subcategory: ""
 description: |-
-  Resource for instance manipulation.
+  Resource for NGFW manipulation.
 ---
 
-# cloudngfwaws_instance
+# cloudngfwaws_ngfw
 
-Resource for instance manipulation.
+Resource for NGFW manipulation.
 
 
 ## Admin Permission Type
@@ -18,7 +18,7 @@ Resource for instance manipulation.
 ## Example Usage
 
 ```terraform
-resource "cloudngfwaws_instance" "example" {
+resource "cloudngfwaws_ngfw" "example" {
   name        = "example-instance"
   vpc_id      = aws_vpc.example.id
   account_id  = "12345678"
@@ -111,5 +111,5 @@ Import is supported using the following syntax:
 
 ```shell
 # import name is <account_id>:<name>
-terraform import cloudngfwaws_instance.example 12345678:example-instance
+terraform import cloudngfwaws_ngfw.example 12345678:example-instance
 ```

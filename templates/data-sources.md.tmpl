@@ -12,7 +12,7 @@ description: |-
 
 ## Admin Permission Type
 
-{{ if or (eq .Name "cloudngfwaws_instance") (eq .Name "cloudngfwaws_instances") -}}
+{{ if or (eq .Name "cloudngfwaws_ngfw") (eq .Name "cloudngfwaws_ngfws") -}}
 * `Firewall`
 {{- else -}}
 * `Rulestack`

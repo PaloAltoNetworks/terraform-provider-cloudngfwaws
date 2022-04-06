@@ -7,8 +7,8 @@ New Data Sources:
 * `cloudngfwaws_country`
 * `cloudngfwaws_custom_url_category`
 * `cloudngfwaws_fqdn_list`
-* `cloudngfwaws_instance` / `cloudngfwaws_instances`
 * `cloudngfwaws_intelligent_feed`
+* `cloudngfwaws_ngfw` / `cloudngfwaws_ngfws`
 * `cloudngfwaws_predefined_url_categories`
 * `cloudngfwaws_predefined_url_category_override`
 * `cloudngfwaws_prefix_list`
@@ -22,8 +22,8 @@ New Data Sources:
 * `cloudngfwaws_commit_rulestack`
 * `cloudngfwaws_custom_url_category`
 * `cloudngfwaws_fqdn_list`
-* `cloudngfwaws_instance`
 * `cloudngfwaws_intelligent_feed`
+* `cloudngfwaws_ngfw`
 * `cloudngfwaws_predefined_url_category_override`
 * `cloudngfwaws_prefix_list`
 * `cloudngfwaws_rulestack`

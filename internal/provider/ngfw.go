@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	instance "github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall"
+	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-// Data source (list instances).
-func dataSourceInstances() *schema.Resource {
+// Data source (list NGFWs).
+func dataSourceNgfws() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source get a list of instances.",
+		Description: "Data source get a list of NGFWs.",
 
-		ReadContext: readInstances,
+		ReadContext: readNgfws,
 
 		Schema: map[string]*schema.Schema{
 			"max_results": {
@@ -45,7 +45,7 @@ func dataSourceInstances() *schema.Resource {
 			"instances": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of instances.",
+				Description: "List of NGFWs.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -65,30 +65,30 @@ func dataSourceInstances() *schema.Resource {
 	}
 }
 
-// Data source for a single instance.
-func dataSourceInstance() *schema.Resource {
+// Data source for a single NGFW.
+func dataSourceNgfw() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source for retrieving instance information.",
+		Description: "Data source for retrieving NGFW information.",
 
-		ReadContext: readInstanceDataSource,
+		ReadContext: readNgfwDataSource,
 
-		Schema: instanceSchema(false, nil),
+		Schema: ngfwSchema(false, nil),
 	}
 }
 
-func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := instance.NewClient(meta.(*awsngfw.Client))
+func readNgfwDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 
 	name := d.Get("name").(string)
 	account_id := d.Get("account_id").(string)
 
-	req := instance.ReadInput{
+	req := ngfw.ReadInput{
 		Name:      name,
 		AccountId: account_id,
 	}
 
 	tflog.Info(
-		ctx, "read instance",
+		ctx, "read ngfw",
 		"ds", true,
 		"name", name,
 	)
@@ -103,23 +103,23 @@ func readInstanceDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	account_id = res.Response.Firewall.AccountId
-	id := buildInstanceId(account_id, name)
+	id := buildNgfwId(account_id, name)
 	d.SetId(id)
 
-	saveInstance(ctx, d, name, *res.Response)
+	saveNgfw(ctx, d, name, *res.Response)
 
 	return nil
 }
 
-func readInstances(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := instance.NewClient(meta.(*awsngfw.Client))
+func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 
 	vpc_ids := make([]string, len(d.Get("vpc_ids").([]interface{})), len(d.Get("vpc_ids").([]interface{})))
 	for i, id := range d.Get("vpc_ids").([]interface{}) {
 		vpc_ids[i] = id.(string)
 	}
 
-	input := instance.ListInput{
+	input := ngfw.ListInput{
 		MaxResults: d.Get("max_results").(int),
 		NextToken:  d.Get("next_token").(string),
 		VpcIds:     vpc_ids,
@@ -129,7 +129,7 @@ func readInstances(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("next_token", input.NextToken)
 
 	tflog.Info(
-		ctx, "read instances",
+		ctx, "read ngfws",
 		"ds", true,
 		"vpc_ids", vpc_ids,
 	)
@@ -165,30 +165,30 @@ func readInstances(ctx context.Context, d *schema.ResourceData, meta interface{}
 }
 
 // Resource.
-func resourceInstance() *schema.Resource {
+func resourceNgfw() *schema.Resource {
 	return &schema.Resource{
-		Description: "Resource for instance manipulation.",
+		Description: "Resource for NGFW manipulation.",
 
-		CreateContext: createInstance,
-		ReadContext:   readInstance,
-		UpdateContext: updateInstance,
-		DeleteContext: deleteInstance,
+		CreateContext: createNgfw,
+		ReadContext:   readNgfw,
+		UpdateContext: updateNgfw,
+		DeleteContext: deleteNgfw,
 
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: instanceSchema(true, []string{"status", "endpoint_service_name"}),
+		Schema: ngfwSchema(true, []string{"status", "endpoint_service_name"}),
 	}
 }
 
-func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := instance.NewClient(meta.(*awsngfw.Client))
+func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 	name := d.Get("name").(string)
-	o := loadInstance(ctx, d)
+	o := loadNgfw(ctx, d)
 
 	tflog.Info(
-		ctx, "create instance",
+		ctx, "create ngfw",
 		"name", o.Name,
 		"payload", o,
 	)
@@ -200,27 +200,27 @@ func createInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	account_id := res.Response.AccountId
 
-	id := buildInstanceId(account_id, name)
+	id := buildNgfwId(account_id, name)
 	d.SetId(id)
 
-	return readInstance(ctx, d, meta)
+	return readNgfw(ctx, d, meta)
 }
 
-func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := instance.NewClient(meta.(*awsngfw.Client))
+func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 
-	account_id, name, err := parseInstanceId(d.Id())
+	account_id, name, err := parseNgfwId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	req := instance.ReadInput{
+	req := ngfw.ReadInput{
 		Name:      name,
 		AccountId: account_id,
 	}
 
 	tflog.Info(
-		ctx, "read instance",
+		ctx, "read ngfw",
 		"name", name,
 	)
 
@@ -233,21 +233,21 @@ func readInstance(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.FromErr(err)
 	}
 
-	saveInstance(ctx, d, name, *res.Response)
+	saveNgfw(ctx, d, name, *res.Response)
 
 	return nil
 }
 
-func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := instance.NewClient(meta.(*awsngfw.Client))
-	o := loadInstance(ctx, d)
+func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	o := loadNgfw(ctx, d)
 
 	tflog.Info(
-		ctx, "update instance",
+		ctx, "update ngfw",
 		"name", o.Name,
 	)
 
-	req := instance.ReadInput{
+	req := ngfw.ReadInput{
 		Name:      o.Name,
 		AccountId: o.AccountId,
 	}
@@ -258,7 +258,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("description") {
-		input := instance.Info{
+		input := ngfw.Info{
 			Name:        o.Name,
 			Description: o.Description,
 			AccountId:   o.AccountId,
@@ -269,7 +269,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	if d.HasChange("app_id_version") || d.HasChange("automatic_upgrade_app_id_version") {
-		input := instance.Info{
+		input := ngfw.Info{
 			Name:                         o.Name,
 			AccountId:                    o.AccountId,
 			AppIdVersion:                 o.AppIdVersion,
@@ -280,8 +280,8 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	assoc := make([]instance.SubnetMapping, 0, len(o.SubnetMappings))
-	disassoc := make([]instance.SubnetMapping, 0, len(res.Response.Firewall.SubnetMappings))
+	assoc := make([]ngfw.SubnetMapping, 0, len(o.SubnetMappings))
+	disassoc := make([]ngfw.SubnetMapping, 0, len(res.Response.Firewall.SubnetMappings))
 
 	for _, x := range o.SubnetMappings {
 		found := false
@@ -294,7 +294,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		if !found {
-			assoc = append(assoc, instance.SubnetMapping{
+			assoc = append(assoc, ngfw.SubnetMapping{
 				SubnetId: x.SubnetId,
 			})
 		}
@@ -311,7 +311,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 
 		if !found {
-			disassoc = append(disassoc, instance.SubnetMapping{
+			disassoc = append(disassoc, ngfw.SubnetMapping{
 				SubnetId: x.SubnetId,
 			})
 		}
@@ -325,7 +325,7 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 			disassoc = nil
 		}
 
-		input := instance.Info{
+		input := ngfw.Info{
 			Name:                       o.Name,
 			AccountId:                  o.AccountId,
 			AssociateSubnetMappings:    assoc,
@@ -336,24 +336,24 @@ func updateInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 		}
 	}
 
-	return readInstance(ctx, d, meta)
+	return readNgfw(ctx, d, meta)
 }
 
-func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := instance.NewClient(meta.(*awsngfw.Client))
+func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 
-	account_id, name, err := parseInstanceId(d.Id())
+	account_id, name, err := parseNgfwId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	tflog.Info(
-		ctx, "delete instance",
+		ctx, "delete ngfw",
 		"name", name,
 		"account_id", account_id,
 	)
 
-	fw := instance.ReadInput{
+	fw := ngfw.ReadInput{
 		Name:      name,
 		AccountId: account_id,
 	}
@@ -367,7 +367,7 @@ func deleteInstance(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 // Schema handling.
-func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
+func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 	endpoint_mode_opts := []string{"ServiceManaged", "CustomerManaged"}
 
 	ans := map[string]*schema.Schema{
@@ -517,9 +517,9 @@ func instanceSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 	return ans
 }
 
-func loadInstance(ctx context.Context, d *schema.ResourceData) instance.Info {
+func loadNgfw(ctx context.Context, d *schema.ResourceData) ngfw.Info {
 
-	return instance.Info{
+	return ngfw.Info{
 		Name:                         d.Get("name").(string),
 		VpcId:                        d.Get("vpc_id").(string),
 		AccountId:                    d.Get("account_id").(string),
@@ -534,7 +534,7 @@ func loadInstance(ctx context.Context, d *schema.ResourceData) instance.Info {
 	}
 }
 
-func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o instance.ReadResponse) {
+func saveNgfw(ctx context.Context, d *schema.ResourceData, name string, o ngfw.ReadResponse) {
 
 	d.Set("name", name)
 	d.Set("vpc_id", o.Firewall.VpcId)
@@ -555,7 +555,7 @@ func saveInstance(ctx context.Context, d *schema.ResourceData, name string, o in
 
 }
 
-func saveSubnetMappings(ctx context.Context, subnetMappings []instance.SubnetMapping) []interface{} {
+func saveSubnetMappings(ctx context.Context, subnetMappings []ngfw.SubnetMapping) []interface{} {
 	if subnetMappings != nil {
 		mappings := make([]interface{}, len(subnetMappings), len(subnetMappings))
 
@@ -572,13 +572,13 @@ func saveSubnetMappings(ctx context.Context, subnetMappings []instance.SubnetMap
 	return make([]interface{}, 0)
 }
 
-func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []instance.SubnetMapping {
+func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []ngfw.SubnetMapping {
 	if subnetMappings != nil {
-		mappings := make([]instance.SubnetMapping, len(subnetMappings), len(subnetMappings))
+		mappings := make([]ngfw.SubnetMapping, len(subnetMappings), len(subnetMappings))
 
 		for i, sm := range subnetMappings {
 			_smi := sm.(map[string]interface{})
-			_sm := instance.SubnetMapping{
+			_sm := ngfw.SubnetMapping{
 				SubnetId:         _smi["subnet_id"].(string),
 				AvailabilityZone: _smi["az"].(string),
 			}
@@ -588,10 +588,10 @@ func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []ins
 		return mappings
 	}
 
-	return make([]instance.SubnetMapping, 0)
+	return make([]ngfw.SubnetMapping, 0)
 }
 
-func saveStatus(ctx context.Context, status instance.FirewallStatus) []interface{} {
+func saveStatus(ctx context.Context, status ngfw.FirewallStatus) []interface{} {
 
 	s := make([]interface{}, 1, 1)
 
@@ -620,11 +620,11 @@ func saveStatus(ctx context.Context, status instance.FirewallStatus) []interface
 }
 
 // Id functions.
-func buildInstanceId(a, b string) string {
+func buildNgfwId(a, b string) string {
 	return strings.Join([]string{a, b}, IdSeparator)
 }
 
-func parseInstanceId(v string) (string, string, error) {
+func parseNgfwId(v string) (string, string, error) {
 	tok := strings.Split(v, IdSeparator)
 	if len(tok) != 2 {
 		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))

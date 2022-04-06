@@ -1,13 +1,13 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_instances Data Source"
+page_title: "cloudngfwaws: cloudngfwaws_ngfws Data Source"
 subcategory: ""
 description: |-
-  Data source get a list of instances.
+  Data source get a list of NGFWs.
 ---
 
-# cloudngfwaws_instances
+# cloudngfwaws_ngfws
 
-Data source get a list of instances.
+Data source get a list of NGFWs.
 
 
 ## Admin Permission Type
@@ -18,7 +18,7 @@ Data source get a list of instances.
 ## Example Usage
 
 ```terraform
-data "cloudngfwaws_instances" "example" {}
+data "cloudngfwaws_ngfws" "example" {}
 ```
 
 
@@ -33,7 +33,7 @@ data "cloudngfwaws_instances" "example" {}
 
 ### Read-Only
 
-- `instances` (List of Object) List of instances. (see [below for nested schema](#nestedatt--instances))
+- `instances` (List of Object) List of NGFWs. (see [below for nested schema](#nestedatt--instances))
 - `next_token` (String) Token for the next page of results.
 
 <a id="nestedatt--instances"></a>

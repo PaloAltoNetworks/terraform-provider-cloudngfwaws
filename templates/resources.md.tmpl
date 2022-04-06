@@ -18,7 +18,7 @@ This resource should be in a plan file by itself (having other rulestack commits
 
 ## Admin Permission Type
 
-{{ if eq .Name "cloudngfwaws_instance" -}}
+{{ if eq .Name "cloudngfwaws_ngfw" -}}
 * `Firewall`
 {{- else -}}
 * `Rulestack`
