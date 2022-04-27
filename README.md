@@ -56,5 +56,5 @@ The final part id the name of the provider. When Terraform search for a provider
 
 <img width="405" alt="image" src="https://user-images.githubusercontent.com/56643631/165510930-8fb70302-b2ba-425b-8d56-c53c6f65037c.png">
 
-Once the above setup is done, check the information under ./docs on how to use it in your code.
+Once the above setup is done, check the information under `examples/provider` on how to use the declare the provider in your code.
 
