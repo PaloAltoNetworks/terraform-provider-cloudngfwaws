@@ -31,7 +31,7 @@ Terraform 0.13 and later:
 terraform {
   required_providers {
     cloudngfwaws = {
-      source  = "paloaltonetworks/terraform-provider-cloudngfwaws"
+      source  = "terraform.local/local/cloudngfwaws"
       version = "1.0.0"
     }
   }
