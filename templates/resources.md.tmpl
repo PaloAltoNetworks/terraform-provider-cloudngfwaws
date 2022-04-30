@@ -20,6 +20,8 @@ This resource should be in a plan file by itself (having other rulestack commits
 
 {{ if eq .Name "cloudngfwaws_ngfw" -}}
 * `Firewall`
+{{- else if eq .Name "cloudngfwaws_ngfw_log_profile" -}}
+* `Firewall`
 {{- else -}}
 * `Rulestack`
 {{- end }}
