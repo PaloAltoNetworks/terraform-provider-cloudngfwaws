@@ -16,6 +16,8 @@ description: |-
 * `Firewall`
 {{- else if eq .Name "cloudngfwaws_ngfw_log_profile" -}}
 * `Firewall`
+{{- else if eq .Name "cloudngfwaws_ngfw_tag" -}}
+* `Firewall`
 {{- else -}}
 * `Rulestack`
 {{- end }}
