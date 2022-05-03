@@ -78,5 +78,5 @@ Read-Only:
 
 Read-Only:
 
-- `az` (String)
+- `availability_zone` (String)
 - `subnet_id` (String)
