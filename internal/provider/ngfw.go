@@ -415,12 +415,12 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 					"subnet_id": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "The subnet id.",
+						Description: "The subnet id, for when the endpoint mode is service managed.",
 					},
-					"az": {
+					"availability_zone": {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "The availability zone.",
+						Description: "The availability zone, for when the endpoint mode is customer managed.",
 					},
 					// Future use
 					// "az_id": {
@@ -562,7 +562,7 @@ func saveSubnetMappings(ctx context.Context, subnetMappings []ngfw.SubnetMapping
 		for i, sm := range subnetMappings {
 			_sm := make(map[string]interface{})
 			_sm["subnet_id"] = sm.SubnetId
-			_sm["az"] = sm.AvailabilityZone
+			_sm["availability_zone"] = sm.AvailabilityZone
 			// _sm["az_id"] = sm.AvailabilityZoneId
 			mappings[i] = _sm
 		}
@@ -580,7 +580,7 @@ func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []ngf
 			_smi := sm.(map[string]interface{})
 			_sm := ngfw.SubnetMapping{
 				SubnetId:         _smi["subnet_id"].(string),
-				AvailabilityZone: _smi["az"].(string),
+				AvailabilityZone: _smi["availability_zone"].(string),
 			}
 			mappings[i] = _sm
 		}
