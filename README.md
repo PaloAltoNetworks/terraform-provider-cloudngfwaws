@@ -43,23 +43,24 @@ cd terraform-provider-cloudngfwaws
 make
 ```
 
-4. Specify the `dev_overrides` configuration per the next section below. This tells Terraform where to find the provider you just built. The directory to specify is the full path to the cloned provider repo. For example: `/home/myuser/cloudngfwaws-terraform/terraform-provider-cloudngfwaws`
+4. Navigate to `/Users/<user-name>/.terraform.d/plugins` folder and create a folder structure as per the image below. When testing out a local provider, Terraform expects the folder structure to be `HOSTNAME/NAMESPACE/TYPE/VERSION/TARGET` (under `/Users/<user-name>/.terraform.d/plugins`) where
 
-When using the provider, refer to the documentation in the `./docs` directory for all resources and parameters.
+`HOSTNAME`: Needs to be in FQDN format. Default is `registry.terraform.io`. So to mimic that, we have created `terraform.local`.
 
-Developing the Provider
------------------------
+`NAMESPACE`: Default is hashicorp. We have named it `local`, to denote that we are storing local providers here.
 
-With Terraform v0.14 and later, [development overrides for provider developers](https://www.terraform.io/docs/cli/config/config-file.html#development-overrides-for-provider-developers) can be leveraged in order to use the provider built from source.
+`TYPE`: Name of your provider. In our case `cloudngfwaws`.
 
-To do this, populate a Terraform CLI configuration file (`~/.terraformrc` for all platforms other than Windows; `terraform.rc` in the `%APPDATA%` directory when using Windows) with at least the following options:
+`VERSION`: Version of the provider in string format, like 1.0.0.
 
-```hcl
-provider_installation {
-  dev_overrides {
-    "registry.terraform.io/paloaltonetworks/cloudngfwaws" = "/directory/containing/the/cloudngfwaws/binary/here"
-  }
+`TARGET`: Specifies a particular target platform using a format like `darwin_amd64 (MacOS)`, `linux_arm`, `windows_amd64`, etc.
 
-  direct {}
-}
-```
+The image below shows setup on a Mac. If you are setting it up for a different platform, please change the folder name accordingly.
+The final part is the name of the provider. When Terraform searches for a provider locally, it expects the provider to be named in the format `terraform-provider-<TYPE>_v<VERSION>`. If you do not follow this format, it errors like below
+
+`Error: Failed to install provider - Error while installing terraform.local/local/cloudngfwaws v1.0.0: provider binary not found: could not find executable file starting with terraform-provider-cloudngfwaws`
+
+<img width="405" alt="image" src="https://user-images.githubusercontent.com/56643631/165510930-8fb70302-b2ba-425b-8d56-c53c6f65037c.png">
+
+Once the above setup is done, check the information under `./examples/provider` on how to use the declare the provider in your code.
+
