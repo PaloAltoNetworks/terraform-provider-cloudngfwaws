@@ -101,8 +101,8 @@ resource "aws_subnet" "subnet2" {
 
 Optional:
 
-- `az` (String) The availability zone.
-- `subnet_id` (String) The subnet id.
+- `availability_zone` (String) The availability zone, for when the endpoint mode is customer managed.
+- `subnet_id` (String) The subnet id, for when the endpoint mode is service managed.
 
 
 ## Import
