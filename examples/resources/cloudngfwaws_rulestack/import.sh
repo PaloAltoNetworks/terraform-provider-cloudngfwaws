@@ -1,2 +1,2 @@
-# import name is <rulestack>
-terraform import cloudngfwaws_rulestack.example terraform-rulestack
+# import name is <scope>:<rulestack>
+terraform import cloudngfwaws_rulestack.example Local:terraform-rulestack
