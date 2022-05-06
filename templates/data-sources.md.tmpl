@@ -16,8 +16,12 @@ description: |-
 * `Firewall`
 {{- else if eq .Name "cloudngfwaws_ngfw_log_profile" -}}
 * `Firewall`
-{{- else if eq .Name "cloudngfwaws_ngfw_tag" -}}
-* `Firewall`
+{{- else if eq .Name "cloudngfwaws_rulestack" -}}
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
+{{- else if eq .Name "cloudngfwaws_validate_rulestack" -}}
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 {{- else -}}
 * `Rulestack`
 {{- end }}
