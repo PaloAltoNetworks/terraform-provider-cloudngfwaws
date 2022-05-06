@@ -23,21 +23,10 @@ func dataSourceNgfws() *schema.Resource {
 		ReadContext: readNgfws,
 
 		Schema: map[string]*schema.Schema{
-			"max_results": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Max number of results.",
-				Default:     100,
-			},
-			"next_token": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Token for the next page of results.",
-			},
 			"vpc_ids": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "List of vpc ids.",
+				Description: "List of vpc ids to filter on.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -51,7 +40,7 @@ func dataSourceNgfws() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The instance name.",
+							Description: "The NGFW name.",
 						},
 						"account_id": {
 							Type:        schema.TypeString,
@@ -63,6 +52,59 @@ func dataSourceNgfws() *schema.Resource {
 			},
 		},
 	}
+}
+
+func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+
+	vpcs := toStringSlice(d.Get("vpc_ids"))
+	d.Set("vpc_ids", vpcs)
+
+	tflog.Info(
+		ctx, "read ngfws",
+		"ds", true,
+		"vpc_ids", vpcs,
+	)
+
+	var nt string
+	var listing []ngfw.ListFirewall
+	for {
+		input := ngfw.ListInput{
+			MaxResults: 100,
+			NextToken:  nt,
+			VpcIds:     vpcs,
+		}
+		ans, err := svc.List(ctx, input)
+		if err != nil {
+			if isObjectNotFound(err) {
+				break
+			}
+			return diag.FromErr(err)
+		}
+
+		listing = append(listing, ans.Response.Firewalls...)
+		nt = ans.Response.NextToken
+		if nt == "" {
+			break
+		}
+	}
+
+	d.SetId(strings.Join(
+		append([]string{strconv.Itoa(len(listing))}, vpcs...),
+		IdSeparator,
+	))
+
+	instances := make([]interface{}, 0, len(listing))
+	for _, x := range listing {
+		instances = append(instances, map[string]interface{}{
+			"name":       x.Name,
+			"account_id": x.AccountId,
+		})
+	}
+
+	d.Set("instances", instances)
+
+	return nil
 }
 
 // Data source for a single NGFW.
@@ -91,6 +133,7 @@ func readNgfwDataSource(ctx context.Context, d *schema.ResourceData, meta interf
 		ctx, "read ngfw",
 		"ds", true,
 		"name", name,
+		"account_id", account_id,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -102,64 +145,10 @@ func readNgfwDataSource(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	account_id = res.Response.Firewall.AccountId
-	id := buildNgfwId(account_id, name)
+	id := buildNgfwId(res.Response.Firewall.AccountId, name)
 	d.SetId(id)
 
-	saveNgfw(ctx, d, name, *res.Response)
-
-	return nil
-}
-
-func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
-
-	vpc_ids := make([]string, len(d.Get("vpc_ids").([]interface{})), len(d.Get("vpc_ids").([]interface{})))
-	for i, id := range d.Get("vpc_ids").([]interface{}) {
-		vpc_ids[i] = id.(string)
-	}
-
-	input := ngfw.ListInput{
-		MaxResults: d.Get("max_results").(int),
-		NextToken:  d.Get("next_token").(string),
-		VpcIds:     vpc_ids,
-	}
-
-	d.Set("max_results", input.MaxResults)
-	d.Set("next_token", input.NextToken)
-
-	tflog.Info(
-		ctx, "read ngfws",
-		"ds", true,
-		"vpc_ids", vpc_ids,
-	)
-
-	ans, err := svc.List(ctx, input)
-	if err != nil {
-		if isObjectNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	d.SetId(strings.Join(
-		append([]string{strconv.Itoa(input.MaxResults), input.NextToken}, input.VpcIds...),
-		IdSeparator,
-	))
-
-	d.Set("next_token", ans.Response.NextToken)
-
-	instances := make([]interface{}, len(ans.Response.Firewalls), len(ans.Response.Firewalls))
-	for i, instance := range ans.Response.Firewalls {
-
-		instances[i] = map[string]interface{}{
-			"name":       instance.Name,
-			"account_id": instance.AccountId,
-		}
-	}
-
-	d.Set("instances", instances)
+	saveNgfw(d, res.Response)
 
 	return nil
 }
@@ -178,19 +167,19 @@ func resourceNgfw() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: ngfwSchema(true, []string{"status", "endpoint_service_name"}),
+		Schema: ngfwSchema(true, nil),
 	}
 }
 
 func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 	name := d.Get("name").(string)
-	o := loadNgfw(ctx, d)
+	o := loadNgfw(d)
 
 	tflog.Info(
 		ctx, "create ngfw",
 		"name", o.Name,
-		"payload", o,
+		"account_id", o.AccountId,
 	)
 
 	res, err := svc.Create(ctx, o)
@@ -222,6 +211,7 @@ func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) dia
 	tflog.Info(
 		ctx, "read ngfw",
 		"name", name,
+		"account_id", account_id,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -233,107 +223,23 @@ func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) dia
 		return diag.FromErr(err)
 	}
 
-	saveNgfw(ctx, d, name, *res.Response)
+	saveNgfw(d, res.Response)
 
 	return nil
 }
 
 func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := ngfw.NewClient(meta.(*awsngfw.Client))
-	o := loadNgfw(ctx, d)
+	o := loadNgfw(d)
 
 	tflog.Info(
 		ctx, "update ngfw",
 		"name", o.Name,
+		"account_id", o.AccountId,
 	)
 
-	req := ngfw.ReadInput{
-		Name:      o.Name,
-		AccountId: o.AccountId,
-	}
-
-	res, err := svc.Read(ctx, req)
-	if err != nil {
+	if err := svc.Modify(ctx, o); err != nil {
 		return diag.FromErr(err)
-	}
-
-	if d.HasChange("description") {
-		input := ngfw.Info{
-			Name:        o.Name,
-			Description: o.Description,
-			AccountId:   o.AccountId,
-		}
-		if err := svc.UpdateDescription(ctx, input); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("app_id_version") || d.HasChange("automatic_upgrade_app_id_version") {
-		input := ngfw.Info{
-			Name:                         o.Name,
-			AccountId:                    o.AccountId,
-			AppIdVersion:                 o.AppIdVersion,
-			AutomaticUpgradeAppIdVersion: o.AutomaticUpgradeAppIdVersion,
-		}
-		if err := svc.UpdateNGFirewallContentVersion(ctx, input); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	assoc := make([]ngfw.SubnetMapping, 0, len(o.SubnetMappings))
-	disassoc := make([]ngfw.SubnetMapping, 0, len(res.Response.Firewall.SubnetMappings))
-
-	for _, x := range o.SubnetMappings {
-		found := false
-
-		for _, y := range res.Response.Firewall.SubnetMappings {
-			if x.SubnetId == y.SubnetId {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			assoc = append(assoc, ngfw.SubnetMapping{
-				SubnetId: x.SubnetId,
-			})
-		}
-	}
-
-	for _, x := range res.Response.Firewall.SubnetMappings {
-		found := false
-
-		for _, y := range o.SubnetMappings {
-			if x.SubnetId == y.SubnetId {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			disassoc = append(disassoc, ngfw.SubnetMapping{
-				SubnetId: x.SubnetId,
-			})
-		}
-	}
-
-	if len(assoc) != 0 || len(disassoc) != 0 {
-		if len(assoc) == 0 {
-			assoc = nil
-		}
-		if len(disassoc) == 0 {
-			disassoc = nil
-		}
-
-		input := ngfw.Info{
-			Name:                       o.Name,
-			AccountId:                  o.AccountId,
-			AssociateSubnetMappings:    assoc,
-			DisassociateSubnetMappings: disassoc,
-		}
-		if err := svc.UpdateSubnetMappings(ctx, input); err != nil {
-			return diag.FromErr(err)
-		}
 	}
 
 	return readNgfw(ctx, d, meta)
@@ -353,7 +259,7 @@ func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		"account_id", account_id,
 	)
 
-	fw := ngfw.ReadInput{
+	fw := ngfw.DeleteInput{
 		Name:      name,
 		AccountId: account_id,
 	}
@@ -374,7 +280,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The name.",
+			Description: "The NGFW name.",
 			ForceNew:    true,
 		},
 		"vpc_id": {
@@ -397,7 +303,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		"endpoint_mode": {
 			Type:         schema.TypeString,
 			Required:     true,
-			Description:  addStringInSliceValidation("Set endpoint mode from the following options", endpoint_mode_opts),
+			Description:  addStringInSliceValidation("Set endpoint mode from the following options.", endpoint_mode_opts),
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice(endpoint_mode_opts, false),
 		},
@@ -409,6 +315,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		"subnet_mapping": {
 			Type:        schema.TypeList,
 			Required:    true,
+			MinItems:    1,
 			Description: "Subnet mappings.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -443,9 +350,18 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 			Description: "Automatic App-ID upgrade version number.",
 			Default:     true,
 		},
-		RulestackName:       rsSchema(),
-		GlobalRulestackName: gRsSchema(),
-		TagsName:            tagsSchema(true, true),
+		RulestackName: {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The rulestack for this NGFW.",
+		},
+		"global_rulestack": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The global rulestack for this NGFW.",
+			ForceNew:    true,
+		},
+		TagsName: tagsSchema(true),
 		"update_token": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -472,7 +388,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 						Computed:    true,
 						Description: "The rulestack status.",
 					},
-					"attachments": {
+					"attachment": {
 						Type:        schema.TypeList,
 						Computed:    true,
 						Description: "The firewall attachments.",
@@ -517,106 +433,83 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 	return ans
 }
 
-func loadNgfw(ctx context.Context, d *schema.ResourceData) ngfw.Info {
+func loadNgfw(d *schema.ResourceData) ngfw.Info {
+	var sm []ngfw.SubnetMapping
+	list := d.Get("subnet_mapping").([]interface{})
+	if len(list) > 0 {
+		sm = make([]ngfw.SubnetMapping, 0, len(list))
+		for i := range list {
+			x := list[i].(map[string]interface{})
+			sm = append(sm, ngfw.SubnetMapping{
+				SubnetId:         x["subnet_id"].(string),
+				AvailabilityZone: x["availability_zone"].(string),
+			})
+		}
+	}
 
 	return ngfw.Info{
 		Name:                         d.Get("name").(string),
 		VpcId:                        d.Get("vpc_id").(string),
 		AccountId:                    d.Get("account_id").(string),
-		Description:                  d.Get("description").(string),
-		EndpointMode:                 d.Get("endpoint_mode").(string),
-		SubnetMappings:               loadSubnetMappings(ctx, d.Get("subnet_mapping").([]interface{})),
+		SubnetMappings:               sm,
 		AppIdVersion:                 d.Get("app_id_version").(string),
+		Description:                  d.Get("description").(string),
+		Rulestack:                    d.Get(RulestackName).(string),
+		GlobalRulestack:              d.Get("global_rulestack").(string),
+		EndpointMode:                 d.Get("endpoint_mode").(string),
 		AutomaticUpgradeAppIdVersion: d.Get("automatic_upgrade_app_id_version").(bool),
-		RuleStackName:                d.Get(RulestackName).(string),
-		GlobalRuleStackName:          d.Get(GlobalRulestackName).(string),
 		Tags:                         loadTags(d.Get(TagsName)),
 	}
 }
 
-func saveNgfw(ctx context.Context, d *schema.ResourceData, name string, o ngfw.ReadResponse) {
+func saveNgfw(d *schema.ResourceData, o ngfw.ReadResponse) {
+	var sm []interface{}
+	if len(o.Firewall.SubnetMappings) > 0 {
+		sm = make([]interface{}, 0, len(o.Firewall.SubnetMappings))
+		for _, x := range o.Firewall.SubnetMappings {
+			sm = append(sm, map[string]interface{}{
+				"subnet_id":         x.SubnetId,
+				"availability_zone": x.AvailabilityZone,
+			})
+		}
+	}
 
-	d.Set("name", name)
-	d.Set("vpc_id", o.Firewall.VpcId)
+	var att []interface{}
+	if len(o.Status.Attachments) > 0 {
+		att = make([]interface{}, 0, len(o.Status.Attachments))
+		for _, x := range o.Status.Attachments {
+			att = append(att, map[string]interface{}{
+				"endpoint_id":     x.EndpointId,
+				"status":          x.Status,
+				"rejected_reason": x.RejectedReason,
+				"subnet_id":       x.SubnetId,
+			})
+		}
+	}
+
+	stat := []interface{}{
+		map[string]interface{}{
+			"firewall_status":  o.Status.FirewallStatus,
+			"failure_reason":   o.Status.FailureReason,
+			"rulestack_status": o.Status.RulestackStatus,
+			"attachment":       att,
+		},
+	}
+
+	d.Set("name", o.Firewall.Name)
 	d.Set("account_id", o.Firewall.AccountId)
-	d.Set("description", o.Firewall.Description)
-	d.Set("endpoint_mode", o.Firewall.EndpointMode)
-	d.Set("endpoint_service_name", o.Firewall.EndpointServiceName)
-	d.Set("subnet_mapping", saveSubnetMappings(ctx, o.Firewall.SubnetMappings))
+	d.Set("subnet_mapping", sm)
+	d.Set("vpc_id", o.Firewall.VpcId)
 	d.Set("app_id_version", o.Firewall.AppIdVersion)
+	d.Set("description", o.Firewall.Description)
+	d.Set(RulestackName, o.Firewall.Rulestack)
+	d.Set("global_rulestack", o.Firewall.GlobalRulestack)
+	d.Set("endpoint_service_name", o.Firewall.EndpointServiceName)
+	d.Set("endpoint_mode", o.Firewall.EndpointMode)
 	d.Set("automatic_upgrade_app_id_version", o.Firewall.AutomaticUpgradeAppIdVersion)
-	d.Set(RulestackName, o.Firewall.RuleStackName)
-	d.Set(GlobalRulestackName, o.Firewall.GlobalRuleStackName)
 	d.Set(TagsName, dumpTags(o.Firewall.Tags))
 	d.Set("update_token", o.Firewall.UpdateToken)
-	if o.Status != nil {
-		d.Set("status", saveStatus(ctx, *o.Status))
-	}
-
-}
-
-func saveSubnetMappings(ctx context.Context, subnetMappings []ngfw.SubnetMapping) []interface{} {
-	if subnetMappings != nil {
-		mappings := make([]interface{}, len(subnetMappings), len(subnetMappings))
-
-		for i, sm := range subnetMappings {
-			_sm := make(map[string]interface{})
-			_sm["subnet_id"] = sm.SubnetId
-			_sm["availability_zone"] = sm.AvailabilityZone
-			// _sm["az_id"] = sm.AvailabilityZoneId
-			mappings[i] = _sm
-		}
-		return mappings
-	}
-
-	return make([]interface{}, 0)
-}
-
-func loadSubnetMappings(ctx context.Context, subnetMappings []interface{}) []ngfw.SubnetMapping {
-	if subnetMappings != nil {
-		mappings := make([]ngfw.SubnetMapping, len(subnetMappings), len(subnetMappings))
-
-		for i, sm := range subnetMappings {
-			_smi := sm.(map[string]interface{})
-			_sm := ngfw.SubnetMapping{
-				SubnetId:         _smi["subnet_id"].(string),
-				AvailabilityZone: _smi["availability_zone"].(string),
-			}
-			mappings[i] = _sm
-		}
-
-		return mappings
-	}
-
-	return make([]ngfw.SubnetMapping, 0)
-}
-
-func saveStatus(ctx context.Context, status ngfw.FirewallStatus) []interface{} {
-
-	s := make([]interface{}, 1, 1)
-
-	attachments := make([]map[string]interface{}, len(status.Attachments), len(status.Attachments))
-
-	for i, att := range status.Attachments {
-		_att := make(map[string]interface{})
-		_att["endpoint_id"] = att.EndpointId
-		_att["status"] = att.Status
-		_att["rejected_reason"] = att.RejectedReason
-		_att["subnet_id"] = att.SubnetId
-		attachments[i] = _att
-	}
-
-	_s := make(map[string]interface{})
-
-	_s["firewall_status"] = status.FirewallStatus
-	_s["failure_reason"] = status.FailureReason
-	_s["rulestack_status"] = status.RuleStackStatus
-	_s["attachments"] = attachments
-
-	s[0] = _s
-
-	return s
-
+	d.Set("status", stat)
 }
 
 // Id functions.
