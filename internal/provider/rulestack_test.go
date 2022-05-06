@@ -31,7 +31,7 @@ func TestAccDataSourceRulestack(t *testing.T) {
 						"data.cloudngfwaws_rulestack.test", "name",
 					),
 					resource.TestCheckResourceAttr(
-						"data.cloudngfwaws_rulestack.test", "scope", "Local",
+						"data.cloudngfwaws_rulestack.test", ScopeName, "Local",
 					),
 					resource.TestCheckResourceAttr(
 						"data.cloudngfwaws_rulestack.test", "account_id", testAccAccountId,
@@ -71,7 +71,7 @@ func TestAccResourceRulestack(t *testing.T) {
 				Config: testAccRulestackConfig("test", &o1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "scope", "Local",
+						"cloudngfwaws_rulestack.test", ScopeName, "Local",
 					),
 					resource.TestCheckResourceAttr(
 						"data.cloudngfwaws_rulestack.test", "account_id", testAccAccountId,
@@ -88,7 +88,7 @@ func TestAccResourceRulestack(t *testing.T) {
 				Config: testAccRulestackConfig("test", &o2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"cloudngfwaws_rulestack.test", "scope", "Local",
+						"cloudngfwaws_rulestack.test", ScopeName, "Local",
 					),
 					resource.TestCheckResourceAttr(
 						"data.cloudngfwaws_rulestack.test", "account_id", testAccAccountId,
