@@ -32,6 +32,7 @@ func resourceCommitRulestack() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			RulestackName: rsSchema(),
+			ScopeName:     scopeSchema(),
 			"state": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -72,15 +73,23 @@ func resourceCommitRulestack() *schema.Resource {
 func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
 	name := d.Get(RulestackName).(string)
+	scope := d.Get(ScopeName).(string)
 	pending := "Pending"
+	input := stack.SimpleInput{
+		Name:  name,
+		Scope: scope,
+	}
+
+	d.Set(ScopeName, scope)
 
 	tflog.Info(
 		ctx, "commit rulestack",
 		RulestackName, name,
+		ScopeName, scope,
 	)
 
 	// Perform the commit.
-	if err := svc.Commit(ctx, name); err != nil {
+	if err := svc.Commit(ctx, input); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -89,9 +98,10 @@ func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, me
 		tflog.Info(
 			ctx, "getting commit status",
 			RulestackName, name,
+			ScopeName, scope,
 		)
 
-		ans, err := svc.CommitStatus(ctx, name)
+		ans, err := svc.CommitStatus(ctx, input)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -103,21 +113,27 @@ func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, me
 		time.Sleep(1 * time.Second)
 	}
 
-	d.SetId(name)
+	d.SetId(buildRulestackId(scope, name))
 
 	return readCommitRulestack(ctx, d, meta)
 }
 
 func readCommitRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
-	name := d.Id()
+	scope, name, err := parseRulestackId(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := stack.ReadInput{
-		Name: name,
+		Name:  name,
+		Scope: scope,
 	}
 	tflog.Info(
 		ctx, "read rulestack",
 		RulestackName, name,
 		"for_commit", true,
+		ScopeName, scope,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -125,7 +141,7 @@ func readCommitRulestack(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
-	cs, err := svc.CommitStatus(ctx, name)
+	cs, err := svc.CommitStatus(ctx, stack.SimpleInput{Name: name, Scope: scope})
 	if err != nil {
 		return diag.FromErr(err)
 	}
