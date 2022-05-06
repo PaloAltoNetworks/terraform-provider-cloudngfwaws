@@ -36,10 +36,14 @@ func readSecurityRuleDataSource(ctx context.Context, d *schema.ResourceData, met
 	rlist := d.Get(RuleListName).(string)
 	priority := d.Get("priority").(int)
 
-	id := configTypeId(style, buildSecurityRuleId(stack, rlist, priority))
+	scope := d.Get(ScopeName).(string)
+	d.Set(ScopeName, scope)
+
+	id := configTypeId(style, buildSecurityRuleId(scope, stack, rlist, priority))
 
 	req := security.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		RuleList:  rlist,
 		Priority:  priority,
 	}
@@ -55,6 +59,7 @@ func readSecurityRuleDataSource(ctx context.Context, d *schema.ResourceData, met
 		"ds", true,
 		ConfigTypeName, style,
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		RuleListName, req.RuleList,
 		"priority", req.Priority,
 	)
@@ -107,6 +112,7 @@ func createSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 	tflog.Info(
 		ctx, "create security rule",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		RuleListName, o.RuleList,
 		"priority", o.Priority,
 		"name", o.Entry.Name,
@@ -116,20 +122,21 @@ func createSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildSecurityRuleId(o.Rulestack, o.RuleList, o.Priority))
+	d.SetId(buildSecurityRuleId(o.Scope, o.Rulestack, o.RuleList, o.Priority))
 
 	return readSecurityRule(ctx, d, meta)
 }
 
 func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := security.NewClient(meta.(*awsngfw.Client))
-	stack, rlist, priority, err := parseSecurityRuleId(d.Id())
+	scope, stack, rlist, priority, err := parseSecurityRuleId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
 
 	req := security.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		RuleList:  rlist,
 		Priority:  priority,
 		Candidate: true,
@@ -137,6 +144,7 @@ func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interfac
 	tflog.Info(
 		ctx, "read security rule",
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		RuleListName, req.RuleList,
 		"priority", req.Priority,
 	)
@@ -150,6 +158,7 @@ func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	saveSecurityRule(d, stack, rlist, priority, *res.Response.Candidate)
 
 	return nil
@@ -161,6 +170,7 @@ func updateSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 	tflog.Info(
 		ctx, "update security rule",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		RuleListName, o.RuleList,
 		"priority", o.Priority,
 	)
@@ -174,7 +184,7 @@ func updateSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 
 func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := security.NewClient(meta.(*awsngfw.Client))
-	stack, rlist, priority, err := parseSecurityRuleId(d.Id())
+	scope, stack, rlist, priority, err := parseSecurityRuleId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -182,11 +192,18 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 	tflog.Info(
 		ctx, "delete security rule",
 		RulestackName, stack,
+		ScopeName, scope,
 		RuleListName, rlist,
 		"priority", priority,
 	)
 
-	if err := svc.Delete(ctx, stack, rlist, priority); err != nil && !isObjectNotFound(err) {
+	input := security.DeleteInput{
+		Rulestack: stack,
+		RuleList:  rlist,
+		Scope:     scope,
+		Priority:  priority,
+	}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -202,6 +219,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
+		ScopeName:      scopeSchema(),
 		RuleListName:   ruleListSchema(),
 		"priority": {
 			Type:        schema.TypeInt,
@@ -406,7 +424,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 	}
 
 	if !isResource {
-		computed(ans, "", []string{ConfigTypeName, RulestackName, RuleListName, "priority"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, RuleListName, ScopeName, "priority"})
 	}
 
 	return ans
@@ -419,6 +437,7 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
 
 	return security.Info{
 		Rulestack: d.Get(RulestackName).(string),
+		Scope:     d.Get(ScopeName).(string),
 		RuleList:  d.Get(RuleListName).(string),
 		Priority:  d.Get("priority").(int),
 		Entry: security.Details{
@@ -496,20 +515,20 @@ func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int,
 }
 
 // Id functions.
-func buildSecurityRuleId(a, b string, c int) string {
-	return strings.Join([]string{a, b, strconv.Itoa(c)}, IdSeparator)
+func buildSecurityRuleId(a, b, c string, d int) string {
+	return strings.Join([]string{a, b, c, strconv.Itoa(d)}, IdSeparator)
 }
 
-func parseSecurityRuleId(v string) (string, string, int, error) {
+func parseSecurityRuleId(v string) (string, string, string, int, error) {
 	tok := strings.Split(v, IdSeparator)
-	if len(tok) != 3 {
-		return "", "", 0, fmt.Errorf("Expecting 3 tokens, got %d", len(tok))
+	if len(tok) != 4 {
+		return "", "", "", 0, fmt.Errorf("Expecting 3 tokens, got %d", len(tok))
 	}
 
-	priority, err := strconv.Atoi(tok[2])
+	priority, err := strconv.Atoi(tok[3])
 	if err != nil {
-		return "", "", 0, err
+		return "", "", "", 0, err
 	}
 
-	return tok[0], tok[1], priority, nil
+	return tok[0], tok[1], tok[2], priority, nil
 }

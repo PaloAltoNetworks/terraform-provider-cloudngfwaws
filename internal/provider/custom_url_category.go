@@ -34,10 +34,14 @@ func readCustomUrlCategoryDataSource(ctx context.Context, d *schema.ResourceData
 	stack := d.Get(RulestackName).(string)
 	name := d.Get("name").(string)
 
-	id := configTypeId(style, buildCustomUrlCategoryId(stack, name))
+	scope := d.Get(ScopeName).(string)
+	d.Set(ScopeName, scope)
+
+	id := configTypeId(style, buildCustomUrlCategoryId(scope, stack, name))
 
 	req := url.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 	}
 	switch style {
@@ -52,6 +56,7 @@ func readCustomUrlCategoryDataSource(ctx context.Context, d *schema.ResourceData
 		"ds", true,
 		ConfigTypeName, style,
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", req.Name,
 	)
 
@@ -102,6 +107,7 @@ func createCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 	tflog.Info(
 		ctx, "create custom url category",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		"name", o.Name,
 	)
 
@@ -109,26 +115,28 @@ func createCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildCustomUrlCategoryId(o.Rulestack, o.Name))
+	d.SetId(buildCustomUrlCategoryId(o.Scope, o.Rulestack, o.Name))
 
 	return readCustomUrlCategory(ctx, d, meta)
 }
 
 func readCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := url.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseCustomUrlCategoryId(d.Id())
+	scope, stack, name, err := parseCustomUrlCategoryId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
 
 	req := url.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 		Candidate: true,
 	}
 	tflog.Info(
 		ctx, "read custom url category",
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", name,
 	)
 
@@ -141,6 +149,7 @@ func readCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	saveCustomUrlCategory(d, stack, name, *res.Response.Candidate)
 
 	return nil
@@ -152,6 +161,7 @@ func updateCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 	tflog.Info(
 		ctx, "update custom url category",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		"name", o.Name,
 	)
 
@@ -164,7 +174,7 @@ func updateCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 
 func deleteCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := url.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseCustomUrlCategoryId(d.Id())
+	scope, stack, name, err := parseCustomUrlCategoryId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -172,10 +182,16 @@ func deleteCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 	tflog.Info(
 		ctx, "delete custom url category",
 		RulestackName, stack,
+		ScopeName, scope,
 		"name", name,
 	)
 
-	if err := svc.Delete(ctx, stack, name); err != nil && !isObjectNotFound(err) {
+	input := url.DeleteInput{
+		Rulestack: stack,
+		Scope:     scope,
+		Name:      name,
+	}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -190,6 +206,7 @@ func customUrlCategorySchema(isResource bool, rmKeys []string) map[string]*schem
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
+		ScopeName:      scopeSchema(),
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -234,7 +251,7 @@ func customUrlCategorySchema(isResource bool, rmKeys []string) map[string]*schem
 	}
 
 	if !isResource {
-		computed(ans, "", []string{ConfigTypeName, RulestackName, "name"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, ScopeName, "name"})
 	}
 
 	return ans
@@ -243,6 +260,7 @@ func customUrlCategorySchema(isResource bool, rmKeys []string) map[string]*schem
 func loadCustomUrlCategory(d *schema.ResourceData) url.Info {
 	return url.Info{
 		Rulestack:    d.Get(RulestackName).(string),
+		Scope:        d.Get(ScopeName).(string),
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		UrlList:      setToSlice(d.Get("url_list")),
@@ -262,15 +280,15 @@ func saveCustomUrlCategory(d *schema.ResourceData, stack, name string, o url.Inf
 }
 
 // Id functions.
-func buildCustomUrlCategoryId(a, b string) string {
-	return strings.Join([]string{a, b}, IdSeparator)
+func buildCustomUrlCategoryId(a, b, c string) string {
+	return strings.Join([]string{a, b, c}, IdSeparator)
 }
 
-func parseCustomUrlCategoryId(v string) (string, string, error) {
+func parseCustomUrlCategoryId(v string) (string, string, string, error) {
 	tok := strings.Split(v, IdSeparator)
-	if len(tok) != 2 {
-		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+	if len(tok) != 3 {
+		return "", "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
 	}
 
-	return tok[0], tok[1], nil
+	return tok[0], tok[1], tok[2], nil
 }

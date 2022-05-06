@@ -29,14 +29,17 @@ func readCertificateDataSource(ctx context.Context, d *schema.ResourceData, meta
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
+	scope := d.Get(ScopeName).(string)
+	d.Set(ScopeName, scope)
 
 	stack := d.Get(RulestackName).(string)
 	name := d.Get("name").(string)
 
-	id := configTypeId(style, buildCertificateId(stack, name))
+	id := configTypeId(style, buildCertificateId(scope, stack, name))
 
 	req := certificate.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 	}
 	switch style {
@@ -51,6 +54,7 @@ func readCertificateDataSource(ctx context.Context, d *schema.ResourceData, meta
 		"ds", true,
 		ConfigTypeName, style,
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", req.Name,
 	)
 
@@ -102,26 +106,28 @@ func createCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 		ctx, "create certificate",
 		RulestackName, o.Rulestack,
 		"name", o.Name,
+		ScopeName, o.Scope,
 	)
 
 	if err := svc.Create(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildCertificateId(o.Rulestack, o.Name))
+	d.SetId(buildCertificateId(o.Scope, o.Rulestack, o.Name))
 
 	return readCertificate(ctx, d, meta)
 }
 
 func readCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := certificate.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseCertificateId(d.Id())
+	scope, stack, name, err := parseCertificateId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
 
 	req := certificate.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 		Candidate: true,
 	}
@@ -129,6 +135,7 @@ func readCertificate(ctx context.Context, d *schema.ResourceData, meta interface
 		ctx, "read certificate",
 		RulestackName, req.Rulestack,
 		"name", name,
+		ScopeName, scope,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -140,6 +147,7 @@ func readCertificate(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	saveCertificate(d, stack, name, *res.Response.Candidate)
 
 	return nil
@@ -152,6 +160,7 @@ func updateCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 		ctx, "update certificate",
 		RulestackName, o.Rulestack,
 		"name", o.Name,
+		ScopeName, o.Scope,
 	)
 
 	if err := svc.Update(ctx, o); err != nil {
@@ -163,7 +172,7 @@ func updateCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func deleteCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := certificate.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseCertificateId(d.Id())
+	scope, stack, name, err := parseCertificateId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -172,9 +181,15 @@ func deleteCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 		ctx, "delete certificate",
 		RulestackName, stack,
 		"name", name,
+		ScopeName, scope,
 	)
 
-	if err := svc.Delete(ctx, stack, name); err != nil && !isObjectNotFound(err) {
+	input := certificate.DeleteInput{
+		Rulestack: stack,
+		Scope:     scope,
+		Name:      name,
+	}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -187,6 +202,7 @@ func certificateSchema(isResource bool, rmKeys []string) map[string]*schema.Sche
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
+		ScopeName:      scopeSchema(),
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -227,7 +243,7 @@ func certificateSchema(isResource bool, rmKeys []string) map[string]*schema.Sche
 	}
 
 	if !isResource {
-		computed(ans, "", []string{ConfigTypeName, RulestackName, "name"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, ScopeName, "name"})
 	}
 
 	return ans
@@ -236,6 +252,7 @@ func certificateSchema(isResource bool, rmKeys []string) map[string]*schema.Sche
 func loadCertificate(d *schema.ResourceData) certificate.Info {
 	return certificate.Info{
 		Rulestack:    d.Get(RulestackName).(string),
+		Scope:        d.Get(ScopeName).(string),
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		SignerArn:    d.Get("signer_arn").(string),
@@ -255,15 +272,15 @@ func saveCertificate(d *schema.ResourceData, stack, name string, o certificate.I
 }
 
 // Id functions.
-func buildCertificateId(a, b string) string {
-	return strings.Join([]string{a, b}, IdSeparator)
+func buildCertificateId(a, b, c string) string {
+	return strings.Join([]string{a, b, c}, IdSeparator)
 }
 
-func parseCertificateId(v string) (string, string, error) {
+func parseCertificateId(v string) (string, string, string, error) {
 	tok := strings.Split(v, IdSeparator)
-	if len(tok) != 2 {
-		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+	if len(tok) != 3 {
+		return "", "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
 	}
 
-	return tok[0], tok[1], nil
+	return tok[0], tok[1], tok[2], nil
 }

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/permissions"
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/tag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -8,13 +9,13 @@ import (
 )
 
 func scopeSchema() *schema.Schema {
-	scopes := []string{"Local", "Global"}
+	scopes := []string{permissions.LocalScope, permissions.GlobalScope}
 
 	return &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  addStringInSliceValidation("The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT.", scopes),
-		Default:      scopes[0],
+		Default:      permissions.LocalScope,
 		ForceNew:     true,
 		ValidateFunc: validation.StringInSlice(scopes, false),
 	}

@@ -31,13 +31,17 @@ func readIntelligentFeedDataSource(ctx context.Context, d *schema.ResourceData, 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
 
+	scope := d.Get(ScopeName).(string)
+	d.Set(ScopeName, scope)
+
 	stack := d.Get(RulestackName).(string)
 	name := d.Get("name").(string)
 
-	id := configTypeId(style, buildIntelligentFeedId(stack, name))
+	id := configTypeId(style, buildIntelligentFeedId(scope, stack, name))
 
 	req := feed.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 	}
 	switch style {
@@ -52,6 +56,7 @@ func readIntelligentFeedDataSource(ctx context.Context, d *schema.ResourceData, 
 		"ds", true,
 		ConfigTypeName, style,
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", req.Name,
 	)
 
@@ -103,26 +108,28 @@ func createIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 		ctx, "create intelligent feed",
 		RulestackName, o.Rulestack,
 		"name", o.Name,
+		ScopeName, o.Scope,
 	)
 
 	if err := svc.Create(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildIntelligentFeedId(o.Rulestack, o.Name))
+	d.SetId(buildIntelligentFeedId(o.Scope, o.Rulestack, o.Name))
 
 	return readIntelligentFeed(ctx, d, meta)
 }
 
 func readIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := feed.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseIntelligentFeedId(d.Id())
+	scope, stack, name, err := parseIntelligentFeedId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
 
 	req := feed.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 		Candidate: true,
 	}
@@ -130,6 +137,7 @@ func readIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta inter
 		ctx, "read intelligent feed",
 		RulestackName, req.Rulestack,
 		"name", name,
+		ScopeName, scope,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -141,6 +149,7 @@ func readIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	saveIntelligentFeed(d, stack, name, *res.Response.Candidate)
 
 	return nil
@@ -153,6 +162,7 @@ func updateIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 		ctx, "update intelligent feed",
 		RulestackName, o.Rulestack,
 		"name", o.Name,
+		ScopeName, o.Scope,
 	)
 
 	if err := svc.Update(ctx, o); err != nil {
@@ -164,7 +174,7 @@ func updateIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 
 func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := feed.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseIntelligentFeedId(d.Id())
+	scope, stack, name, err := parseIntelligentFeedId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -173,9 +183,15 @@ func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 		ctx, "delete intelligent feed",
 		RulestackName, stack,
 		"name", name,
+		ScopeName, scope,
 	)
 
-	if err := svc.Delete(ctx, stack, name); err != nil && !isObjectNotFound(err) {
+	input := feed.DeleteInput{
+		Rulestack: stack,
+		Scope:     scope,
+		Name:      name,
+	}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -189,9 +205,11 @@ func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.
 	frequency_values := []string{"HOURLY", "DAILY"}
 	time_low := 0
 	time_high := 23
+
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
+		ScopeName:      scopeSchema(),
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -250,7 +268,7 @@ func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.
 	}
 
 	if !isResource {
-		computed(ans, "", []string{ConfigTypeName, RulestackName, "name"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, ScopeName, "name"})
 	}
 
 	return ans
@@ -259,6 +277,7 @@ func intelligentFeedSchema(isResource bool, rmKeys []string) map[string]*schema.
 func loadIntelligentFeed(d *schema.ResourceData) feed.Info {
 	return feed.Info{
 		Rulestack:    d.Get(RulestackName).(string),
+		Scope:        d.Get(ScopeName).(string),
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		Certificate:  d.Get("certificate").(string),
@@ -284,15 +303,15 @@ func saveIntelligentFeed(d *schema.ResourceData, stack, name string, o feed.Info
 }
 
 // Id functions.
-func buildIntelligentFeedId(a, b string) string {
-	return strings.Join([]string{a, b}, IdSeparator)
+func buildIntelligentFeedId(a, b, c string) string {
+	return strings.Join([]string{a, b, c}, IdSeparator)
 }
 
-func parseIntelligentFeedId(v string) (string, string, error) {
+func parseIntelligentFeedId(v string) (string, string, string, error) {
 	tok := strings.Split(v, IdSeparator)
-	if len(tok) != 2 {
-		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+	if len(tok) != 3 {
+		return "", "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
 	}
 
-	return tok[0], tok[1], nil
+	return tok[0], tok[1], tok[2], nil
 }

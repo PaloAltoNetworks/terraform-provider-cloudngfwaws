@@ -33,10 +33,14 @@ func readFqdnListDataSource(ctx context.Context, d *schema.ResourceData, meta in
 	stack := d.Get(RulestackName).(string)
 	name := d.Get("name").(string)
 
-	id := configTypeId(style, buildFqdnListId(stack, name))
+	scope := d.Get(ScopeName).(string)
+	d.Set(ScopeName, scope)
+
+	id := configTypeId(style, buildFqdnListId(scope, stack, name))
 
 	req := fqdn.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 	}
 	switch style {
@@ -51,6 +55,7 @@ func readFqdnListDataSource(ctx context.Context, d *schema.ResourceData, meta in
 		"ds", true,
 		ConfigTypeName, style,
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", req.Name,
 	)
 
@@ -102,20 +107,21 @@ func createFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 		ctx, "create fqdn list",
 		RulestackName, o.Rulestack,
 		"name", o.Name,
+		ScopeName, o.Scope,
 	)
 
 	if err := svc.Create(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildFqdnListId(o.Rulestack, o.Name))
+	d.SetId(buildFqdnListId(o.Scope, o.Rulestack, o.Name))
 
 	return readFqdnList(ctx, d, meta)
 }
 
 func readFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := fqdn.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseFqdnListId(d.Id())
+	scope, stack, name, err := parseFqdnListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -124,10 +130,12 @@ func readFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{})
 		Rulestack: stack,
 		Name:      name,
 		Candidate: true,
+		Scope:     scope,
 	}
 	tflog.Info(
 		ctx, "read fqdn list",
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", name,
 	)
 
@@ -140,6 +148,7 @@ func readFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{})
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	saveFqdnList(d, stack, name, *res.Response.Candidate)
 
 	return nil
@@ -151,6 +160,7 @@ func updateFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Info(
 		ctx, "update fqdn list",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		"name", o.Name,
 	)
 
@@ -163,7 +173,7 @@ func updateFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 
 func deleteFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := fqdn.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parseFqdnListId(d.Id())
+	scope, stack, name, err := parseFqdnListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -171,10 +181,16 @@ func deleteFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 	tflog.Info(
 		ctx, "delete fqdn list",
 		RulestackName, stack,
+		ScopeName, scope,
 		"name", name,
 	)
 
-	if err := svc.Delete(ctx, stack, name); err != nil && !isObjectNotFound(err) {
+	input := fqdn.DeleteInput{
+		Rulestack: stack,
+		Scope:     scope,
+		Name:      name,
+	}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -187,6 +203,7 @@ func fqdnListSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
+		ScopeName:      scopeSchema(),
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -224,7 +241,7 @@ func fqdnListSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 	}
 
 	if !isResource {
-		computed(ans, "", []string{ConfigTypeName, RulestackName, "name"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, ScopeName, "name"})
 	}
 
 	return ans
@@ -233,6 +250,7 @@ func fqdnListSchema(isResource bool, rmKeys []string) map[string]*schema.Schema 
 func loadFqdnList(d *schema.ResourceData) fqdn.Info {
 	return fqdn.Info{
 		Rulestack:    d.Get(RulestackName).(string),
+		Scope:        d.Get(ScopeName).(string),
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		FqdnList:     setToSlice(d.Get("fqdn_list")),
@@ -250,15 +268,15 @@ func saveFqdnList(d *schema.ResourceData, stack, name string, o fqdn.Info) {
 }
 
 // Id functions.
-func buildFqdnListId(a, b string) string {
-	return strings.Join([]string{a, b}, IdSeparator)
+func buildFqdnListId(a, b, c string) string {
+	return strings.Join([]string{a, b, c}, IdSeparator)
 }
 
-func parseFqdnListId(v string) (string, string, error) {
+func parseFqdnListId(v string) (string, string, string, error) {
 	tok := strings.Split(v, IdSeparator)
-	if len(tok) != 2 {
-		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+	if len(tok) != 3 {
+		return "", "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
 	}
 
-	return tok[0], tok[1], nil
+	return tok[0], tok[1], tok[2], nil
 }

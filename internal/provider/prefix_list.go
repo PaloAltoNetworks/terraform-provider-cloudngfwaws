@@ -33,10 +33,14 @@ func readPrefixListDataSource(ctx context.Context, d *schema.ResourceData, meta 
 	stack := d.Get(RulestackName).(string)
 	name := d.Get("name").(string)
 
-	id := configTypeId(style, buildPrefixListId(stack, name))
+	scope := d.Get(ScopeName).(string)
+	d.Set(ScopeName, scope)
+
+	id := configTypeId(style, buildPrefixListId(scope, stack, name))
 
 	req := prefix.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 	}
 	switch style {
@@ -51,6 +55,7 @@ func readPrefixListDataSource(ctx context.Context, d *schema.ResourceData, meta 
 		"ds", true,
 		ConfigTypeName, style,
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", req.Name,
 	)
 
@@ -101,6 +106,7 @@ func createPrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 	tflog.Info(
 		ctx, "create prefix list",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		"name", o.Name,
 	)
 
@@ -108,26 +114,28 @@ func createPrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildPrefixListId(o.Rulestack, o.Name))
+	d.SetId(buildPrefixListId(o.Scope, o.Rulestack, o.Name))
 
 	return readPrefixList(ctx, d, meta)
 }
 
 func readPrefixList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := prefix.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parsePrefixListId(d.Id())
+	scope, stack, name, err := parsePrefixListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
 
 	req := prefix.ReadInput{
 		Rulestack: stack,
+		Scope:     scope,
 		Name:      name,
 		Candidate: true,
 	}
 	tflog.Info(
 		ctx, "read prefix list",
 		RulestackName, req.Rulestack,
+		ScopeName, scope,
 		"name", name,
 	)
 
@@ -140,6 +148,7 @@ func readPrefixList(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	savePrefixList(d, stack, name, *res.Response.Candidate)
 
 	return nil
@@ -151,6 +160,7 @@ func updatePrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 	tflog.Info(
 		ctx, "update prefix list",
 		RulestackName, o.Rulestack,
+		ScopeName, o.Scope,
 		"name", o.Name,
 	)
 
@@ -163,7 +173,7 @@ func updatePrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 
 func deletePrefixList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := prefix.NewClient(meta.(*awsngfw.Client))
-	stack, name, err := parsePrefixListId(d.Id())
+	scope, stack, name, err := parsePrefixListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
 	}
@@ -171,10 +181,16 @@ func deletePrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 	tflog.Info(
 		ctx, "delete prefix list",
 		RulestackName, stack,
+		ScopeName, scope,
 		"name", name,
 	)
 
-	if err := svc.Delete(ctx, stack, name); err != nil && !isObjectNotFound(err) {
+	input := prefix.DeleteInput{
+		Rulestack: stack,
+		Scope:     scope,
+		Name:      name,
+	}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -187,6 +203,7 @@ func prefixListSchema(isResource bool, rmKeys []string) map[string]*schema.Schem
 	ans := map[string]*schema.Schema{
 		ConfigTypeName: configTypeSchema(),
 		RulestackName:  rsSchema(),
+		ScopeName:      scopeSchema(),
 		"name": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -224,7 +241,7 @@ func prefixListSchema(isResource bool, rmKeys []string) map[string]*schema.Schem
 	}
 
 	if !isResource {
-		computed(ans, "", []string{ConfigTypeName, RulestackName, "name"})
+		computed(ans, "", []string{ConfigTypeName, RulestackName, ScopeName, "name"})
 	}
 
 	return ans
@@ -233,6 +250,7 @@ func prefixListSchema(isResource bool, rmKeys []string) map[string]*schema.Schem
 func loadPrefixList(d *schema.ResourceData) prefix.Info {
 	return prefix.Info{
 		Rulestack:    d.Get(RulestackName).(string),
+		Scope:        d.Get(ScopeName).(string),
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		PrefixList:   setToSlice(d.Get("prefix_list")),
@@ -250,15 +268,15 @@ func savePrefixList(d *schema.ResourceData, stack, name string, o prefix.Info) {
 }
 
 // Id functions.
-func buildPrefixListId(a, b string) string {
-	return strings.Join([]string{a, b}, IdSeparator)
+func buildPrefixListId(a, b, c string) string {
+	return strings.Join([]string{a, b, c}, IdSeparator)
 }
 
-func parsePrefixListId(v string) (string, string, error) {
+func parsePrefixListId(v string) (string, string, string, error) {
 	tok := strings.Split(v, IdSeparator)
-	if len(tok) != 2 {
-		return "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
+	if len(tok) != 3 {
+		return "", "", "", fmt.Errorf("Expecting 2 tokens, got %d", len(tok))
 	}
 
-	return tok[0], tok[1], nil
+	return tok[0], tok[1], tok[2], nil
 }
