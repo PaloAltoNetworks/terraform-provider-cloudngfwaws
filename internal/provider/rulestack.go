@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/rule/stack"
@@ -29,11 +31,13 @@ func readRulestackDataSource(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set(ConfigTypeName, style)
 
 	name := d.Get("name").(string)
+	scope := d.Get(ScopeName).(string)
 
-	id := configTypeId(style, name)
+	id := configTypeId(style, buildRulestackId(scope, name))
 
 	req := stack.ReadInput{
-		Name: name,
+		Name:  name,
+		Scope: scope,
 	}
 	switch style {
 	case CandidateConfig:
@@ -46,6 +50,7 @@ func readRulestackDataSource(ctx context.Context, d *schema.ResourceData, meta i
 		ctx, "read rulestack",
 		"ds", true,
 		"name", name,
+		ScopeName, scope,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -91,13 +96,24 @@ func resourceRulestack() *schema.Resource {
 
 func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
-	o := loadRulestack(d)
+	o, ti := loadRulestack(d)
 	tflog.Info(
 		ctx, "create rulestack",
 		"name", o.Name,
+		ScopeName, o.Entry.Scope,
 	)
 
 	if err := svc.Create(ctx, o); err != nil {
+		return diag.FromErr(err)
+	}
+
+	tflog.Info(
+		ctx, "apply rulestack tags",
+		"name", ti.Rulestack,
+		ScopeName, o.Entry.Scope,
+	)
+
+	if err := svc.ApplyTags(ctx, ti); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -108,14 +124,20 @@ func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 
 func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
-	name := d.Id()
+	scope, name, err := parseRulestackId(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := stack.ReadInput{
 		Name:      name,
+		Scope:     scope,
 		Candidate: true,
 	}
 	tflog.Info(
 		ctx, "read rulestack",
 		"name", name,
+		ScopeName, scope,
 	)
 
 	res, err := svc.Read(ctx, req)
@@ -134,7 +156,7 @@ func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}
 
 func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
-	o := loadRulestack(d)
+	o, ti := loadRulestack(d)
 	tflog.Info(
 		ctx, "update rulestack",
 		"name", o.Name,
@@ -144,19 +166,29 @@ func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.FromErr(err)
 	}
 
+	if err := svc.ApplyTags(ctx, ti); err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(o.Name)
 	return readRulestack(ctx, d, meta)
 }
 
 func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
-	name := d.Id()
+	scope, name, err := parseRulestackId(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tflog.Info(
 		ctx, "delete rulestack",
 		"name", name,
+		ScopeName, scope,
 	)
 
-	if err := svc.Delete(ctx, name); err != nil && !isObjectNotFound(err) {
+	input := stack.SimpleInput{Name: name, Scope: scope}
+	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -179,11 +211,7 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 			Optional:    true,
 			Description: "The description.",
 		},
-		"scope": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The scope.",
-		},
+		ScopeName: scopeSchema(),
 		"account_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -200,7 +228,7 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 			Computed:    true,
 			Description: "Minimum App-ID version number.",
 		},
-		TagsName: tagsSchema(true, false),
+		TagsName: tagsSchema(true),
 		"profile_config": {
 			Type:     schema.TypeList,
 			Required: true,
@@ -263,24 +291,29 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 	}
 
 	if !isResource {
-		computed(ans, "", []string{"name", ConfigTypeName})
+		computed(ans, "", []string{"name", ConfigTypeName, ScopeName})
 	}
 
 	return ans
 }
 
-func loadRulestack(d *schema.ResourceData) stack.Info {
+func loadRulestack(d *schema.ResourceData) (stack.Info, stack.AddTagsInput) {
 	p := configFolder(d.Get("profile_config"))
+
+	ti := stack.AddTagsInput{
+		Rulestack: d.Get("name").(string),
+		Scope:     d.Get(ScopeName).(string),
+		Tags:      loadTags(d.Get(TagsName)),
+	}
 
 	return stack.Info{
 		Name: d.Get("name").(string),
 		Entry: stack.Details{
 			Description:         d.Get("description").(string),
-			Scope:               d.Get("scope").(string),
+			Scope:               d.Get(ScopeName).(string),
 			AccountId:           d.Get("account_id").(string),
 			AccountGroup:        d.Get("account_group").(string),
 			MinimumAppIdVersion: d.Get("minimum_app_id_version").(string),
-			Tags:                loadTags(d.Get(TagsName)),
 			Profile: stack.ProfileConfig{
 				AntiSpyware:                p["anti_spyware"].(string),
 				AntiVirus:                  p["anti_virus"].(string),
@@ -291,7 +324,7 @@ func loadRulestack(d *schema.ResourceData) stack.Info {
 				OutboundUntrustCertificate: p["outbound_untrust_certificate"].(string),
 			},
 		},
-	}
+	}, ti
 }
 
 func saveRulestack(d *schema.ResourceData, name, state string, o stack.Details) {
@@ -307,11 +340,25 @@ func saveRulestack(d *schema.ResourceData, name, state string, o stack.Details) 
 
 	d.Set("name", name)
 	d.Set("description", o.Description)
-	d.Set("scope", o.Scope)
+	d.Set(ScopeName, o.Scope)
 	d.Set("account_id", o.AccountId)
 	d.Set("account_group", o.AccountGroup)
 	d.Set("minimum_app_id_version", o.MinimumAppIdVersion)
 	d.Set("profile_config", []interface{}{pc})
 	d.Set(TagsName, dumpTags(o.Tags))
 	d.Set("state", state)
+}
+
+// Id functions.
+func buildRulestackId(a, b string) string {
+	return strings.Join([]string{a, b}, IdSeparator)
+}
+
+func parseRulestackId(v string) (string, string, error) {
+	tok := strings.Split(v, IdSeparator)
+	if len(tok) != 2 {
+		return "", "", fmt.Errorf("Expected 2 tokens from ID")
+	}
+
+	return tok[0], tok[1], nil
 }
