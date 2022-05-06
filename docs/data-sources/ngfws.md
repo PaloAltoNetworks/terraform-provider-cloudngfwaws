@@ -28,6 +28,7 @@ data "cloudngfwaws_ngfws" "example" {}
 ### Optional
 
 - `id` (String) The ID of this resource.
+- `rulestack` (String) The rulestack to filter on.
 - `vpc_ids` (List of String) List of vpc ids to filter on.
 
 ### Read-Only
