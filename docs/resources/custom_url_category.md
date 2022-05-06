@@ -12,7 +12,8 @@ Resource for custom url category manipulation.
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 ## Example Usage
@@ -57,6 +58,7 @@ resource "cloudngfwaws_rulestack" "r" {
 - `audit_comment` (String) The audit comment.
 - `description` (String) The description.
 - `id` (String) The ID of this resource.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 
 ### Read-Only
 
@@ -68,6 +70,6 @@ resource "cloudngfwaws_rulestack" "r" {
 Import is supported using the following syntax:
 
 ```shell
-# import name is <rulestack>:<category_name>
-terraform import cloudngfwaws_custom_url_category.example terraform-rulestack:tf-custom-category
+# import name is <scope>:<rulestack>:<category_name>
+terraform import cloudngfwaws_custom_url_category.example Local:terraform-rulestack:tf-custom-category
 ```

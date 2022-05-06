@@ -12,7 +12,8 @@ Resource for intelligent feed manipulation.
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 ## Example Usage
@@ -57,6 +58,7 @@ resource "cloudngfwaws_rulestack" "r" {
 - `description` (String) The description.
 - `frequency` (String) Update frequency. Valid values are `HOURLY` or `DAILY`. Defaults to `HOURLY`.
 - `id` (String) The ID of this resource.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `time` (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
 - `type` (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`. Defaults to `IP_LIST`.
 
@@ -70,6 +72,6 @@ resource "cloudngfwaws_rulestack" "r" {
 Import is supported using the following syntax:
 
 ```shell
-# import name is <rulestack>:<intelligent_feed_name>
-terraform import cloudngfwaws_intelligent_feed.example terraform-rulestack:tf-feed
+# import name is <scope>:<rulestack>:<intelligent_feed_name>
+terraform import cloudngfwaws_intelligent_feed.example Local:terraform-rulestack:tf-feed
 ```

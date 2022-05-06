@@ -12,7 +12,8 @@ Resource for security rule manipulation.
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 ## Example Usage
@@ -76,6 +77,7 @@ resource "cloudngfwaws_rulestack" "r" {
 - `negate_source` (Boolean) Negate the source definition.
 - `protocol` (String) The protocol. Defaults to `application-default`.
 - `rule_list` (String) The rulebase. Valid values are `PreRule`, `PostRule`, or `LocalRule`. Defaults to `PreRule`.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `tags` (Map of String) The tags.
 
 ### Read-Only
@@ -119,6 +121,6 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-# import name is <rulestack>:<rule_list>:<priority>
-terraform import cloudngfwaws_security_rule.example terraform-rulestack:LocalRule:3
+# import name is <scope>:<rulestack>:<rule_list>:<priority>
+terraform import cloudngfwaws_security_rule.example Local:terraform-rulestack:LocalRule:3
 ```
