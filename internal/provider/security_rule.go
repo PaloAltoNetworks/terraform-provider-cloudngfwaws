@@ -393,7 +393,7 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 			Description:  addStringInSliceValidation("Decryption rule type.", decryption_values),
 			ValidateFunc: validation.StringInSlice(decryption_values, false),
 		},
-		TagsName: tagsSchema(false, false),
+		TagsName: tagsSchema(true),
 		"update_token": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -450,8 +450,7 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
 			Action:             d.Get("action").(string),
 			Logging:            d.Get("logging").(bool),
 			DecryptionRuleType: d.Get("decryption_rule_type").(string),
-			//Tags: tlist,
-			//UpdateToken: d.Get("update_token").(string),
+			Tags:               loadTags(d.Get(TagsName)),
 		},
 	}
 }
