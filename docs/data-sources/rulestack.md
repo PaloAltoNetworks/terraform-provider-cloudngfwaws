@@ -12,7 +12,8 @@ Data source for retrieving rulestack information.
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 ## Example Usage
@@ -35,6 +36,7 @@ data "cloudngfwaws_rulestack" "example" {
 
 - `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
 - `id` (String) The ID of this resource.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 
 ### Read-Only
 
@@ -43,7 +45,6 @@ data "cloudngfwaws_rulestack" "example" {
 - `description` (String) The description.
 - `minimum_app_id_version` (String) Minimum App-ID version number.
 - `profile_config` (List of Object) (see [below for nested schema](#nestedatt--profile_config))
-- `scope` (String) The scope.
 - `state` (String) The rulestack state.
 - `tags` (Map of String) The tags.
 

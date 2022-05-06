@@ -76,9 +76,9 @@ resource "aws_subnet" "subnet2" {
 
 ### Required
 
-- `endpoint_mode` (String) Set endpoint mode from the following options Valid values are `ServiceManaged` or `CustomerManaged`.
-- `name` (String) The name.
-- `rulestack` (String) The rulestack.
+- `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
+- `name` (String) The NGFW name.
+- `rulestack` (String) The rulestack for this NGFW.
 - `subnet_mapping` (Block List, Min: 1) Subnet mappings. (see [below for nested schema](#nestedblock--subnet_mapping))
 - `vpc_id` (String) The vpc id.
 
@@ -88,12 +88,14 @@ resource "aws_subnet" "subnet2" {
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
 - `description` (String) The description.
-- `globalrulestack` (String) The global rulestack.
+- `global_rulestack` (String) The global rulestack for this NGFW.
 - `id` (String) The ID of this resource.
 - `tags` (Map of String) The tags.
 
 ### Read-Only
 
+- `endpoint_service_name` (String) The endpoint service name.
+- `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `update_token` (String) The update token.
 
 <a id="nestedblock--subnet_mapping"></a>
@@ -103,6 +105,27 @@ Optional:
 
 - `availability_zone` (String) The availability zone, for when the endpoint mode is customer managed.
 - `subnet_id` (String) The subnet id, for when the endpoint mode is service managed.
+
+
+<a id="nestedatt--status"></a>
+### Nested Schema for `status`
+
+Read-Only:
+
+- `attachment` (List of Object) (see [below for nested schema](#nestedobjatt--status--attachment))
+- `failure_reason` (String)
+- `firewall_status` (String)
+- `rulestack_status` (String)
+
+<a id="nestedobjatt--status--attachment"></a>
+### Nested Schema for `status.attachment`
+
+Read-Only:
+
+- `endpoint_id` (String)
+- `rejected_reason` (String)
+- `status` (String)
+- `subnet_id` (String)
 
 
 ## Import

@@ -29,7 +29,7 @@ data "cloudngfwaws_ngfw" "example" {
 
 ### Required
 
-- `name` (String) The name.
+- `name` (String) The NGFW name.
 
 ### Optional
 
@@ -41,10 +41,10 @@ data "cloudngfwaws_ngfw" "example" {
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number.
 - `description` (String) The description.
-- `endpoint_mode` (String) Set endpoint mode from the following options Valid values are `ServiceManaged` or `CustomerManaged`.
+- `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
 - `endpoint_service_name` (String) The endpoint service name.
-- `globalrulestack` (String) The global rulestack.
-- `rulestack` (String) The rulestack.
+- `global_rulestack` (String) The global rulestack for this NGFW.
+- `rulestack` (String) The rulestack for this NGFW.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `subnet_mapping` (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))
 - `tags` (Map of String) The tags.
@@ -56,13 +56,13 @@ data "cloudngfwaws_ngfw" "example" {
 
 Read-Only:
 
-- `attachments` (List of Object) (see [below for nested schema](#nestedobjatt--status--attachments))
+- `attachment` (List of Object) (see [below for nested schema](#nestedobjatt--status--attachment))
 - `failure_reason` (String)
 - `firewall_status` (String)
 - `rulestack_status` (String)
 
-<a id="nestedobjatt--status--attachments"></a>
-### Nested Schema for `status.attachments`
+<a id="nestedobjatt--status--attachment"></a>
+### Nested Schema for `status.attachment`
 
 Read-Only:
 

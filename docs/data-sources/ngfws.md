@@ -28,13 +28,11 @@ data "cloudngfwaws_ngfws" "example" {}
 ### Optional
 
 - `id` (String) The ID of this resource.
-- `max_results` (Number) Max number of results. Defaults to `100`.
-- `vpc_ids` (List of String) List of vpc ids.
+- `vpc_ids` (List of String) List of vpc ids to filter on.
 
 ### Read-Only
 
 - `instances` (List of Object) List of NGFWs. (see [below for nested schema](#nestedatt--instances))
-- `next_token` (String) Token for the next page of results.
 
 <a id="nestedatt--instances"></a>
 ### Nested Schema for `instances`

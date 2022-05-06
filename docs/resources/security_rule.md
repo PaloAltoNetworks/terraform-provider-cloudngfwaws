@@ -76,10 +76,10 @@ resource "cloudngfwaws_rulestack" "r" {
 - `negate_source` (Boolean) Negate the source definition.
 - `protocol` (String) The protocol. Defaults to `application-default`.
 - `rule_list` (String) The rulebase. Valid values are `PreRule`, `PostRule`, or `LocalRule`. Defaults to `PreRule`.
+- `tags` (Map of String) The tags.
 
 ### Read-Only
 
-- `tags` (Map of String) The tags.
 - `update_token` (String) The update token.
 
 <a id="nestedblock--category"></a>

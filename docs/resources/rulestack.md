@@ -12,7 +12,8 @@ Resource for rulestack manipulation.
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 ## Example Usage
@@ -45,7 +46,7 @@ resource "cloudngfwaws_rulestack" "example" {
 - `description` (String) The description.
 - `id` (String) The ID of this resource.
 - `minimum_app_id_version` (String) Minimum App-ID version number.
-- `scope` (String) The scope.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `tags` (Map of String) The tags.
 
 ### Read-Only

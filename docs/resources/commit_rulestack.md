@@ -16,7 +16,8 @@ This resource should be in a plan file by itself (having other rulestack commits
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 ## Example Usage
@@ -38,6 +39,7 @@ resource "cloudngfwaws_commit_rulestack" "example" {
 ### Optional
 
 - `id` (String) The ID of this resource.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `state` (String) The rulestack state. This can only be the default value. Defaults to `Running`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 

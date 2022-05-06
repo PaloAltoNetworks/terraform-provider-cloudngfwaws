@@ -12,7 +12,8 @@ Data source to validate the rulestack config.
 
 ## Admin Permission Type
 
-* `Rulestack`
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 
 
 
@@ -28,6 +29,7 @@ Data source to validate the rulestack config.
 ### Optional
 
 - `id` (String) The ID of this resource.
+- `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

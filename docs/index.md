@@ -48,8 +48,7 @@ Example JSON config file:
 {
   "host": "api.us-east-1.aws.cloudngfw.com",
   "region": "us-east-1",
-  "lfa-arn": "arn:aws:iam::123456789:role/FirewallAdmin",
-  "lra-arn": "arn:aws:iam::123456789:role/RulestackAdmin"
+  "arn": "arn:aws:iam::123456789:role/MyRole"
 }
 ```
 
@@ -69,13 +68,14 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 ### Optional
 
 - `access_key` (String) (Used for the initial `sts assume role`) AWS access key. Environment variable: `CLOUDNGFWAWS_ACCESS_KEY`. JSON conf file variable: `access-key`.
-- `arn` (String) The ARN allowing both firewall and rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_ARN`. JSON conf file variable: `arn`.
+- `arn` (String) The ARN allowing firewall, rulestack, and global rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_ARN`. JSON conf file variable: `arn`.
+- `gra_arn` (String) The ARN allowing global rulestack admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_GRA_ARN`. JSON conf file variable: `gra-arn`.
 - `headers` (Map of String) Additional HTTP headers to send with API calls. Environment variable: `CLOUDNGFWAWS_HEADERS`. JSON conf file variable: `headers`.
 - `host` (String) The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`). Environment variable: `CLOUDNGFWAWS_HOST`. JSON conf file variable: `host`.
 - `json_config_file` (String) Retrieve provider configuration from this JSON file.
-- `lfa_arn` (String) The ARN allowing firewall admin permissions. Environment variable: `CLOUDNGFWAWS_LFA_ARN`. JSON conf file variable: `lfa-arn`.
+- `lfa_arn` (String) The ARN allowing firewall admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_LFA_ARN`. JSON conf file variable: `lfa-arn`.
 - `logging` (List of String) The logging options for the provider. Environment variable: `CLOUDNGFWAWS_LOGGING`. JSON conf file variable: `logging`.
-- `lra_arn` (String) The ARN allowing rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_LRA_ARN`. JSON conf file variable: `lra-arn`.
+- `lra_arn` (String) The ARN allowing rulestack admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_LRA_ARN`. JSON conf file variable: `lra-arn`.
 - `protocol` (String) The protocol (defaults to `https`). Environment variable: `CLOUDNGFWAWS_PROTOCOL`. JSON conf file variable: `protocol`. Valid values are `https` or `http`.
 - `region` (String) AWS region. Environment variable: `CLOUDNGFWAWS_REGION`. JSON conf file variable: `region`.
 - `secret_key` (String) (Used for the initial `sts assume role`) AWS secret key. Environment variable: `CLOUDNGFWAWS_SECRET_KEY`. JSON conf file variable: `secret-key`.
