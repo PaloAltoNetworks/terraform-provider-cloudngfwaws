@@ -1,6 +1,8 @@
 Terraform Provider for Palo Alto Networks Cloud NGFW for AWS
 ============================================================
 
+**NOTE:**  Breaking changes will be introduced during this BETA time period.
+
 **NOTE:**  This Terraform provider is currently available as BETA code.  Once this is officially released, it will be available from the Terraform registry just like all other providers.
 
 The Terraform provider for the Palo Alto Networks Cloud Next-Gen Firewall for AWS.
