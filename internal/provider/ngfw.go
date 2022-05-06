@@ -23,6 +23,11 @@ func dataSourceNgfws() *schema.Resource {
 		ReadContext: readNgfws,
 
 		Schema: map[string]*schema.Schema{
+			RulestackName: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The rulestack to filter on.",
+			},
 			"vpc_ids": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -57,6 +62,7 @@ func dataSourceNgfws() *schema.Resource {
 func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := ngfw.NewClient(meta.(*awsngfw.Client))
 
+	stack := d.Get(RulestackName).(string)
 	vpcs := toStringSlice(d.Get("vpc_ids"))
 	d.Set("vpc_ids", vpcs)
 
@@ -64,12 +70,14 @@ func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		ctx, "read ngfws",
 		"ds", true,
 		"vpc_ids", vpcs,
+		RulestackName, stack,
 	)
 
 	var nt string
 	var listing []ngfw.ListFirewall
 	for {
 		input := ngfw.ListInput{
+			Rulestack:  stack,
 			MaxResults: 100,
 			NextToken:  nt,
 			VpcIds:     vpcs,
@@ -102,6 +110,7 @@ func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		})
 	}
 
+	d.Set(RulestackName, stack)
 	d.Set("instances", instances)
 
 	return nil
