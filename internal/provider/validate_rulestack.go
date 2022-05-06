@@ -30,6 +30,7 @@ func dataSourceValidateRulestack() *schema.Resource {
 				Computed:    true,
 				Description: "The rulestack state.",
 			},
+			ScopeName: scopeSchema(),
 			"commit_status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -67,9 +68,11 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 
 	svc := stack.NewClient(meta.(*awsngfw.Client))
 	name := d.Get(RulestackName).(string)
+	scope := d.Get(ScopeName).(string)
 
 	req := stack.ReadInput{
-		Name: name,
+		Scope: scope,
+		Name:  name,
 	}
 
 	tflog.Info(
@@ -89,7 +92,11 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 	)
 
 	// Perform the validation.
-	if err = svc.Validate(ctx, name); err != nil {
+	vin := stack.SimpleInput{
+		Name:  name,
+		Scope: scope,
+	}
+	if err = svc.Validate(ctx, vin); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -100,7 +107,7 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 			RulestackName, name,
 		)
 
-		ans, err = svc.CommitStatus(ctx, name)
+		ans, err = svc.CommitStatus(ctx, vin)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -115,6 +122,7 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId(name)
 	d.Set(RulestackName, name)
 	d.Set("state", res.Response.State)
+	d.Set(ScopeName, scope)
 	d.Set("commit_status", ans.Response.CommitStatus)
 	d.Set("validation_status", ans.Response.ValidationStatus)
 	d.Set("commit_errors", ans.Response.CommitMessages)
