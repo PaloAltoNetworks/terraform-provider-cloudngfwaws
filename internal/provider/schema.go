@@ -7,6 +7,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+func scopeSchema() *schema.Schema {
+	scopes := []string{"Local", "Global"}
+
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  addStringInSliceValidation("The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT.", scopes),
+		Default:      scopes[0],
+		ForceNew:     true,
+		ValidateFunc: validation.StringInSlice(scopes, false),
+	}
+}
+
 func rsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
@@ -105,7 +118,7 @@ func sliceToSet(s []string) *schema.Set {
 	return schema.NewSet(schema.HashString, items)
 }
 
-func tagsSchema(isOptional, forceNew bool) *schema.Schema {
+func tagsSchema(isOptional bool) *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeMap,
 		Optional:    isOptional,
@@ -114,7 +127,6 @@ func tagsSchema(isOptional, forceNew bool) *schema.Schema {
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-		ForceNew: forceNew,
 	}
 }
 
