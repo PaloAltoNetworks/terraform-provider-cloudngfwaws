@@ -24,6 +24,12 @@ This resource should be in a plan file by itself (having other rulestack commits
 * `Firewall`
 {{- else if eq .Name "cloudngfwaws_ngfw_tag" -}}
 * `Firewall`
+{{- else if eq .Name "cloudngfwaws_rulestack" -}}
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
+{{- else if eq .Name "cloudngfwaws_commit_rulestack" -}}
+* `Rulestack` (for `scope="Local"`)
+* `Global Rulestack` (for `scope="Global"`)
 {{- else -}}
 * `Rulestack`
 {{- end }}
