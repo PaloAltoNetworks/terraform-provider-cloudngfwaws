@@ -10,6 +10,13 @@ The cloudngfwaws provider provides resources to manage your Palo Alto Networks C
 
 Palo Alto Networks Cloud NGFW combines best-in-class network security with cloud ease of use and delivers the leading ML-powered NGFW as a cloud-native service on AWS.
 
+Refer to [the changelog](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/blob/main/CHANGELOG.md) to see what's new.
+
+
+## Enable API Access
+
+Before this provider can be used, you must first enable API access.  The steps to do this can be found [here](https://pan.dev/cloudngfw/aws/api/).
+
 
 ## Authentication Workflow
 
