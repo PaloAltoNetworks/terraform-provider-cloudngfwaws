@@ -29,12 +29,9 @@ Building the Provider
 
 1. Install [GoLang](https://go.dev/dl/)
 
-2. Clone the needed repositories side-by-side to a new directory
+2. Clone the repository:
 
 ```sh
-mkdir cloudngfwaws-terraform
-cd cloudngfwaws-terraform
-git clone https://github.com/PaloAltoNetworks/cloud-ngfw-aws-go.git
 git clone https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws
 ```
 
