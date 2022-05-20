@@ -1,4 +1,4 @@
-## 1.0.0 (Unreleased)
+## 1.0.0 (May 20, 2022)
 
 New Data Sources:
 
@@ -24,6 +24,7 @@ New Data Sources:
 * `cloudngfwaws_fqdn_list`
 * `cloudngfwaws_intelligent_feed`
 * `cloudngfwaws_ngfw`
+* `cloudngfwaws_ngfw_log_profile`
 * `cloudngfwaws_predefined_url_category_override`
 * `cloudngfwaws_prefix_list`
 * `cloudngfwaws_rulestack`
