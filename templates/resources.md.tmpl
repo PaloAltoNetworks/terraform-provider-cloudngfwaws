@@ -10,9 +10,12 @@ description: |-
 {{ .Description | trimspace }}
 {{- if eq .Name "cloudngfwaws_commit_rulestack" }}
 
-This resource should be in a plan file by itself (having other rulestack commits is fine).
+!> **NOTE:** This resource should be placed in a separate plan as the plan that configures the rulestack and its contents.  If you do not, you will have perpetual configuration drift and will need to run your plan twice so the commit is performed.  Placing instances of this resource with instances of NGFW resources (such as `cloudngfwaws_ngfw`) is fine.
 
-!> **NOTE:** This resource does not error if the commit failed.  To see if the commit failed, check the commit status attribute.
+{{- end }}
+{{- if eq .Name "cloudngfwaws_ngfw" }}
+
+-> **NOTE:** Having the `rulestack` param reference the rulestack name from `cloudngfwaws_commit_rulestack` ensures that Terraform will only try to spin up a NGFW instance if the commit is successful.
 {{- end }}
 
 

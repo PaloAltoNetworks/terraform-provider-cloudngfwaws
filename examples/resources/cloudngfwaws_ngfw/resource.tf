@@ -13,13 +13,16 @@ resource "cloudngfwaws_ngfw" "example" {
     subnet_id = aws_subnet.subnet2.id
   }
 
-  rulestack = "example-rulestack"
+  rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
 
   tags = {
     Foo = "bar"
   }
 }
 
+resource "cloudngfwaws_commit_rulestack" "rs" {
+  rulestack = "my-rulestack"
+}
 
 resource "aws_vpc" "example" {
   cidr_block = "172.16.0.0/16"
