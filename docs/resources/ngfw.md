@@ -9,6 +9,8 @@ description: |-
 
 Resource for NGFW manipulation.
 
+-> **NOTE:** Having the `rulestack` param reference the rulestack name from `cloudngfwaws_commit_rulestack` ensures that Terraform will only try to spin up a NGFW instance if the commit is successful.
+
 
 ## Admin Permission Type
 
@@ -33,13 +35,16 @@ resource "cloudngfwaws_ngfw" "example" {
     subnet_id = aws_subnet.subnet2.id
   }
 
-  rulestack = "example-rulestack"
+  rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
 
   tags = {
     Foo = "bar"
   }
 }
 
+resource "cloudngfwaws_commit_rulestack" "rs" {
+  rulestack = "my-rulestack"
+}
 
 resource "aws_vpc" "example" {
   cidr_block = "172.16.0.0/16"

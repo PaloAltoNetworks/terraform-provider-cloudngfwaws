@@ -9,9 +9,7 @@ description: |-
 
 Resource for committing the rulestack config.
 
-This resource should be in a plan file by itself (having other rulestack commits is fine).
-
-!> **NOTE:** This resource does not error if the commit failed.  To see if the commit failed, check the commit status attribute.
+!> **NOTE:** This resource should be placed in a separate plan as the plan that configures the rulestack and its contents.  If you do not, you will have perpetual configuration drift and will need to run your plan twice so the commit is performed.  Placing instances of this resource with instances of NGFW resources (such as `cloudngfwaws_ngfw`) is fine.
 
 
 ## Admin Permission Type
@@ -56,4 +54,5 @@ resource "cloudngfwaws_commit_rulestack" "example" {
 Optional:
 
 - `create` (String)
+- `read` (String)
 - `update` (String)
