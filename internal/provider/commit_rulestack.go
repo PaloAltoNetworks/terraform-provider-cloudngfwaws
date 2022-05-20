@@ -26,8 +26,9 @@ func resourceCommitRulestack() *schema.Resource {
 		DeleteContext: deleteCommitRulestack,
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(15 * time.Minute),
-			Update: schema.DefaultTimeout(15 * time.Minute),
+			Create: schema.DefaultTimeout(20 * time.Minute),
+			Read:   schema.DefaultTimeout(20 * time.Minute),
+			Update: schema.DefaultTimeout(20 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -74,13 +75,10 @@ func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, me
 	svc := stack.NewClient(meta.(*awsngfw.Client))
 	name := d.Get(RulestackName).(string)
 	scope := d.Get(ScopeName).(string)
-	pending := "Pending"
 	input := stack.SimpleInput{
 		Name:  name,
 		Scope: scope,
 	}
-
-	d.Set(ScopeName, scope)
 
 	tflog.Info(
 		ctx, "commit rulestack",
@@ -93,24 +91,9 @@ func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	// Wait until the status is not Pending.
-	for {
-		tflog.Info(
-			ctx, "getting commit status",
-			RulestackName, name,
-			ScopeName, scope,
-		)
-
-		ans, err := svc.CommitStatus(ctx, input)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if ans.Response.CommitStatus != pending {
-			break
-		}
-
-		time.Sleep(1 * time.Second)
+	// Wait until the status is not pending.
+	if _, err := svc.PollCommit(ctx, input); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(buildRulestackId(scope, name))
@@ -141,11 +124,18 @@ func readCommitRulestack(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
+	tflog.Info(
+		ctx, "read rulestack commit status",
+		RulestackName, name,
+		ScopeName, scope,
+		"for_commit", true,
+	)
 	cs, err := svc.CommitStatus(ctx, stack.SimpleInput{Name: name, Scope: scope})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	d.Set(ScopeName, scope)
 	d.Set(RulestackName, name)
 	d.Set("state", res.Response.State)
 	d.Set("commit_status", cs.Response.CommitStatus)
