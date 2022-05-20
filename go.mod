@@ -3,7 +3,7 @@ module github.com/paloaltonetworks/terraform-provider-cloudngfwaws
 require (
 	github.com/hashicorp/terraform-plugin-log v0.2.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/paloaltonetworks/cloud-ngfw-aws-go v0.0.0
+	github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.0
 )
 
 require (
@@ -67,6 +67,6 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 )
 
-replace github.com/paloaltonetworks/cloud-ngfw-aws-go => ../cloud-ngfw-aws-go
+//replace github.com/paloaltonetworks/cloud-ngfw-aws-go => ../cloud-ngfw-aws-go
 
 go 1.17
