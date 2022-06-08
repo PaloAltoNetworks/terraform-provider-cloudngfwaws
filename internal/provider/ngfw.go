@@ -378,7 +378,6 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		},
 		"status": {
 			Type:     schema.TypeList,
-			MaxItems: 1,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
