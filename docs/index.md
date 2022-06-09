@@ -53,7 +53,7 @@ Example JSON config file:
 
 ```shell
 {
-  "host": "api.us-east-1.aws.cloudngfw.com",
+  "host": "api.us-east-1.aws.cloudngfw.paloaltonetworks.com",
   "region": "us-east-1",
   "arn": "arn:aws:iam::123456789:role/MyRole"
 }
@@ -78,7 +78,7 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 - `arn` (String) The ARN allowing firewall, rulestack, and global rulestack admin permissions. Environment variable: `CLOUDNGFWAWS_ARN`. JSON conf file variable: `arn`.
 - `gra_arn` (String) The ARN allowing global rulestack admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_GRA_ARN`. JSON conf file variable: `gra-arn`.
 - `headers` (Map of String) Additional HTTP headers to send with API calls. Environment variable: `CLOUDNGFWAWS_HEADERS`. JSON conf file variable: `headers`.
-- `host` (String) The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`). Environment variable: `CLOUDNGFWAWS_HOST`. JSON conf file variable: `host`.
+- `host` (String) The hostname of the API (default: `api.us-east-1.aws.cloudngfw.paloaltonetworks.com`). Environment variable: `CLOUDNGFWAWS_HOST`. JSON conf file variable: `host`.
 - `json_config_file` (String) Retrieve provider configuration from this JSON file.
 - `lfa_arn` (String) The ARN allowing firewall admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_LFA_ARN`. JSON conf file variable: `lfa-arn`.
 - `logging` (List of String) The logging options for the provider. Environment variable: `CLOUDNGFWAWS_LOGGING`. JSON conf file variable: `logging`.
