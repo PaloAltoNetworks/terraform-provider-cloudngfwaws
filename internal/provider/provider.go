@@ -84,7 +84,7 @@ func providerSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			Description: addProviderParamDescription(
-				"The hostname of the API (default: `api.us-east-1.aws.cloudngfw.com`).",
+				"The hostname of the API (default: `api.us-east-1.aws.cloudngfw.paloaltonetworks.com`).",
 				"CLOUDNGFWAWS_HOST",
 				"host",
 			),
