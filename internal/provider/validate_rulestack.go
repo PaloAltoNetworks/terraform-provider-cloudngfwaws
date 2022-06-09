@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
@@ -70,6 +71,8 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 	name := d.Get(RulestackName).(string)
 	scope := d.Get(ScopeName).(string)
 
+	id := strings.Join([]string{scope, name}, IdSeparator)
+
 	req := stack.ReadInput{
 		Scope: scope,
 		Name:  name,
@@ -119,7 +122,7 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 		time.Sleep(1 * time.Second)
 	}
 
-	d.SetId(name)
+	d.SetId(id)
 	d.Set(RulestackName, name)
 	d.Set("state", res.Response.State)
 	d.Set(ScopeName, scope)
