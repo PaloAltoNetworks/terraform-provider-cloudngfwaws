@@ -1,3 +1,12 @@
+## 1.0.2 (June 8, 2022)
+
+* Bug fixes
+* Documentation fixes
+
+## 1.0.1 (May 20, 2022)
+
+* Fix deployment issues
+
 ## 1.0.0 (May 20, 2022)
 
 New Data Sources:
