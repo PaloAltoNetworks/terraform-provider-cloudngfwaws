@@ -117,13 +117,20 @@ func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.FromErr(err)
 	}
 
-	d.SetId(o.Name)
+	d.SetId(buildRulestackId(o.Entry.Scope, o.Name))
 
 	return readRulestack(ctx, d, meta)
 }
 
 func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := stack.NewClient(meta.(*awsngfw.Client))
+
+	// Verify the correct number of tokens first.
+	tok := strings.Split(d.Id(), IdSeparator)
+	if len(tok) == 1 {
+		d.SetId(buildRulestackId(d.Get(ScopeName).(string), tok[0]))
+	}
+
 	scope, name, err := parseRulestackId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -170,7 +177,7 @@ func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.FromErr(err)
 	}
 
-	d.SetId(o.Name)
+	d.SetId(buildRulestackId(o.Entry.Scope, o.Name))
 	return readRulestack(ctx, d, meta)
 }
 
