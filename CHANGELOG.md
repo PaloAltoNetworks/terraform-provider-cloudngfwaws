@@ -1,3 +1,9 @@
+## 1.0.4 (June 13, 2022)
+
+Bug Fixes:
+
+* `cloudngfwaws_rulestack`: Commit after deleting a rulestack
+
 ## 1.0.3 (June 9, 2022)
 
 * Bug fixes
