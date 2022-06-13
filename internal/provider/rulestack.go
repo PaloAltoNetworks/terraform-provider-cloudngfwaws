@@ -199,6 +199,19 @@ func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.FromErr(err)
 	}
 
+	// Deleting a rulestack that has been committed requires a commit, and the API
+	// doesn't do this because reasons...
+	//
+	// Polling the commit is unnecessary, as is checking the response from issuing
+	// the commit.
+	tflog.Info(
+		ctx, "commit rulestack",
+		"post-delete", true,
+		"name", name,
+		ScopeName, scope,
+	)
+	_ = svc.Commit(ctx, input)
+
 	d.SetId("")
 	return nil
 }
