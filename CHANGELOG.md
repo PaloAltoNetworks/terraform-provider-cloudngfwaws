@@ -1,3 +1,9 @@
+## 1.0.5 (July 07, 2022)
+
+Bug Fixes:
+
+* Update the documentation with global rulestack admin dependency on Firewall Manager
+
 ## 1.0.4 (June 13, 2022)
 
 Bug Fixes:
