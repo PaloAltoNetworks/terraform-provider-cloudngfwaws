@@ -1,3 +1,7 @@
+## 1.0.6 (July 7, 2022)
+
+* Fix deployment issues
+
 ## 1.0.5 (July 07, 2022)
 
 Bug Fixes:
