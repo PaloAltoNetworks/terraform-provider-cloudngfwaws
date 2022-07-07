@@ -120,7 +120,7 @@ func providerSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			Description: addProviderParamDescription(
-				"The ARN allowing firewall, rulestack, and global rulestack admin permissions.",
+				"The ARN allowing firewall, rulestack, and global rulestack admin permissions. Global rulestack admin permissions can be enabled only if the AWS account is onboarded by AWS Firewall Manager. Use 'lfa_arn' and 'lra_arn' if you want to enable only firewall and rulestack admin permissions.",
 				"CLOUDNGFWAWS_ARN",
 				"arn",
 			),
@@ -147,7 +147,7 @@ func providerSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			Description: addProviderParamDescription(
-				"The ARN allowing global rulestack admin permissions. This is preferentially used over the `arn` param if both are specified.",
+				"The ARN allowing global rulestack admin permissions. Global rulestack admin permissions can be enabled only if the AWS account is onboarded by AWS Firewall Manager. 'gra_arn' is preferentially used over the `arn` param if both are specified.",
 				"CLOUDNGFWAWS_GRA_ARN",
 				"gra-arn",
 			),
