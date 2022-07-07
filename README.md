@@ -56,9 +56,22 @@ To do this, populate a Terraform CLI configuration file (`~/.terraformrc` for al
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/paloaltonetworks/cloudngfwaws" = "/directory/containing/the/cloudngfwaws/binary/here"
+    "registry.terraform.io/paloaltonetworks-local/cloudngfwaws" = "/directory/containing/the/cloudngfwaws/binary/here"
   }
 
   direct {}
+}
+```
+
+Then when referencing the locally built provider, use the local name in the provider block like so:
+
+```hcl
+terraform {
+    required_providers {
+        cloudngfwaws = {
+            source = "paloaltonetworks-local/cloudngfwaws"
+            version = "1.0.0"
+        }
+    }
 }
 ```
