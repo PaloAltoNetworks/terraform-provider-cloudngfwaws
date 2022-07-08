@@ -45,6 +45,7 @@ data "cloudngfwaws_rulestack" "example" {
 - `description` (String) The description.
 - `minimum_app_id_version` (String) Minimum App-ID version number.
 - `profile_config` (List of Object) (see [below for nested schema](#nestedatt--profile_config))
+- `lookup_x_forwarded_for` (String) Lookup X forwarded for.
 - `state` (String) The rulestack state.
 - `tags` (Map of String) The tags.
 
