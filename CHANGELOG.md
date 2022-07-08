@@ -1,3 +1,7 @@
+## 1.0.7 (July 8, 2022)
+
+* Added XFF support
+
 ## 1.0.6 (July 7, 2022)
 
 * Fix deployment issues
