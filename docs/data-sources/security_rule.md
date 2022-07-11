@@ -66,6 +66,7 @@ resource "cloudngfwaws_rulestack" "r" {
 - `negate_destination` (Boolean) Negate the destination definition.
 - `negate_source` (Boolean) Negate the source definition.
 - `protocol` (String) The protocol.
+- `prot_port_list` (Set of String) Protocol Port List.
 - `source` (List of Object) The source spec. (see [below for nested schema](#nestedatt--source))
 - `tags` (Map of String) The tags.
 - `update_token` (String) The update token.

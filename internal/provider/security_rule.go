@@ -386,7 +386,14 @@ func securityRuleSchema(isResource bool, rmKeys []string) map[string]*schema.Sch
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The protocol.",
-			Default:     "application-default",
+		},
+		"prot_port_list": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Protocol port list.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 		"audit_comment": {
 			Type:        schema.TypeString,
@@ -465,6 +472,7 @@ func loadSecurityRule(d *schema.ResourceData) security.Info {
 				Feeds:            setToSlice(cat["feeds"]),
 			},
 			Protocol:           d.Get("protocol").(string),
+			ProtPortList:       setToSlice(d.Get("prot_port_list")),
 			AuditComment:       d.Get("audit_comment").(string),
 			Action:             d.Get("action").(string),
 			Logging:            d.Get("logging").(bool),
@@ -506,6 +514,7 @@ func saveSecurityRule(d *schema.ResourceData, stack, rlist string, priority int,
 	d.Set("applications", sliceToSet(o.Applications))
 	d.Set("category", []interface{}{cat})
 	d.Set("protocol", o.Protocol)
+	d.Set("prot_port_list", sliceToSet(o.ProtPortList))
 	d.Set("audit_comment", o.AuditComment)
 	d.Set("action", o.Action)
 	d.Set("logging", o.Logging)
