@@ -1,3 +1,7 @@
+## 1.0.8 (July 11, 2022)
+
+* Added ProtPortList support
+
 ## 1.0.7 (July 8, 2022)
 
 * Added XFF support
