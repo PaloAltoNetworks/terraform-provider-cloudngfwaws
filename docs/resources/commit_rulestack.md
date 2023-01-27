@@ -36,7 +36,6 @@ resource "cloudngfwaws_commit_rulestack" "example" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `state` (String) The rulestack state. This can only be the default value. Defaults to `Running`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -45,6 +44,7 @@ resource "cloudngfwaws_commit_rulestack" "example" {
 
 - `commit_errors` (List of String) Commit error messages.
 - `commit_status` (String) The commit status.
+- `id` (String) The ID of this resource.
 - `validation_errors` (List of String) Validation error messages.
 - `validation_status` (String) The validation status.
 

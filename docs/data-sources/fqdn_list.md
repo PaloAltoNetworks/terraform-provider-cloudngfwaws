@@ -47,7 +47,6 @@ resource "cloudngfwaws_rulestack" "r" {
 ### Optional
 
 - `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- `id` (String) The ID of this resource.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 
 ### Read-Only
@@ -55,4 +54,5 @@ resource "cloudngfwaws_rulestack" "r" {
 - `audit_comment` (String) The audit comment.
 - `description` (String) The description.
 - `fqdn_list` (Set of String) The fqdn list.
+- `id` (String) The ID of this resource.
 - `update_token` (String) The update token.

@@ -49,10 +49,10 @@ resource "cloudngfwaws_rulestack" "r" {
 
 - `action` (String) The action to take. Valid values are `none`, `allow`, `alert`, or `block`. Defaults to `none`.
 - `audit_comment` (String) The audit comment.
-- `id` (String) The ID of this resource.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `update_token` (String) Update token.
 
 

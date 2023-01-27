@@ -98,6 +98,9 @@ resource "aws_subnet" "subnet2" {
 ### Optional
 
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
+
+### Read-Only
+
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--log_destination"></a>

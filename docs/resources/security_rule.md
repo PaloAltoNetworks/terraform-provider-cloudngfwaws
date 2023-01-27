@@ -71,18 +71,18 @@ resource "cloudngfwaws_rulestack" "r" {
 - `decryption_rule_type` (String) Decryption rule type. Valid values are `` or `SSLOutboundInspection`.
 - `description` (String) The description.
 - `enabled` (Boolean) Set to false to disable this rule. Defaults to `true`.
-- `id` (String) The ID of this resource.
 - `logging` (Boolean) Enable logging at end. Defaults to `true`.
 - `negate_destination` (Boolean) Negate the destination definition.
 - `negate_source` (Boolean) Negate the source definition.
-- `protocol` (String) The protocol. Defaults to `application-default`.
-- `prot_port_list` (Set of String) Protocol Port List.
+- `prot_port_list` (Set of String) Protocol port list.
+- `protocol` (String) The protocol.
 - `rule_list` (String) The rulebase. Valid values are `PreRule`, `PostRule`, or `LocalRule`. Defaults to `PreRule`.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `tags` (Map of String) The tags.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `update_token` (String) The update token.
 
 <a id="nestedblock--category"></a>

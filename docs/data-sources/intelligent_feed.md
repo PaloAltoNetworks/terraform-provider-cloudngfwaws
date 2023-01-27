@@ -47,7 +47,6 @@ resource "cloudngfwaws_rulestack" "r" {
 ### Optional
 
 - `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- `id` (String) The ID of this resource.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 
 ### Read-Only
@@ -56,6 +55,7 @@ resource "cloudngfwaws_rulestack" "r" {
 - `certificate` (String) The certificate profile.
 - `description` (String) The description.
 - `frequency` (String) Update frequency. Valid values are `HOURLY` or `DAILY`.
+- `id` (String) The ID of this resource.
 - `time` (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
 - `type` (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`.
 - `update_token` (String) The update token.

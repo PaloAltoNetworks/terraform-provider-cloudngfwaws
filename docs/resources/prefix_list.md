@@ -55,11 +55,11 @@ resource "cloudngfwaws_rulestack" "r" {
 
 - `audit_comment` (String) The audit comment.
 - `description` (String) The description.
-- `id` (String) The ID of this resource.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `update_token` (String) The update token.
 
 

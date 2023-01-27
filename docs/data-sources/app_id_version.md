@@ -33,11 +33,11 @@ data "cloudngfwaws_app_id_version" "example" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `max_results` (Number) Max results. Defaults to `100`.
 - `token` (String) Pagination token.
 
 ### Read-Only
 
 - `applications` (List of String) List of applications.
+- `id` (String) The ID of this resource.
 - `next_token` (String) Token for the next page of results.
