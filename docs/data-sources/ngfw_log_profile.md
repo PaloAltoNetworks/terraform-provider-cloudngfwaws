@@ -33,13 +33,10 @@ data "cloudngfwaws_ngfw_log_profile" "example" {
 - `account_id` (String) The unique ID of the account.
 - `ngfw` (String) The name of the NGFW.
 
-### Optional
-
-- `id` (String) The ID of this resource.
-
 ### Read-Only
 
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
+- `id` (String) The ID of this resource.
 - `log_destination` (List of Object) List of log destinations. (see [below for nested schema](#nestedatt--log_destination))
 
 <a id="nestedatt--log_destination"></a>

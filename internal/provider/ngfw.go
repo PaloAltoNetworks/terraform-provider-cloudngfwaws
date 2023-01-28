@@ -189,6 +189,7 @@ func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		ctx, "create ngfw",
 		"name", o.Name,
 		"account_id", o.AccountId,
+		"multi_vpc", o.MultiVpc,
 	)
 
 	res, err := svc.Create(ctx, o)
@@ -245,6 +246,7 @@ func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		ctx, "update ngfw",
 		"name", o.Name,
 		"account_id", o.AccountId,
+		"multi_vpc", o.MultiVpc,
 	)
 
 	if err := svc.Modify(ctx, o); err != nil {
@@ -301,7 +303,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		"account_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "The account ID.",
+			Description: "The account ID. This field is mandatory if using multiple accounts.",
 			ForceNew:    true,
 		},
 		"description": {
@@ -370,6 +372,13 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 			Description: "The global rulestack for this NGFW.",
 			ForceNew:    true,
 		},
+		"multi_vpc": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Multiple VPCs supported.",
+			Default:     true,
+			ForceNew:    true,
+		},
 		TagsName: tagsSchema(true),
 		"update_token": {
 			Type:        schema.TypeString,
@@ -435,7 +444,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 	}
 
 	if !isResource {
-		computed(ans, "", []string{"name"})
+		computed(ans, "", []string{"name", "account_id"})
 	}
 
 	return ans
@@ -464,6 +473,7 @@ func loadNgfw(d *schema.ResourceData) ngfw.Info {
 		Description:                  d.Get("description").(string),
 		Rulestack:                    d.Get(RulestackName).(string),
 		GlobalRulestack:              d.Get("global_rulestack").(string),
+		MultiVpc:                     d.Get("multi_vpc").(bool),
 		EndpointMode:                 d.Get("endpoint_mode").(string),
 		AutomaticUpgradeAppIdVersion: d.Get("automatic_upgrade_app_id_version").(bool),
 		Tags:                         loadTags(d.Get(TagsName)),
@@ -512,6 +522,7 @@ func saveNgfw(d *schema.ResourceData, o ngfw.ReadResponse) {
 	d.Set("description", o.Firewall.Description)
 	d.Set(RulestackName, o.Firewall.Rulestack)
 	d.Set("global_rulestack", o.Firewall.GlobalRulestack)
+	d.Set("multi_vpc", o.Firewall.MultiVpc)
 	d.Set("endpoint_service_name", o.Firewall.EndpointServiceName)
 	d.Set("endpoint_mode", o.Firewall.EndpointMode)
 	d.Set("automatic_upgrade_app_id_version", o.Firewall.AutomaticUpgradeAppIdVersion)

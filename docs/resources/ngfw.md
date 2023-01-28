@@ -89,17 +89,18 @@ resource "aws_subnet" "subnet2" {
 
 ### Optional
 
-- `account_id` (String) The account ID.
+- `account_id` (String) The account ID. This field is mandatory if using multiple accounts.
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
 - `description` (String) The description.
 - `global_rulestack` (String) The global rulestack for this NGFW.
-- `id` (String) The ID of this resource.
+- `multi_vpc` (Boolean) Multiple VPCs supported. Defaults to `true`.
 - `tags` (Map of String) The tags.
 
 ### Read-Only
 
 - `endpoint_service_name` (String) The endpoint service name.
+- `id` (String) The ID of this resource.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `update_token` (String) The update token.
 

@@ -27,11 +27,11 @@ data "cloudngfwaws_country" "example" {}
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `max_results` (Number) Max number of results. Defaults to `100`.
 - `token` (String) Pagination token.
 
 ### Read-Only
 
 - `codes` (Map of String) The country code (as the key) and description (as the value).
+- `id` (String) The ID of this resource.
 - `next_token` (String) Token for the next page of results.

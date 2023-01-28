@@ -57,13 +57,13 @@ resource "cloudngfwaws_rulestack" "r" {
 - `certificate` (String) The certificate profile.
 - `description` (String) The description.
 - `frequency` (String) Update frequency. Valid values are `HOURLY` or `DAILY`. Defaults to `HOURLY`.
-- `id` (String) The ID of this resource.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 - `time` (Number) The time to poll for updates if frequency is daily. The number must be between [0, 23] incluside.
 - `type` (String) The intelligent feed type. Valid values are `IP_LIST` or `URL_LIST`. Defaults to `IP_LIST`.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `update_token` (String) The update token.
 
 

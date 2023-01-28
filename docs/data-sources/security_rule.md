@@ -47,7 +47,6 @@ resource "cloudngfwaws_rulestack" "r" {
 ### Optional
 
 - `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- `id` (String) The ID of this resource.
 - `rule_list` (String) The rulebase. Valid values are `PreRule`, `PostRule`, or `LocalRule`. Defaults to `PreRule`.
 - `scope` (String) The rulestack's scope. A local rulestack will require that you've retrieved a LRA JWT. A global rulestack will require that you've retrieved a GRA JWT. Valid values are `Local` or `Global`. Defaults to `Local`.
 
@@ -61,12 +60,13 @@ resource "cloudngfwaws_rulestack" "r" {
 - `description` (String) The description.
 - `destination` (List of Object) The destination spec. (see [below for nested schema](#nestedatt--destination))
 - `enabled` (Boolean) Set to false to disable this rule.
+- `id` (String) The ID of this resource.
 - `logging` (Boolean) Enable logging at end.
 - `name` (String) The name.
 - `negate_destination` (Boolean) Negate the destination definition.
 - `negate_source` (Boolean) Negate the source definition.
+- `prot_port_list` (Set of String) Protocol port list.
 - `protocol` (String) The protocol.
-- `prot_port_list` (Set of String) Protocol Port List.
 - `source` (List of Object) The source spec. (see [below for nested schema](#nestedatt--source))
 - `tags` (Map of String) The tags.
 - `update_token` (String) The update token.

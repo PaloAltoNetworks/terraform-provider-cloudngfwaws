@@ -47,10 +47,10 @@ resource "cloudngfwaws_rulestack" "r" {
 ### Optional
 
 - `config_type` (String) Retrieve either the candidate or running config. Valid values are `candidate` or `running`. Defaults to `candidate`.
-- `id` (String) The ID of this resource.
 
 ### Read-Only
 
 - `action` (String) The action to take. Valid values are `none`, `allow`, `alert`, or `block`.
 - `audit_comment` (String) The audit comment.
+- `id` (String) The ID of this resource.
 - `update_token` (String) Update token.

@@ -1,3 +1,7 @@
+## 1.0.9 (Jan 27, 2023)
+
+* Added support for multi vpc and multi account
+
 ## 1.0.8 (July 11, 2022)
 
 * Added ProtPortList support

@@ -33,17 +33,18 @@ data "cloudngfwaws_ngfw" "example" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
+- `account_id` (String) The account ID. This field is mandatory if using multiple accounts.
 
 ### Read-Only
 
-- `account_id` (String) The account ID.
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number.
 - `description` (String) The description.
 - `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
 - `endpoint_service_name` (String) The endpoint service name.
 - `global_rulestack` (String) The global rulestack for this NGFW.
+- `id` (String) The ID of this resource.
+- `multi_vpc` (Boolean) Multiple VPCs supported.
 - `rulestack` (String) The rulestack for this NGFW.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `subnet_mapping` (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))
