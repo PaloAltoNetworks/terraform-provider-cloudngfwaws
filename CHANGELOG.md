@@ -1,3 +1,8 @@
+## 1.0.10 (Feb 9, 2023)
+
+* Fix the issue where firewalls are getting disrupted when migrating to multi_vpc 
+  enabled build.
+
 ## 1.0.9 (Jan 27, 2023)
 
 * Added support for multi vpc and multi account
