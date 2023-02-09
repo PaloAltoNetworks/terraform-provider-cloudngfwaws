@@ -44,7 +44,7 @@ data "cloudngfwaws_ngfw" "example" {
 - `endpoint_service_name` (String) The endpoint service name.
 - `global_rulestack` (String) The global rulestack for this NGFW.
 - `id` (String) The ID of this resource.
-- `multi_vpc` (Boolean) Multiple VPCs supported.
+- `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
 - `rulestack` (String) The rulestack for this NGFW.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `subnet_mapping` (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))

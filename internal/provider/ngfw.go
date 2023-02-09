@@ -375,9 +375,8 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		"multi_vpc": {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Multiple VPCs supported.",
-			Default:     true,
-			ForceNew:    true,
+			Computed:    true,
+			Description: "Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.",
 		},
 		TagsName: tagsSchema(true),
 		"update_token": {

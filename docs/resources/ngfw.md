@@ -94,7 +94,7 @@ resource "aws_subnet" "subnet2" {
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
 - `description` (String) The description.
 - `global_rulestack` (String) The global rulestack for this NGFW.
-- `multi_vpc` (Boolean) Multiple VPCs supported. Defaults to `true`.
+- `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
 - `tags` (Map of String) The tags.
 
 ### Read-Only
