@@ -91,8 +91,10 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 
 ## ezrulestack Module
 
-ezrulestack module lets user specify the resources and handles the dependencies between security objects, rules, 
-rulestack and commit resources implicitly. Follow the example [here](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/tree/main/examples/modules/ezrulestack) for creating a rulestack using ezrulestack module.
+ezrulestack module allows for faster and simpler workflow to create rulestacks, by defining the dependencies
+between security objects, rules, rulestack and commit resources implicitly. User can specify the resources
+and ezrulestack module will resolve the dependencies and create the resources in the necessary order.
+. Follow the example [here](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/tree/main/examples/modules/ezrulestack) for creating a rulestack using ezrulestack module.
 Documentation for ezrulestack module can be found [here](https://registry.terraform.io/providers/PaloAltoNetworks/cloudngfwaws/latest/docs/modules/ezrulestack)
 
 ## Support

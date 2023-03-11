@@ -9,8 +9,9 @@ Module for rulestack manipulation.
 
 Module for rulestack manipulation. 
 
-ezrulestack module lets user specify the resources and handles the dependencies between security objects, rules, 
-rulestack and commit resources implicitly.
+ezrulestack module allows for faster and simpler workflow to create rulestacks, by defining the dependencies 
+between security objects, rules, rulestack and commit resources implicitly. User can specify the resources
+and ezrulestack module will resolve the dependencies and create the resources in the necessary order.
 
 By default, ezrulestack module commit variable is set to `true`. It can be overridden if user
 intends to keep the changes uncommitted.
