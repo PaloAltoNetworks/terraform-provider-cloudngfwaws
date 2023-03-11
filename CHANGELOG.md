@@ -1,3 +1,8 @@
+## 2.0.0 (Mar 10, 2023)
+
+* Add the module ezrulestack for quick rulestack creation with dependencies resolved 
+  implicity.
+
 ## 1.0.10 (Feb 9, 2023)
 
 * Fix the issue where firewalls are getting disrupted when migrating to multi_vpc 

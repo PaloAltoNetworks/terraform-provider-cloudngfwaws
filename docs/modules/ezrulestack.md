@@ -2,7 +2,7 @@
 page_title: "cloudngfwaws: ezrulestack Module"
 subcategory: ""
 description: |-
-Module for rulestack manipulation.
+  Module for rulestack manipulation.
 ---
 
 # ezrulestack
