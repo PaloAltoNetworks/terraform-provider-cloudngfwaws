@@ -89,6 +89,13 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 - `skip_verify_certificate` (Boolean) Skip verifying the SSL certificate. Environment variable: `CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE`. JSON conf file variable: `skip-verify-certificate`.
 - `timeout` (Number) The timeout for any single API call (default: `30`). Environment variable: `CLOUDNGFWAWS_TIMEOUT`. JSON conf file variable: `timeout`.
 
+## ezrulestack Module
+
+ezrulestack module allows for faster and simpler workflow to create rulestacks, by defining the dependencies
+between security objects, rules, rulestack and commit resources implicitly. User can specify the resources
+and ezrulestack module will resolve the dependencies and create the resources in the necessary order.
+. Follow the example [here](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/tree/main/examples/modules/ezrulestack) for creating a rulestack using ezrulestack module.
+Documentation for ezrulestack module can be found [here](https://registry.terraform.io/providers/PaloAltoNetworks/cloudngfwaws/latest/docs/modules/ezrulestack)
 
 ## Support
 
