@@ -2,7 +2,6 @@ module "rulestack" {
   source                = "./modules/ezrulestack"
   rulestack             = var.my_rulestack
   security_rules        = var.my_security_rules
-  anti_spyware          = var.my_rulestack.profile_config.anti_spyware
   feeds                 = var.my_feeds
   prefix_lists          = var.my_prefix_lists
   fqdn_lists            = var.my_fqdn_lists
