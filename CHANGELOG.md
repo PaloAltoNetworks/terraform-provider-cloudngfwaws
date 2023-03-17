@@ -1,3 +1,7 @@
+## 2.0.1 (Mar 17, 2023)
+
+* Update ezrulestack module documentation
+
 ## 2.0.0 (Mar 10, 2023)
 
 * Add the module ezrulestack for quick rulestack creation with dependencies resolved 
