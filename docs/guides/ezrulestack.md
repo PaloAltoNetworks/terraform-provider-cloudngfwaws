@@ -31,7 +31,7 @@ in CloudNGFW and initiates commit, provided the commit variable is set to `true`
 
 ```terraform
 module "example-rulestack" {
-  source                = "./modules/ezrulestack"
+  source = "github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/modules/ezrulestack"
   rulestack             = var.my_rulestack
   security_rules        = var.my_security_rules
   feeds                 = var.my_feeds
