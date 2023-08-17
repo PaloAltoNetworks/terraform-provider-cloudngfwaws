@@ -83,19 +83,18 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 - `lfa_arn` (String) The ARN allowing firewall admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_LFA_ARN`. JSON conf file variable: `lfa-arn`.
 - `logging` (List of String) The logging options for the provider. Environment variable: `CLOUDNGFWAWS_LOGGING`. JSON conf file variable: `logging`.
 - `lra_arn` (String) The ARN allowing rulestack admin permissions. This is preferentially used over the `arn` param if both are specified. Environment variable: `CLOUDNGFWAWS_LRA_ARN`. JSON conf file variable: `lra-arn`.
+- `profile` (String) (Used for the initial `sts assume role`) AWS PROFILE. Environment variable: `CLOUDNGFWAWS_PROFILE`. JSON conf file variable: `profile`.
 - `protocol` (String) The protocol (defaults to `https`). Environment variable: `CLOUDNGFWAWS_PROTOCOL`. JSON conf file variable: `protocol`. Valid values are `https` or `http`.
 - `region` (String) AWS region. Environment variable: `CLOUDNGFWAWS_REGION`. JSON conf file variable: `region`.
 - `secret_key` (String) (Used for the initial `sts assume role`) AWS secret key. Environment variable: `CLOUDNGFWAWS_SECRET_KEY`. JSON conf file variable: `secret-key`.
 - `skip_verify_certificate` (Boolean) Skip verifying the SSL certificate. Environment variable: `CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE`. JSON conf file variable: `skip-verify-certificate`.
 - `timeout` (Number) The timeout for any single API call (default: `30`). Environment variable: `CLOUDNGFWAWS_TIMEOUT`. JSON conf file variable: `timeout`.
 
+
 ## ezrulestack Module
 
-ezrulestack module allows for faster and simpler workflow to create rulestacks, by defining the dependencies
-between security objects, rules, rulestack and commit resources implicitly. User can specify the resources
-and ezrulestack module will resolve the dependencies and create the resources in the necessary order.
-. Follow the example [here](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/tree/main/examples/modules/ezrulestack) for creating a rulestack using ezrulestack module.
-Documentation for ezrulestack module can be found [here](https://registry.terraform.io/providers/PaloAltoNetworks/cloudngfwaws/latest/docs/guides/ezrulestack)
+ezrulestack module allows for faster and simpler workflow to create rulestacks, by defining the dependencies between security objects, rules, rulestack and commit resources implicitly. User can specify the resources and ezrulestack module will resolve the dependencies and create the resources in the necessary order. Follow the example [here](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/tree/main/examples/modules/ezrulestack) for creating a rulestack using ezrulestack module. Documentation for ezrulestack module can be found [here](https://registry.terraform.io/providers/PaloAltoNetworks/cloudngfwaws/latest/docs/guides/ezrulestack)
+
 
 ## Support
 

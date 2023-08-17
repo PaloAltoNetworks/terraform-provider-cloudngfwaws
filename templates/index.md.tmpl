@@ -53,6 +53,11 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 {{ .SchemaMarkdown | trimspace }}
 
 
+## ezrulestack Module
+
+ezrulestack module allows for faster and simpler workflow to create rulestacks, by defining the dependencies between security objects, rules, rulestack and commit resources implicitly. User can specify the resources and ezrulestack module will resolve the dependencies and create the resources in the necessary order. Follow the example [here](https://github.com/PaloAltoNetworks/terraform-provider-cloudngfwaws/tree/main/examples/modules/ezrulestack) for creating a rulestack using ezrulestack module. Documentation for ezrulestack module can be found [here](https://registry.terraform.io/providers/PaloAltoNetworks/cloudngfwaws/latest/docs/guides/ezrulestack)
+
+
 ## Support
 
 The software and templates in this repo are released under the official support policy of Palo Alto Networks through the support options that you've purchased, for example Premium Support, support teams, or ASC (Authorized Support Centers) partners and Premium Partner Support options. The support scope is restricted to troubleshooting for the stated/intended use cases and product versions specified in the project documentation and does not cover customization of the scripts or templates.

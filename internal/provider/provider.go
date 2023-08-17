@@ -107,6 +107,15 @@ func providerSchema() map[string]*schema.Schema {
 				"secret-key",
 			),
 		},
+		"profile": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"(Used for the initial `sts assume role`) AWS PROFILE.",
+				"CLOUDNGFWAWS_PROFILE",
+				"profile",
+			),
+		},
 		"region": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -257,6 +266,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			Host:                  d.Get("host").(string),
 			AccessKey:             d.Get("access_key").(string),
 			SecretKey:             d.Get("secret_key").(string),
+			Profile:               d.Get("profile").(string),
 			Region:                d.Get("region").(string),
 			Arn:                   d.Get("arn").(string),
 			LfaArn:                d.Get("lfa_arn").(string),
