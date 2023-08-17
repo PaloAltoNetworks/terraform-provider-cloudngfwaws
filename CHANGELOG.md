@@ -1,3 +1,7 @@
+## 2.0.2 (Aug 17, 2023)
+
+* Added support for specifying AWS profile in cloudngfwaws provider
+
 ## 2.0.1 (Mar 17, 2023)
 
 * Update ezrulestack module documentation
