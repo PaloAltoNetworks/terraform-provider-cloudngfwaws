@@ -190,6 +190,7 @@ func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		"name", o.Name,
 		"account_id", o.AccountId,
 		"multi_vpc", o.MultiVpc,
+		"link_id", o.LinkId,
 	)
 
 	res, err := svc.Create(ctx, o)
@@ -247,6 +248,7 @@ func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		"name", o.Name,
 		"account_id", o.AccountId,
 		"multi_vpc", o.MultiVpc,
+		"link_id", o.LinkId,
 	)
 
 	if err := svc.Modify(ctx, o); err != nil {
@@ -378,6 +380,16 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.",
 		},
+		"link_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The link ID.",
+		},
+		"link_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The link status.",
+		},
 		TagsName: tagsSchema(true),
 		"update_token": {
 			Type:        schema.TypeString,
@@ -475,6 +487,8 @@ func loadNgfw(d *schema.ResourceData) ngfw.Info {
 		MultiVpc:                     d.Get("multi_vpc").(bool),
 		EndpointMode:                 d.Get("endpoint_mode").(string),
 		AutomaticUpgradeAppIdVersion: d.Get("automatic_upgrade_app_id_version").(bool),
+		LinkId:                       d.Get("link_id").(string),
+		LinkStatus:                   d.Get("link_status").(string),
 		Tags:                         loadTags(d.Get(TagsName)),
 	}
 }
@@ -525,6 +539,8 @@ func saveNgfw(d *schema.ResourceData, o ngfw.ReadResponse) {
 	d.Set("endpoint_service_name", o.Firewall.EndpointServiceName)
 	d.Set("endpoint_mode", o.Firewall.EndpointMode)
 	d.Set("automatic_upgrade_app_id_version", o.Firewall.AutomaticUpgradeAppIdVersion)
+	d.Set("link_id", o.Firewall.LinkId)
+	d.Set("link_status", o.Firewall.LinkStatus)
 	d.Set(TagsName, dumpTags(o.Firewall.Tags))
 	d.Set("update_token", o.Firewall.UpdateToken)
 	d.Set("status", stat)

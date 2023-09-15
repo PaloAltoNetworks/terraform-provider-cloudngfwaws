@@ -94,6 +94,7 @@ resource "aws_subnet" "subnet2" {
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
 - `description` (String) The description.
 - `global_rulestack` (String) The global rulestack for this NGFW.
+- `link_id` (String) The link ID.
 - `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
 - `tags` (Map of String) The tags.
 
@@ -101,6 +102,7 @@ resource "aws_subnet" "subnet2" {
 
 - `endpoint_service_name` (String) The endpoint service name.
 - `id` (String) The ID of this resource.
+- `link_status` (String) The link status.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `update_token` (String) The update token.
 

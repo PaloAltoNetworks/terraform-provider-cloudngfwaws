@@ -328,6 +328,8 @@ github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.5 h1:1AdF8d4tq/UqCj4nTu3LQlq5
 github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.5/go.mod h1:+6upX5K8fRBtib4yXEiZGLDvr5TW3i55EdE14NZTCcg=
 github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.6 h1:bjTaid31oUYq9pzFwXpdnaziN23y/v7/99zDgEgrPbE=
 github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.6/go.mod h1:+6upX5K8fRBtib4yXEiZGLDvr5TW3i55EdE14NZTCcg=
+github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.7 h1:X790MYY+6w2zNL6epbu6G6els9rb7+BxgDda4s0vV+E=
+github.com/paloaltonetworks/cloud-ngfw-aws-go v0.1.7/go.mod h1:+6upX5K8fRBtib4yXEiZGLDvr5TW3i55EdE14NZTCcg=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
