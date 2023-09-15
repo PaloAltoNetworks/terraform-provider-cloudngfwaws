@@ -1,3 +1,7 @@
+## 2.0.3 (Sep 15, 2023)
+
+* Added link_id and link_status fields to cloudngfwaws_ngfw resource
+
 ## 2.0.2 (Aug 17, 2023)
 
 * Added support for specifying AWS profile in cloudngfwaws provider
