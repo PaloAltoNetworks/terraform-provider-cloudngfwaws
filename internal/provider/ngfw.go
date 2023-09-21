@@ -383,6 +383,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		"link_id": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "The link ID.",
 		},
 		"link_status": {
