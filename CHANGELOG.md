@@ -1,3 +1,7 @@
+## 2.0.4 (Sep 21, 2023)
+
+* Mark link_id field as computed to support migration of existing firewalls
+
 ## 2.0.3 (Sep 15, 2023)
 
 * Added link_id and link_status fields to cloudngfwaws_ngfw resource
