@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/rule/stack"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/stack"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -72,7 +72,7 @@ func resourceCommitRulestack() *schema.Resource {
 }
 
 func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	name := d.Get(RulestackName).(string)
 	scope := d.Get(ScopeName).(string)
 	input := stack.SimpleInput{
@@ -82,17 +82,19 @@ func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, me
 
 	tflog.Info(
 		ctx, "commit rulestack",
-		RulestackName, name,
-		ScopeName, scope,
+		map[string]interface{}{
+			RulestackName: name,
+			ScopeName:     scope,
+		},
 	)
 
 	// Perform the commit.
-	if err := svc.Commit(ctx, input); err != nil {
+	if err := svc.CommitRuleStack(ctx, input); err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Wait until the status is not pending.
-	if _, err := svc.PollCommit(ctx, input); err != nil {
+	if _, err := svc.PollCommitRulestack(ctx, input); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -102,7 +104,7 @@ func createUpdateCommitRulestack(ctx context.Context, d *schema.ResourceData, me
 }
 
 func readCommitRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, name, err := parseRulestackId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -114,23 +116,27 @@ func readCommitRulestack(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 	tflog.Info(
 		ctx, "read rulestack",
-		RulestackName, name,
-		"for_commit", true,
-		ScopeName, scope,
+		map[string]interface{}{
+			RulestackName: name,
+			"for_commit":  true,
+			ScopeName:     scope,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadRuleStack(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	tflog.Info(
 		ctx, "read rulestack commit status",
-		RulestackName, name,
-		ScopeName, scope,
-		"for_commit", true,
+		map[string]interface{}{
+			RulestackName: name,
+			ScopeName:     scope,
+			"for_commit":  true,
+		},
 	)
-	cs, err := svc.CommitStatus(ctx, stack.SimpleInput{Name: name, Scope: scope})
+	cs, err := svc.CommitStatusRuleStack(ctx, stack.SimpleInput{Name: name, Scope: scope})
 	if err != nil {
 		return diag.FromErr(err)
 	}

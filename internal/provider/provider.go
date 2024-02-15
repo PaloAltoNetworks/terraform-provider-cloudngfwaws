@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 )
 
 func init() {
@@ -114,6 +115,15 @@ func providerSchema() map[string]*schema.Schema {
 				"(Used for the initial `sts assume role`) AWS PROFILE.",
 				"CLOUDNGFWAWS_PROFILE",
 				"profile",
+			),
+		},
+		"sync_mode": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"Enable synchronous mode while creating resources",
+				"CLOUDNGFWAWS_SYNC_MODE",
+				"sync_mode",
 			),
 		},
 		"region": {
@@ -229,17 +239,17 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		var lc uint32
 
 		lm := map[string]uint32{
-			"quiet":   awsngfw.LogQuiet,
-			"login":   awsngfw.LogLogin,
-			"get":     awsngfw.LogGet,
-			"patch":   awsngfw.LogPatch,
-			"post":    awsngfw.LogPost,
-			"put":     awsngfw.LogPut,
-			"delete":  awsngfw.LogDelete,
-			"action":  awsngfw.LogAction,
-			"path":    awsngfw.LogPath,
-			"send":    awsngfw.LogSend,
-			"receive": awsngfw.LogReceive,
+			"quiet":   ngfw.LogQuiet,
+			"login":   ngfw.LogLogin,
+			"get":     ngfw.LogGet,
+			"patch":   ngfw.LogPatch,
+			"post":    ngfw.LogPost,
+			"put":     ngfw.LogPut,
+			"delete":  ngfw.LogDelete,
+			"action":  ngfw.LogAction,
+			"path":    ngfw.LogPath,
+			"send":    ngfw.LogSend,
+			"receive": ngfw.LogReceive,
 		}
 
 		var hdrs map[string]string
@@ -262,16 +272,18 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			}
 		}
 
-		con := &awsngfw.Client{
+		con := &aws.Client{
 			Host:                  d.Get("host").(string),
 			AccessKey:             d.Get("access_key").(string),
 			SecretKey:             d.Get("secret_key").(string),
 			Profile:               d.Get("profile").(string),
+			SyncMode:              d.Get("sync_mode").(bool),
 			Region:                d.Get("region").(string),
 			Arn:                   d.Get("arn").(string),
 			LfaArn:                d.Get("lfa_arn").(string),
 			LraArn:                d.Get("lra_arn").(string),
 			GraArn:                d.Get("gra_arn").(string),
+			AuthType:              aws.AuthTypeIAMRole,
 			Protocol:              d.Get("protocol").(string),
 			Timeout:               d.Get("timeout").(int),
 			Headers:               hdrs,
@@ -289,10 +301,11 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		con.HttpClient.Transport = logging.NewTransport("CloudNgfwAws", con.HttpClient.Transport)
 
-		if err := con.RefreshJwts(ctx); err != nil {
-			return nil, diag.FromErr(err)
-		}
+		InitLogger(InfoLevel)
+		api.SetLogger(Logger)
 
-		return con, nil
+		apiClient := api.NewAPIClient(con, ctx, 5000, "", false)
+		api.Logger.Infof("sync_mode:%+v", apiClient.IsSyncModeEnabled(ctx))
+		return apiClient, nil
 	}
 }

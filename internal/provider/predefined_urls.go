@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/predefined/url"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	url "github.com/paloaltonetworks/cloud-ngfw-aws-go/api/predefinedurl"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -52,7 +52,7 @@ func dataSourcePredefinedUrlCategories() *schema.Resource {
 }
 
 func readPredefinedUrlCategories(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	input := url.ListInput{
 		NextToken:  d.Get("token").(string),
@@ -64,12 +64,14 @@ func readPredefinedUrlCategories(ctx context.Context, d *schema.ResourceData, me
 
 	tflog.Info(
 		ctx, "read predefined url categories",
-		"ds", true,
-		"token", input.NextToken,
-		"max_results", input.MaxResults,
+		map[string]interface{}{
+			"ds":          true,
+			"token":       input.NextToken,
+			"max_results": input.MaxResults,
+		},
 	)
 
-	ans, err := svc.List(ctx, input)
+	ans, err := svc.ListUrlPredefinedCategories(ctx, input)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +97,7 @@ func dataSourcePredefinedUrlCategoryOverride() *schema.Resource {
 }
 
 func readDataSourcePredefinedUrlCategoryOverride(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	input := url.GetOverrideInput{
 		Rulestack: d.Get(RulestackName).(string),
@@ -115,13 +117,15 @@ func readDataSourcePredefinedUrlCategoryOverride(ctx context.Context, d *schema.
 
 	tflog.Info(
 		ctx, "read predefined url category override",
-		"ds", true,
-		RulestackName, input.Rulestack,
-		"name", input.Name,
-		ConfigTypeName, style,
+		map[string]interface{}{
+			"ds":           true,
+			RulestackName:  input.Rulestack,
+			"name":         input.Name,
+			ConfigTypeName: style,
+		},
 	)
 
-	ans, err := svc.GetOverride(ctx, input)
+	ans, err := svc.DescribeUrlCategoryActionOverride(ctx, input)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -163,7 +167,7 @@ func resourcePredefinedUrlCategoryOverride() *schema.Resource {
 }
 
 func createUpdatePredefinedUrlCategoryOverride(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	input := url.OverrideInput{
 		Rulestack:    d.Get(RulestackName).(string),
@@ -176,13 +180,15 @@ func createUpdatePredefinedUrlCategoryOverride(ctx context.Context, d *schema.Re
 
 	tflog.Info(
 		ctx, "modify predefined url category override",
-		RulestackName, input.Rulestack,
-		"name", input.Name,
-		"action", input.Action,
-		"audit_comment", input.AuditComment,
+		map[string]interface{}{
+			RulestackName:   input.Rulestack,
+			"name":          input.Name,
+			"action":        input.Action,
+			"audit_comment": input.AuditComment,
+		},
 	)
 
-	if err := svc.Override(ctx, input); err != nil {
+	if err := svc.UpdateUrlCategoryActionOverride(ctx, input); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -191,7 +197,7 @@ func createUpdatePredefinedUrlCategoryOverride(ctx context.Context, d *schema.Re
 }
 
 func readPredefinedUrlCategoryOverride(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	stack, name, err := parsePredefinedUrlCategoryOverrideId(d.Id())
 	if err != nil {
@@ -208,11 +214,13 @@ func readPredefinedUrlCategoryOverride(ctx context.Context, d *schema.ResourceDa
 
 	tflog.Info(
 		ctx, "read predefined url category override",
-		RulestackName, stack,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: stack,
+			"name":        name,
+		},
 	)
 
-	ans, err := svc.GetOverride(ctx, input)
+	ans, err := svc.DescribeUrlCategoryActionOverride(ctx, input)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -226,7 +234,7 @@ func readPredefinedUrlCategoryOverride(ctx context.Context, d *schema.ResourceDa
 }
 
 func deletePredefinedUrlCategoryOverride(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	stack, name, err := parsePredefinedUrlCategoryOverrideId(d.Id())
 	if err != nil {
@@ -239,7 +247,7 @@ func deletePredefinedUrlCategoryOverride(ctx context.Context, d *schema.Resource
 		Action:    "none",
 	}
 
-	if err := svc.Override(ctx, input); err != nil {
+	if err := svc.UpdateUrlCategoryActionOverride(ctx, input); err != nil {
 		return diag.FromErr(err)
 	}
 

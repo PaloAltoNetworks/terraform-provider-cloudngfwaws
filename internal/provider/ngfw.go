@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go/api/firewall"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,7 +61,7 @@ func dataSourceNgfws() *schema.Resource {
 }
 
 func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	stack := d.Get(RulestackName).(string)
 	vpcs := toStringSlice(d.Get("vpc_ids"))
@@ -68,9 +69,11 @@ func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 
 	tflog.Info(
 		ctx, "read ngfws",
-		"ds", true,
-		"vpc_ids", vpcs,
-		RulestackName, stack,
+		map[string]interface{}{
+			"ds":          true,
+			"vpc_ids":     vpcs,
+			RulestackName: stack,
+		},
 	)
 
 	var nt string
@@ -82,7 +85,7 @@ func readNgfws(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 			NextToken:  nt,
 			VpcIds:     vpcs,
 		}
-		ans, err := svc.List(ctx, input)
+		ans, err := svc.ListFirewall(ctx, input)
 		if err != nil {
 			if isObjectNotFound(err) {
 				break
@@ -128,7 +131,7 @@ func dataSourceNgfw() *schema.Resource {
 }
 
 func readNgfwDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	name := d.Get("name").(string)
 	account_id := d.Get("account_id").(string)
@@ -140,12 +143,14 @@ func readNgfwDataSource(ctx context.Context, d *schema.ResourceData, meta interf
 
 	tflog.Info(
 		ctx, "read ngfw",
-		"ds", true,
-		"name", name,
-		"account_id", account_id,
+		map[string]interface{}{
+			"ds":         true,
+			"name":       name,
+			"account_id": account_id,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFirewall(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -181,25 +186,34 @@ func resourceNgfw() *schema.Resource {
 }
 
 func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	name := d.Get("name").(string)
 	o := loadNgfw(d)
 
 	tflog.Info(
 		ctx, "create ngfw",
-		"name", o.Name,
-		"account_id", o.AccountId,
-		"multi_vpc", o.MultiVpc,
-		"link_id", o.LinkId,
+		map[string]interface{}{
+			"name":       o.Name,
+			"account_id": o.AccountId,
+			"multi_vpc":  o.MultiVpc,
+			"link_id":    o.LinkId,
+		},
 	)
 
-	res, err := svc.Create(ctx, o)
+	res, err := svc.CreateFirewall(ctx, o)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	account_id := res.Response.AccountId
+	if svc.IsSyncModeEnabled(ctx) {
+		// wait for firewall creation to complete
+		err = wait4NgfwCreateComplete(ctx, svc, o.Name, o.AccountId)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
+	account_id := res.Response.AccountId
 	id := buildNgfwId(account_id, name)
 	d.SetId(id)
 
@@ -207,7 +221,7 @@ func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 }
 
 func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	account_id, name, err := parseNgfwId(d.Id())
 	if err != nil {
@@ -221,11 +235,13 @@ func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) dia
 
 	tflog.Info(
 		ctx, "read ngfw",
-		"name", name,
-		"account_id", account_id,
+		map[string]interface{}{
+			"name":       name,
+			"account_id": account_id,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFirewall(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -240,26 +256,36 @@ func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) dia
 }
 
 func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadNgfw(d)
 
 	tflog.Info(
 		ctx, "update ngfw",
-		"name", o.Name,
-		"account_id", o.AccountId,
-		"multi_vpc", o.MultiVpc,
-		"link_id", o.LinkId,
+		map[string]interface{}{
+			"name":       o.Name,
+			"account_id": o.AccountId,
+			"multi_vpc":  o.MultiVpc,
+			"link_id":    o.LinkId,
+		},
 	)
 
-	if err := svc.Modify(ctx, o); err != nil {
+	if err := svc.ModifyFirewall(ctx, o); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if svc.IsSyncModeEnabled(ctx) {
+		// wait for firewall creation to complete
+		err := wait4NgfwCreateComplete(ctx, svc, o.Name, o.AccountId)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return readNgfw(ctx, d, meta)
 }
 
 func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := ngfw.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	account_id, name, err := parseNgfwId(d.Id())
 	if err != nil {
@@ -268,8 +294,10 @@ func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 
 	tflog.Info(
 		ctx, "delete ngfw",
-		"name", name,
-		"account_id", account_id,
+		map[string]interface{}{
+			"name":       name,
+			"account_id": account_id,
+		},
 	)
 
 	fw := ngfw.DeleteInput{
@@ -277,12 +305,38 @@ func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		AccountId: account_id,
 	}
 
-	if err = svc.Delete(ctx, fw); err != nil && !isObjectNotFound(err) {
+	if err = svc.DeleteFirewall(ctx, fw); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
 	return nil
+}
+
+func wait4NgfwCreateComplete(ctx context.Context, svc *api.ApiClient, name, accountId string) error {
+	for i := 0; i < 120; i++ {
+		select {
+		case <-time.After(30 * time.Second):
+			req := ngfw.ReadInput{
+				Name:      name,
+				AccountId: accountId,
+			}
+			res, err := svc.ReadFirewall(ctx, req)
+			if err != nil {
+				return err
+			}
+			switch res.Response.Status.FirewallStatus {
+			case "CREATE_COMPLETE", "CREATE_FAILED":
+				return nil
+			default:
+				tflog.Info(ctx, "create ngfw",
+					map[string]interface{}{
+						"status": res.Response.Status.FirewallStatus,
+					})
+			}
+		}
+	}
+	return fmt.Errorf("timed out waiting for firewall creation")
 }
 
 // Schema handling.

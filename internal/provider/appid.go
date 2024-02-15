@@ -1,12 +1,15 @@
 package provider
 
 import (
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/appid"
+
 	"context"
 	"strconv"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/appid"
+	// "github.com/paloaltonetworks/cloud-ngfw-aws-go"
+	// "github.com/paloaltonetworks/cloud-ngfw-aws-go/appid"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,13 +63,13 @@ func readAppIdVersions(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	tflog.Info(
 		ctx, "read appid versions",
-		"max_results", input.MaxResults,
-		"token", input.NextToken,
+		map[string]interface{}{"max_results": input.MaxResults,
+			"token": input.NextToken},
 	)
 
-	svc := appid.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
-	ans, err := svc.List(ctx, input)
+	ans, err := svc.ListAppID(ctx, input)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,14 +138,16 @@ func readAppIdVersion(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	tflog.Info(
 		ctx, "read appid version",
-		"version", input.Version,
-		"max_results", input.MaxResults,
-		"token", input.NextToken,
+		map[string]interface{}{
+			"version":     input.Version,
+			"max_results": input.MaxResults,
+			"token":       input.NextToken,
+		},
 	)
 
-	svc := appid.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
-	ans, err := svc.Read(ctx, input)
+	ans, err := svc.ReadAppID(ctx, input)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")

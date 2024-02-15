@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/object/fqdn"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/fqdn"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,7 +25,7 @@ func dataSourceFqdnList() *schema.Resource {
 }
 
 func readFqdnListDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := fqdn.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -52,14 +52,16 @@ func readFqdnListDataSource(ctx context.Context, d *schema.ResourceData, meta in
 
 	tflog.Info(
 		ctx, "read fqdn list",
-		"ds", true,
-		ConfigTypeName, style,
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", req.Name,
+		map[string]interface{}{
+			"ds":           true,
+			ConfigTypeName: style,
+			RulestackName:  req.Rulestack,
+			ScopeName:      scope,
+			"name":         req.Name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFqdn(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -101,16 +103,18 @@ func resourceFqdnList() *schema.Resource {
 }
 
 func createFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := fqdn.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadFqdnList(d)
 	tflog.Info(
 		ctx, "create fqdn list",
-		RulestackName, o.Rulestack,
-		"name", o.Name,
-		ScopeName, o.Scope,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			"name":        o.Name,
+			ScopeName:     o.Scope,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreateFqdn(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -120,7 +124,7 @@ func createFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func readFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := fqdn.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseFqdnListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -134,12 +138,14 @@ func readFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{})
 	}
 	tflog.Info(
 		ctx, "read fqdn list",
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: req.Rulestack,
+			ScopeName:     scope,
+			"name":        name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFqdn(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -155,16 +161,18 @@ func readFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{})
 }
 
 func updateFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := fqdn.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadFqdnList(d)
 	tflog.Info(
 		ctx, "update fqdn list",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		"name", o.Name,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			"name":        o.Name,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateFqdn(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -172,7 +180,7 @@ func updateFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func deleteFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := fqdn.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseFqdnListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -180,9 +188,11 @@ func deleteFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	tflog.Info(
 		ctx, "delete fqdn list",
-		RulestackName, stack,
-		ScopeName, scope,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: stack,
+			ScopeName:     scope,
+			"name":        name,
+		},
 	)
 
 	input := fqdn.DeleteInput{
@@ -190,7 +200,7 @@ func deleteFqdnList(ctx context.Context, d *schema.ResourceData, meta interface{
 		Scope:     scope,
 		Name:      name,
 	}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeleteFqdn(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 

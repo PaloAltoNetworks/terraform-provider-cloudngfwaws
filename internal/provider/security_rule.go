@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/rule/security"
-
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/security"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,7 +26,7 @@ func dataSourceSecurityRule() *schema.Resource {
 }
 
 func readSecurityRuleDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := security.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -56,15 +55,17 @@ func readSecurityRuleDataSource(ctx context.Context, d *schema.ResourceData, met
 
 	tflog.Info(
 		ctx, "read security rule",
-		"ds", true,
-		ConfigTypeName, style,
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		RuleListName, req.RuleList,
-		"priority", req.Priority,
+		map[string]interface{}{
+			"ds":           true,
+			ConfigTypeName: style,
+			RulestackName:  req.Rulestack,
+			ScopeName:      scope,
+			RuleListName:   req.RuleList,
+			"priority":     req.Priority,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadSecurityRule(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -107,18 +108,20 @@ func resourceSecurityRule() *schema.Resource {
 }
 
 func createSecurityRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := security.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadSecurityRule(d)
 	tflog.Info(
 		ctx, "create security rule",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		RuleListName, o.RuleList,
-		"priority", o.Priority,
-		"name", o.Entry.Name,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			RuleListName:  o.RuleList,
+			"priority":    o.Priority,
+			"name":        o.Entry.Name,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreateSecurityRule(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -128,7 +131,7 @@ func createSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := security.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, rlist, priority, err := parseSecurityRuleId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -143,13 +146,15 @@ func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 	tflog.Info(
 		ctx, "read security rule",
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		RuleListName, req.RuleList,
-		"priority", req.Priority,
+		map[string]interface{}{
+			RulestackName: req.Rulestack,
+			ScopeName:     scope,
+			RuleListName:  req.RuleList,
+			"priority":    req.Priority,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadSecurityRule(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -165,17 +170,19 @@ func readSecurityRule(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 func updateSecurityRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := security.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadSecurityRule(d)
 	tflog.Info(
 		ctx, "update security rule",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		RuleListName, o.RuleList,
-		"priority", o.Priority,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			RuleListName:  o.RuleList,
+			"priority":    o.Priority,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateSecurityRule(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -183,7 +190,7 @@ func updateSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := security.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, rlist, priority, err := parseSecurityRuleId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -191,10 +198,12 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 
 	tflog.Info(
 		ctx, "delete security rule",
-		RulestackName, stack,
-		ScopeName, scope,
-		RuleListName, rlist,
-		"priority", priority,
+		map[string]interface{}{
+			RulestackName: stack,
+			ScopeName:     scope,
+			RuleListName:  rlist,
+			"priority":    priority,
+		},
 	)
 
 	input := security.DeleteInput{
@@ -203,7 +212,7 @@ func deleteSecurityRule(ctx context.Context, d *schema.ResourceData, meta interf
 		Scope:     scope,
 		Priority:  priority,
 	}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeleteSecurityRule(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
