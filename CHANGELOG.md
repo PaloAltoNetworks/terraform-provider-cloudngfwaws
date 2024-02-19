@@ -1,3 +1,7 @@
+## 2.0.5 (Feb 19, 2024)
+
+* provide sync_mode flag that enables terraform to wait for ngfw resource creation
+
 ## 2.0.4 (Sep 21, 2023)
 
 * Mark link_id field as computed to support migration of existing firewalls
