@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/country"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/country"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,13 +60,15 @@ func readCountry(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 	tflog.Info(
 		ctx, "read countries",
-		"max_results", input.MaxResults,
-		"token", input.NextToken,
+		map[string]interface{}{
+			"max_results": input.MaxResults,
+			"token":       input.NextToken,
+		},
 	)
 
-	svc := country.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
-	ans, err := svc.List(ctx, input)
+	ans, err := svc.ListCountry(ctx, input)
 	if err != nil {
 		return diag.FromErr(err)
 	}

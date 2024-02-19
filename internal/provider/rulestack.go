@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/rule/stack"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/stack"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,7 +25,7 @@ func dataSourceRulestack() *schema.Resource {
 }
 
 func readRulestackDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -48,12 +48,14 @@ func readRulestackDataSource(ctx context.Context, d *schema.ResourceData, meta i
 
 	tflog.Info(
 		ctx, "read rulestack",
-		"ds", true,
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			"ds":      true,
+			"name":    name,
+			ScopeName: scope,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadRuleStack(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -95,25 +97,29 @@ func resourceRulestack() *schema.Resource {
 }
 
 func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o, ti := loadRulestack(d)
 	tflog.Info(
 		ctx, "create rulestack",
-		"name", o.Name,
-		ScopeName, o.Entry.Scope,
+		map[string]interface{}{
+			"name":    o.Name,
+			ScopeName: o.Entry.Scope,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreateRuleStack(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
 	tflog.Info(
 		ctx, "apply rulestack tags",
-		"name", ti.Rulestack,
-		ScopeName, o.Entry.Scope,
+		map[string]interface{}{
+			"name":    ti.Rulestack,
+			ScopeName: o.Entry.Scope,
+		},
 	)
 
-	if err := svc.ApplyTags(ctx, ti); err != nil {
+	if err := svc.ApplyTagsRuleStack(ctx, ti); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -123,7 +129,7 @@ func createRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 }
 
 func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	// Verify the correct number of tokens first.
 	tok := strings.Split(d.Id(), IdSeparator)
@@ -143,11 +149,13 @@ func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}
 	}
 	tflog.Info(
 		ctx, "read rulestack",
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			"name":    name,
+			ScopeName: scope,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadRuleStack(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -162,18 +170,20 @@ func readRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}
 }
 
 func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o, ti := loadRulestack(d)
 	tflog.Info(
 		ctx, "update rulestack",
-		"name", o.Name,
+		map[string]interface{}{
+			"name": o.Name,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateRuleStack(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := svc.ApplyTags(ctx, ti); err != nil {
+	if err := svc.ApplyTagsRuleStack(ctx, ti); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -182,7 +192,7 @@ func updateRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 }
 
 func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, name, err := parseRulestackId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -190,12 +200,14 @@ func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 
 	tflog.Info(
 		ctx, "delete rulestack",
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			"name":    name,
+			ScopeName: scope,
+		},
 	)
 
 	input := stack.SimpleInput{Name: name, Scope: scope}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeleteRuleStack(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -206,11 +218,13 @@ func deleteRulestack(ctx context.Context, d *schema.ResourceData, meta interface
 	// the commit.
 	tflog.Info(
 		ctx, "commit rulestack",
-		"post-delete", true,
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			"post-delete": true,
+			"name":        name,
+			ScopeName:     scope,
+		},
 	)
-	_ = svc.Commit(ctx, input)
+	_ = svc.CommitRuleStack(ctx, input)
 
 	d.SetId("")
 	return nil

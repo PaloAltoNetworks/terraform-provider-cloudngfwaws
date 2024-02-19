@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/object/url"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/url"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -26,7 +26,7 @@ func dataSourceCustomUrlCategory() *schema.Resource {
 }
 
 func readCustomUrlCategoryDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -53,14 +53,16 @@ func readCustomUrlCategoryDataSource(ctx context.Context, d *schema.ResourceData
 
 	tflog.Info(
 		ctx, "read custom url category",
-		"ds", true,
-		ConfigTypeName, style,
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", req.Name,
+		map[string]interface{}{
+			"ds":           true,
+			ConfigTypeName: style,
+			RulestackName:  req.Rulestack,
+			ScopeName:      scope,
+			"name":         req.Name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadUrlCustomCategory(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -102,16 +104,18 @@ func resourceCustomUrlCategory() *schema.Resource {
 }
 
 func createCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadCustomUrlCategory(d)
 	tflog.Info(
 		ctx, "create custom url category",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		"name", o.Name,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			"name":        o.Name,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreateUrlCustomCategory(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -121,7 +125,7 @@ func createCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func readCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseCustomUrlCategoryId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -135,12 +139,14 @@ func readCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta int
 	}
 	tflog.Info(
 		ctx, "read custom url category",
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: req.Rulestack,
+			ScopeName:     scope,
+			"name":        name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadUrlCustomCategory(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -156,16 +162,18 @@ func readCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func updateCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadCustomUrlCategory(d)
 	tflog.Info(
 		ctx, "update custom url category",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		"name", o.Name,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			"name":        o.Name,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateUrlCustomCategory(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -173,7 +181,7 @@ func updateCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func deleteCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := url.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseCustomUrlCategoryId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -181,9 +189,11 @@ func deleteCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 
 	tflog.Info(
 		ctx, "delete custom url category",
-		RulestackName, stack,
-		ScopeName, scope,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: stack,
+			ScopeName:     scope,
+			"name":        name,
+		},
 	)
 
 	input := url.DeleteInput{
@@ -191,7 +201,7 @@ func deleteCustomUrlCategory(ctx context.Context, d *schema.ResourceData, meta i
 		Scope:     scope,
 		Name:      name,
 	}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeleteUrlCustomCategory(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 

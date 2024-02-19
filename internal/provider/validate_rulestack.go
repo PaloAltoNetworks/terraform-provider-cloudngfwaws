@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/rule/stack"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/stack"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -67,7 +67,7 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 	var ans stack.CommitStatus
 	pending := "Pending"
 
-	svc := stack.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	name := d.Get(RulestackName).(string)
 	scope := d.Get(ScopeName).(string)
 
@@ -80,18 +80,22 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 
 	tflog.Info(
 		ctx, "read rulestack",
-		RulestackName, name,
-		"for_validation", true,
+		map[string]interface{}{
+			RulestackName:    name,
+			"for_validation": true,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadRuleStack(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	tflog.Info(
 		ctx, "validate rulestack",
-		RulestackName, name,
+		map[string]interface{}{
+			RulestackName: name,
+		},
 	)
 
 	// Perform the validation.
@@ -99,7 +103,7 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 		Name:  name,
 		Scope: scope,
 	}
-	if err = svc.Validate(ctx, vin); err != nil {
+	if err = svc.ValidateRuleStack(ctx, vin); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -107,10 +111,12 @@ func readValidateRulestack(ctx context.Context, d *schema.ResourceData, meta int
 	for {
 		tflog.Info(
 			ctx, "getting validation status",
-			RulestackName, name,
+			map[string]interface{}{
+				RulestackName: name,
+			},
 		)
 
-		ans, err = svc.CommitStatus(ctx, vin)
+		ans, err = svc.CommitStatusRuleStack(ctx, vin)
 		if err != nil {
 			return diag.FromErr(err)
 		}

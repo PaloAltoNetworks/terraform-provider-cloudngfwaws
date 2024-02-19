@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/response"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -119,9 +119,23 @@ func computed(sm map[string]*schema.Schema, parent string, omits []string) {
 }
 
 func isObjectNotFound(e error) bool {
-	if e2, ok := e.(*api.Status); ok {
+	if e2, ok := e.(*response.Status); ok {
 		return e2.ObjectNotFound()
 	}
 
 	return false
 }
+
+/*
+func structToMap(data interface{}) (map[string]interface{}, error) {
+	mapData := make(map[string]interface{})
+
+	values := reflect.ValueOf(data)
+	keys := values.Type()
+
+	for i := 0; i < values.NumField(); i++ {
+		mapData[keys.Field(i).Name] = values.Field(i).Interface()
+	}
+	return mapData, nil
+}
+*/

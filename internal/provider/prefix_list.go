@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/object/prefix"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/prefix"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,7 +25,7 @@ func dataSourcePrefixList() *schema.Resource {
 }
 
 func readPrefixListDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := prefix.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -52,14 +52,16 @@ func readPrefixListDataSource(ctx context.Context, d *schema.ResourceData, meta 
 
 	tflog.Info(
 		ctx, "read prefix list",
-		"ds", true,
-		ConfigTypeName, style,
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", req.Name,
+		map[string]interface{}{
+			"ds":           true,
+			ConfigTypeName: style,
+			RulestackName:  req.Rulestack,
+			ScopeName:      scope,
+			"name":         req.Name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadPrefixList(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -101,16 +103,18 @@ func resourcePrefixList() *schema.Resource {
 }
 
 func createPrefixList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := prefix.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadPrefixList(d)
 	tflog.Info(
 		ctx, "create prefix list",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		"name", o.Name,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			"name":        o.Name,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreatePrefixList(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -120,7 +124,7 @@ func createPrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 func readPrefixList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := prefix.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parsePrefixListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -134,12 +138,14 @@ func readPrefixList(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	tflog.Info(
 		ctx, "read prefix list",
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: req.Rulestack,
+			ScopeName:     scope,
+			"name":        name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadPrefixList(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -155,16 +161,18 @@ func readPrefixList(ctx context.Context, d *schema.ResourceData, meta interface{
 }
 
 func updatePrefixList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := prefix.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadPrefixList(d)
 	tflog.Info(
 		ctx, "update prefix list",
-		RulestackName, o.Rulestack,
-		ScopeName, o.Scope,
-		"name", o.Name,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			ScopeName:     o.Scope,
+			"name":        o.Name,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdatePrefixList(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -172,7 +180,7 @@ func updatePrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 func deletePrefixList(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := prefix.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parsePrefixListId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -180,9 +188,11 @@ func deletePrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	tflog.Info(
 		ctx, "delete prefix list",
-		RulestackName, stack,
-		ScopeName, scope,
-		"name", name,
+		map[string]interface{}{
+			RulestackName: stack,
+			ScopeName:     scope,
+			"name":        name,
+		},
 	)
 
 	input := prefix.DeleteInput{
@@ -190,7 +200,7 @@ func deletePrefixList(ctx context.Context, d *schema.ResourceData, meta interfac
 		Scope:     scope,
 		Name:      name,
 	}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeletePrefixList(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 

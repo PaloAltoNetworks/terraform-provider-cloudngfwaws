@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/object/feed"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/feed"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -26,7 +26,7 @@ func dataSourceIntelligentFeed() *schema.Resource {
 }
 
 func readIntelligentFeedDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := feed.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -53,14 +53,16 @@ func readIntelligentFeedDataSource(ctx context.Context, d *schema.ResourceData, 
 
 	tflog.Info(
 		ctx, "read intelligent feed",
-		"ds", true,
-		ConfigTypeName, style,
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", req.Name,
+		map[string]interface{}{
+			"ds":           true,
+			ConfigTypeName: style,
+			RulestackName:  req.Rulestack,
+			ScopeName:      scope,
+			"name":         req.Name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFeed(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -102,16 +104,18 @@ func resourceIntelligentFeed() *schema.Resource {
 }
 
 func createIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := feed.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadIntelligentFeed(d)
 	tflog.Info(
 		ctx, "create intelligent feed",
-		RulestackName, o.Rulestack,
-		"name", o.Name,
-		ScopeName, o.Scope,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			"name":        o.Name,
+			ScopeName:     o.Scope,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreateFeed(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -121,7 +125,7 @@ func createIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func readIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := feed.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseIntelligentFeedId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -135,12 +139,14 @@ func readIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 	tflog.Info(
 		ctx, "read intelligent feed",
-		RulestackName, req.Rulestack,
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			RulestackName: req.Rulestack,
+			"name":        name,
+			ScopeName:     scope,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFeed(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -156,16 +162,18 @@ func readIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func updateIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := feed.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadIntelligentFeed(d)
 	tflog.Info(
 		ctx, "update intelligent feed",
-		RulestackName, o.Rulestack,
-		"name", o.Name,
-		ScopeName, o.Scope,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			"name":        o.Name,
+			ScopeName:     o.Scope,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateFeed(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -173,7 +181,7 @@ func updateIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := feed.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseIntelligentFeedId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -181,9 +189,11 @@ func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 
 	tflog.Info(
 		ctx, "delete intelligent feed",
-		RulestackName, stack,
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			RulestackName: stack,
+			"name":        name,
+			ScopeName:     scope,
+		},
 	)
 
 	input := feed.DeleteInput{
@@ -191,7 +201,7 @@ func deleteIntelligentFeed(ctx context.Context, d *schema.ResourceData, meta int
 		Scope:     scope,
 		Name:      name,
 	}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeleteFeed(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 

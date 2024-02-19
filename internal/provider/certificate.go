@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/object/certificate"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/certificate"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,7 +25,7 @@ func dataSourceCertificate() *schema.Resource {
 }
 
 func readCertificateDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := certificate.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	style := d.Get(ConfigTypeName).(string)
 	d.Set(ConfigTypeName, style)
@@ -51,14 +51,16 @@ func readCertificateDataSource(ctx context.Context, d *schema.ResourceData, meta
 
 	tflog.Info(
 		ctx, "read certificate",
-		"ds", true,
-		ConfigTypeName, style,
-		RulestackName, req.Rulestack,
-		ScopeName, scope,
-		"name", req.Name,
+		map[string]interface{}{
+			"ds":           true,
+			ConfigTypeName: style,
+			RulestackName:  req.Rulestack,
+			ScopeName:      scope,
+			"name":         req.Name,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadCertificate(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -100,16 +102,18 @@ func resourceCertificate() *schema.Resource {
 }
 
 func createCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := certificate.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadCertificate(d)
 	tflog.Info(
 		ctx, "create certificate",
-		RulestackName, o.Rulestack,
-		"name", o.Name,
-		ScopeName, o.Scope,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			"name":        o.Name,
+			ScopeName:     o.Scope,
+		},
 	)
 
-	if err := svc.Create(ctx, o); err != nil {
+	if err := svc.CreateCertificate(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -119,7 +123,7 @@ func createCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func readCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := certificate.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseCertificateId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -133,12 +137,14 @@ func readCertificate(ctx context.Context, d *schema.ResourceData, meta interface
 	}
 	tflog.Info(
 		ctx, "read certificate",
-		RulestackName, req.Rulestack,
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			RulestackName: req.Rulestack,
+			"name":        name,
+			ScopeName:     scope,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadCertificate(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -154,16 +160,18 @@ func readCertificate(ctx context.Context, d *schema.ResourceData, meta interface
 }
 
 func updateCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := certificate.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadCertificate(d)
 	tflog.Info(
 		ctx, "update certificate",
-		RulestackName, o.Rulestack,
-		"name", o.Name,
-		ScopeName, o.Scope,
+		map[string]interface{}{
+			RulestackName: o.Rulestack,
+			"name":        o.Name,
+			ScopeName:     o.Scope,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateCertificate(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -171,7 +179,7 @@ func updateCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func deleteCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := certificate.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	scope, stack, name, err := parseCertificateId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -179,9 +187,11 @@ func deleteCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	tflog.Info(
 		ctx, "delete certificate",
-		RulestackName, stack,
-		"name", name,
-		ScopeName, scope,
+		map[string]interface{}{
+			RulestackName: stack,
+			"name":        name,
+			ScopeName:     scope,
+		},
 	)
 
 	input := certificate.DeleteInput{
@@ -189,7 +199,7 @@ func deleteCertificate(ctx context.Context, d *schema.ResourceData, meta interfa
 		Scope:     scope,
 		Name:      name,
 	}
-	if err := svc.Delete(ctx, input); err != nil && !isObjectNotFound(err) {
+	if err := svc.DeleteCertificate(ctx, input); err != nil && !isObjectNotFound(err) {
 		return diag.FromErr(err)
 	}
 

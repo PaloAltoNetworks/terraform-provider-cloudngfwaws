@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	lp "github.com/paloaltonetworks/cloud-ngfw-aws-go/firewall/logprofile"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	lp "github.com/paloaltonetworks/cloud-ngfw-aws-go/api/logprofile"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -26,7 +26,7 @@ func dataSourceNgfwLogProfile() *schema.Resource {
 }
 
 func readNgfwLogProfileDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := lp.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 
 	aid := d.Get("account_id").(string)
 	ngfw := d.Get("ngfw").(string)
@@ -38,12 +38,14 @@ func readNgfwLogProfileDataSource(ctx context.Context, d *schema.ResourceData, m
 
 	tflog.Info(
 		ctx, "read ngfw log profile",
-		"ds", true,
-		"ngfw", ngfw,
-		"account_id", aid,
+		map[string]interface{}{
+			"ds":         true,
+			"ngfw":       ngfw,
+			"account_id": aid,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFirewallLogProfile(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")
@@ -78,16 +80,18 @@ func resourceNgfwLogProfile() *schema.Resource {
 }
 
 func createUpdateNgfwLogProfile(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := lp.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	o := loadNgfwLogProfile(d)
 
 	tflog.Info(
 		ctx, "modify ngfw log profile",
-		"ngfw", o.Firewall,
-		"account_id", o.AccountId,
+		map[string]interface{}{
+			"ngfw":       o.Firewall,
+			"account_id": o.AccountId,
+		},
 	)
 
-	if err := svc.Update(ctx, o); err != nil {
+	if err := svc.UpdateFirewallLogProfile(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -97,7 +101,7 @@ func createUpdateNgfwLogProfile(ctx context.Context, d *schema.ResourceData, met
 }
 
 func readNgfwLogProfile(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	svc := lp.NewClient(meta.(*awsngfw.Client))
+	svc := meta.(*api.ApiClient)
 	aid, ngfw, err := parseNgfwLogProfileId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error in parsing ID %q: %s", d.Id(), err)
@@ -109,11 +113,13 @@ func readNgfwLogProfile(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 	tflog.Info(
 		ctx, "read ngfw log profile",
-		"ngfw", ngfw,
-		"account_id", aid,
+		map[string]interface{}{
+			"ngfw":       ngfw,
+			"account_id": aid,
+		},
 	)
 
-	res, err := svc.Read(ctx, req)
+	res, err := svc.ReadFirewallLogProfile(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
 			d.SetId("")

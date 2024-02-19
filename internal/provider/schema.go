@@ -1,8 +1,9 @@
 package provider
 
 import (
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/permissions"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/tag"
+	// "github.com/paloaltonetworks/cloud-ngfw-aws-go/api/permissions"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/tag"
+	permissions "github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
