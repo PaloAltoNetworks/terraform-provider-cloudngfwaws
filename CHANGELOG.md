@@ -1,3 +1,7 @@
+## 2.0.6 (Feb 25, 2024)
+
+* provide resource_timeout field to override default provider values
+
 ## 2.0.5 (Feb 19, 2024)
 
 * provide sync_mode flag that enables terraform to wait for ngfw resource creation
