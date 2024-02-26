@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
@@ -13,6 +14,8 @@ import (
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 )
+
+var resourceTimeout = 120 * time.Minute
 
 func init() {
 	schema.DescriptionKind = schema.StringMarkdown
@@ -188,8 +191,17 @@ func providerSchema() map[string]*schema.Schema {
 			Type:     schema.TypeInt,
 			Optional: true,
 			Description: addProviderParamDescription(
-				"The timeout for any single API call (default: `30`).",
+				"The timeout for any single API call (default: `30s`).",
 				"CLOUDNGFWAWS_TIMEOUT",
+				"timeout",
+			),
+		},
+		"resource_timeout": {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The timeout for terraform resource create/update/delete operations (default: `7200s`).",
+				"CLOUDNGFWAWS_RESOURCE_TIMEOUT",
 				"timeout",
 			),
 		},
@@ -278,6 +290,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			SecretKey:             d.Get("secret_key").(string),
 			Profile:               d.Get("profile").(string),
 			SyncMode:              d.Get("sync_mode").(bool),
+			ResourceTimeout:       d.Get("resource_timeout").(int),
 			Region:                d.Get("region").(string),
 			Arn:                   d.Get("arn").(string),
 			LfaArn:                d.Get("lfa_arn").(string),
@@ -306,6 +319,8 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		apiClient := api.NewAPIClient(con, ctx, 5000, "", false)
 		api.Logger.Infof("sync_mode:%+v", apiClient.IsSyncModeEnabled(ctx))
+		resourceTimeout = time.Duration(apiClient.GetResourceTimeout(ctx)) * time.Second
+		api.Logger.Infof("resource_timeout:%+v", resourceTimeout)
 		return apiClient, nil
 	}
 }

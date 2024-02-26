@@ -182,6 +182,13 @@ func resourceNgfw() *schema.Resource {
 		},
 
 		Schema: ngfwSchema(true, nil),
+		Timeouts: &schema.ResourceTimeout{
+			Create:  &resourceTimeout,
+			Read:    &resourceTimeout,
+			Update:  &resourceTimeout,
+			Delete:  &resourceTimeout,
+			Default: &resourceTimeout,
+		},
 	}
 }
 
@@ -207,7 +214,7 @@ func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 
 	if svc.IsSyncModeEnabled(ctx) {
 		// wait for firewall creation to complete
-		err = wait4NgfwCreateComplete(ctx, svc, o.Name, o.AccountId)
+		err = wait4NgfwCrudComplete(ctx, svc, o.Name, o.AccountId)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -273,14 +280,6 @@ func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		return diag.FromErr(err)
 	}
 
-	if svc.IsSyncModeEnabled(ctx) {
-		// wait for firewall creation to complete
-		err := wait4NgfwCreateComplete(ctx, svc, o.Name, o.AccountId)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
 	return readNgfw(ctx, d, meta)
 }
 
@@ -309,11 +308,21 @@ func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		return diag.FromErr(err)
 	}
 
+	if svc.IsSyncModeEnabled(ctx) {
+		// wait for firewall creation to complete
+		err = wait4NgfwCrudComplete(ctx, svc, fw.Name, fw.AccountId)
+		if err != nil {
+			if !isObjectNotFound(err) {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	d.SetId("")
 	return nil
 }
 
-func wait4NgfwCreateComplete(ctx context.Context, svc *api.ApiClient, name, accountId string) error {
+func wait4NgfwCrudComplete(ctx context.Context, svc *api.ApiClient, name, accountId string) error {
 	for i := 0; i < 120; i++ {
 		select {
 		case <-time.After(30 * time.Second):
@@ -326,7 +335,7 @@ func wait4NgfwCreateComplete(ctx context.Context, svc *api.ApiClient, name, acco
 				return err
 			}
 			switch res.Response.Status.FirewallStatus {
-			case "CREATE_COMPLETE", "CREATE_FAILED":
+			case "CREATE_COMPLETE", "CREATE_FAIL", "UPDATE_COMPLETE", "UPDATE_FAIL", "DELETE_COMPLETE", "DELETE_FAIL":
 				return nil
 			default:
 				tflog.Info(ctx, "create ngfw",
