@@ -1,3 +1,7 @@
+## 2.0.7 (Apr 09, 2024)
+
+* fix global rulestack creation issues
+
 ## 2.0.6 (Feb 25, 2024)
 
 * provide resource_timeout field to override default provider values
