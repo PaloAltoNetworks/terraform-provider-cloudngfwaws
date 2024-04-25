@@ -1,3 +1,7 @@
+## 2.0.8 (Apr 25, 2024)
+
+* fix arn attribute parse error
+
 ## 2.0.7 (Apr 09, 2024)
 
 * fix global rulestack creation issues
