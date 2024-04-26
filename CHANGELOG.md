@@ -1,4 +1,4 @@
-## 2.0.8 (Apr 25, 2024)
+## 2.0.9 (Apr 25, 2024)
 
 * fix arn attribute parse error
 
