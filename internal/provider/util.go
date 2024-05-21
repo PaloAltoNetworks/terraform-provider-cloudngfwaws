@@ -126,6 +126,22 @@ func isObjectNotFound(e error) bool {
 	return false
 }
 
+func isBadRequest(e error) bool {
+	if e2, ok := e.(*response.Status); ok {
+		return e2.Code == 400
+	}
+	return false
+}
+
+func Contains(inputStr string, strList []string) bool {
+	for _, str := range strList {
+		if inputStr == str {
+			return true
+		}
+	}
+	return false
+}
+
 /*
 func structToMap(data interface{}) (map[string]interface{}, error) {
 	mapData := make(map[string]interface{})
@@ -139,3 +155,7 @@ func structToMap(data interface{}) (map[string]interface{}, error) {
 	return mapData, nil
 }
 */
+
+func PtrToString(s string) *string {
+	return &s
+}

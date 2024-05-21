@@ -142,7 +142,9 @@ func deleteNgfwLogProfile(ctx context.Context, d *schema.ResourceData, meta inte
 func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 	destinationTypes := []string{"S3", "CloudWatchLogs", "KinesisDataFirehose"}
 	logTypes := []string{"TRAFFIC", "THREAT", "DECRYPTION"}
-
+	cloudwatch_metric_fields := []string{"Dataplane_CPU_Utilization", "Dataplane_Packet_Buffer_Utilization", "Connection_Per_Second",
+										 "Session_Throughput_Kbps", "Session_Throughput_Pps", "Session_Active", "Session_Utilization",
+										 "BytesIn", "BytesOut", "PktsIn", "PktsOut"}
 	ans := map[string]*schema.Schema{
 		"ngfw": {
 			Type:        schema.TypeString,
@@ -159,6 +161,21 @@ func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.S
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "The CloudWatch metric namespace.",
+		},
+		"advanced_threat_log": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Enable advanced threat logging.",
+		},
+		"cloudwatch_metric_fields": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Cloudwatch metric fields.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+				Description:  addStringInSliceValidation("Allowed metrics fields:", cloudwatch_metric_fields),
+				ValidateFunc: validation.StringInSlice(cloudwatch_metric_fields, false),
+			},
 		},
 		"log_destination": {
 			Type:        schema.TypeList,
@@ -215,13 +232,22 @@ func loadNgfwLogProfile(d *schema.ResourceData) lp.Info {
 			})
 		}
 	}
-
-	return lp.Info{
+	info := lp.Info{
 		AccountId:                 d.Get("account_id").(string),
 		Firewall:                  d.Get("ngfw").(string),
 		LogDestinations:           dests,
 		CloudWatchMetricNamespace: d.Get("cloud_watch_metric_namespace").(string),
+		AdvancedThreatLog: d.Get("advanced_threat_log").(bool),
 	}
+	metricFieldList := d.Get("cloudwatch_metric_fields").([]interface{})
+	metricFields := make([]string, 0)
+	if len(metricFieldList) > 0 {
+		for _, metricField := range metricFieldList {
+			metricFields = append(metricFields, metricField.(string))
+		}
+		info.CloudWatchMetricsFields = metricFields
+	}
+	return info
 }
 
 func saveNgfwLogProfile(d *schema.ResourceData, o lp.Info) {
@@ -241,6 +267,10 @@ func saveNgfwLogProfile(d *schema.ResourceData, o lp.Info) {
 	d.Set("ngfw", o.Firewall)
 	d.Set("log_destination", dests)
 	d.Set("cloud_watch_metric_namespace", o.CloudWatchMetricNamespace)
+	if len(o.CloudWatchMetricsFields) > 0 {
+		d.Set("cloudwatch_metric_fields", o.CloudWatchMetricsFields)
+	}
+	d.Set("advanced_threat_log", o.AdvancedThreatLog)
 }
 
 // Id functions.

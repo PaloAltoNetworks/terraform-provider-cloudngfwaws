@@ -214,7 +214,7 @@ func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 
 	if svc.IsSyncModeEnabled(ctx) {
 		// wait for firewall creation to complete
-		err = wait4NgfwCrudComplete(ctx, svc, o.Name, o.AccountId)
+		err = wait4NgfwStatus(ctx, svc, o.Name, o.AccountId, []string{"CREATE_COMPLETE", "CREATE_FAIL"})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -276,8 +276,18 @@ func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		},
 	)
 
-	if err := svc.ModifyFirewall(ctx, o); err != nil {
+	waitForUpdate, err := svc.ModifyFirewall(ctx, o)
+
+	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if svc.IsSyncModeEnabled(ctx) && waitForUpdate {
+		// wait for firewall update to complete
+		err := wait4NgfwStatus(ctx, svc, o.Name, o.AccountId, []string{"UPDATE_COMPLETE", "UPDATE_FAIL"})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return readNgfw(ctx, d, meta)
@@ -308,21 +318,11 @@ func deleteNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		return diag.FromErr(err)
 	}
 
-	if svc.IsSyncModeEnabled(ctx) {
-		// wait for firewall creation to complete
-		err = wait4NgfwCrudComplete(ctx, svc, fw.Name, fw.AccountId)
-		if err != nil {
-			if !isObjectNotFound(err) {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	d.SetId("")
 	return nil
 }
 
-func wait4NgfwCrudComplete(ctx context.Context, svc *api.ApiClient, name, accountId string) error {
+func wait4NgfwStatus(ctx context.Context, svc *api.ApiClient, name, accountId string, expStatus []string) error {
 	for i := 0; i < 120; i++ {
 		select {
 		case <-time.After(30 * time.Second):
@@ -334,8 +334,9 @@ func wait4NgfwCrudComplete(ctx context.Context, svc *api.ApiClient, name, accoun
 			if err != nil {
 				return err
 			}
-			switch res.Response.Status.FirewallStatus {
-			case "CREATE_COMPLETE", "CREATE_FAIL", "UPDATE_COMPLETE", "UPDATE_FAIL", "DELETE_COMPLETE", "DELETE_FAIL":
+			status := res.Response.Status.FirewallStatus
+			switch {
+			case Contains(status, expStatus):
 				return nil
 			default:
 				tflog.Info(ctx, "create ngfw",
@@ -403,14 +404,15 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 					"availability_zone": {
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 						Description: "The availability zone, for when the endpoint mode is customer managed.",
 					},
-					// Future use
-					// "az_id": {
-					// 	Type:        schema.TypeString,
-					// 	Optional:    true,
-					// 	Description: "The availability zone id.",
-					// },
+					"availability_zone_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The availability zone ID, for when the endpoint mode is customer managed.",
+					},
 				},
 			},
 		},
@@ -532,10 +534,26 @@ func loadNgfw(d *schema.ResourceData) ngfw.Info {
 		sm = make([]ngfw.SubnetMapping, 0, len(list))
 		for i := range list {
 			x := list[i].(map[string]interface{})
-			sm = append(sm, ngfw.SubnetMapping{
-				SubnetId:         x["subnet_id"].(string),
-				AvailabilityZone: x["availability_zone"].(string),
-			})
+			mapping := ngfw.SubnetMapping{}
+			subnetId := x["subnet_id"].(string)
+			azName := x["availability_zone"].(string)
+			azId := x["availability_zone_id"].(string)
+			if subnetId != "" {
+				mapping.SubnetId = subnetId
+			}
+			if azName != "" {
+				mapping.AvailabilityZone = azName
+			}
+			if azId != "" {
+				mapping.AvailabilityZoneId = azId
+			}
+
+			// Set AZ name to empty if both AZ ID and AZ name are set to avoid
+			// setting conflicting values.
+			if azName != "" && azId != "" {
+				mapping.AvailabilityZone = ""
+			}
+			sm = append(sm, mapping)
 		}
 	}
 
@@ -562,10 +580,17 @@ func saveNgfw(d *schema.ResourceData, o ngfw.ReadResponse) {
 	if len(o.Firewall.SubnetMappings) > 0 {
 		sm = make([]interface{}, 0, len(o.Firewall.SubnetMappings))
 		for _, x := range o.Firewall.SubnetMappings {
-			sm = append(sm, map[string]interface{}{
-				"subnet_id":         x.SubnetId,
-				"availability_zone": x.AvailabilityZone,
-			})
+			mapping := map[string]interface{}{}
+			if x.SubnetId != "" {
+				mapping["subnet_id"] = x.SubnetId
+			}
+			if x.AvailabilityZone != "" {
+				mapping["availability_zone"] = x.AvailabilityZone
+			}
+			if x.AvailabilityZoneId != "" {
+				mapping["availability_zone_id"] = x.AvailabilityZoneId
+			}
+			sm = append(sm, mapping)
 		}
 	}
 
