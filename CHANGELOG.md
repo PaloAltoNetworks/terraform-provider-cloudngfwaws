@@ -1,3 +1,7 @@
+## 2.0.10 (May 21, 2024)
+
+* added cloudwatch metrics and advanced threat log support
+  
 ## 2.0.9 (Apr 25, 2024)
 
 * fix arn attribute parse error
