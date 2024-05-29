@@ -430,7 +430,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 		},
 		RulestackName: {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "The rulestack for this NGFW.",
 		},
 		"global_rulestack": {
