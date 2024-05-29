@@ -1,3 +1,7 @@
+## 2.0.11 (May 29, 2024)
+
+* Add support to create firewall without a local rulestack
+
 ## 2.0.10 (May 21, 2024)
 
 * added cloudwatch metrics and advanced threat log support
