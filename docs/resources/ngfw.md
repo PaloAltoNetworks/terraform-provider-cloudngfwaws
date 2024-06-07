@@ -101,6 +101,7 @@ resource "aws_subnet" "subnet2" {
 ### Read-Only
 
 - `endpoint_service_name` (String) The endpoint service name.
+- `firewall_id` (String) The Id of the NGFW.
 - `id` (String) The ID of this resource.
 - `link_status` (String) The link status.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
