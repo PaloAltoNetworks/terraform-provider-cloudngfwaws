@@ -360,6 +360,11 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 			Description: "The NGFW name.",
 			ForceNew:    true,
 		},
+		"firewall_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Id of the NGFW.",
+		},
 		"vpc_id": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -559,6 +564,7 @@ func loadNgfw(d *schema.ResourceData) ngfw.Info {
 
 	return ngfw.Info{
 		Name:                         d.Get("name").(string),
+		Id:                           d.Get("firewall_id").(string),
 		VpcId:                        d.Get("vpc_id").(string),
 		AccountId:                    d.Get("account_id").(string),
 		SubnetMappings:               sm,
@@ -617,6 +623,7 @@ func saveNgfw(d *schema.ResourceData, o ngfw.ReadResponse) {
 	}
 
 	d.Set("name", o.Firewall.Name)
+	d.Set("firewall_id", o.Firewall.Id)
 	d.Set("account_id", o.Firewall.AccountId)
 	d.Set("subnet_mapping", sm)
 	d.Set("vpc_id", o.Firewall.VpcId)
