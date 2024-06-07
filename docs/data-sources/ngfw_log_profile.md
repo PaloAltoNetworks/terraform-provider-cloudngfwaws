@@ -35,7 +35,9 @@ data "cloudngfwaws_ngfw_log_profile" "example" {
 
 ### Read-Only
 
+- `advanced_threat_log` (Boolean) Enable advanced threat logging.
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
+- `cloudwatch_metric_fields` (List of String) Cloudwatch metric fields.
 - `id` (String) The ID of this resource.
 - `log_destination` (List of Object) List of log destinations. (see [below for nested schema](#nestedatt--log_destination))
 

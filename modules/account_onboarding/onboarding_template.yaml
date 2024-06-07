@@ -1,0 +1,428 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'This template creates a Cross-Account-Role that will grant Palo Alto Networks permissions to your account'
+Parameters:
+ EndpointMode:
+   Description: 'Do you want Cloud NGFW to create firewall endpoints automatically in your subnets?'
+   Type: String
+   AllowedValues: ['Yes', 'No']
+   Default: 'Yes'
+ DecryptionCertificate:
+   Description: 'The CloudNGFW can decrypt inbound and outbound traffic by providing a certificate stored in secret Manager.  The role allows the service to access a certificate configured in the rulestack.  Only certificated tagged with PaloAltoCloudNGFW can be accessed'
+   Type: String
+   AllowedValues: [None, TagBasedCertificate]
+   Default: TagBasedCertificate
+ CloudwatchNamespace:
+   Description: 'Cloudwatch Namespace'
+   Type: String
+   Default: 'PaloAltoCloudNGFW'
+ CloudwatchLog:
+   Description: 'Cloudwatch Log Group'
+   Type: String
+   Default: 'PaloAltoCloudNGFW'
+ AuditLogGroup:
+   Description: 'Audit Log Group Name'
+   Type: String
+   Default: 'PaloAltoCloudNGFWAuditLog'
+ KinesisFirehose:
+   Description: 'Kinesis Firehose for logging'
+   Type: String
+   Default: 'PaloAltoCloudNGFW'
+ S3Bucket:
+   Description: 'S3 Bucket Name for Logging. Logging roles provide access to create log contents in this bucket.'
+   Type: String
+   Default: 'None'
+ TrustedAccount:
+   Description: 'Palo Alto Networks account in the trust policy'
+   Type: String
+ ExternalId:
+   Description: 'Your external id for the trust policy'
+   Type: String
+ SNSTopicArn:
+   Description: 'SNS topic ARN to publish roles'
+   Type: String
+
+Metadata:
+ AWS::CloudFormation::Interface:
+   ParameterGroups:
+     - Label:
+         default: "Role Configuration"
+       Parameters:
+         - EndpointMode
+         - DecryptionCertificate
+         - CloudwatchNamespace
+         - CloudwatchLog
+         - AuditLogGroup
+         - KinesisFirehose
+         - S3Bucket
+     - Label:
+         default: "Trust Policy Configuration"
+       Parameters:
+         - TrustedAccount
+         - ExternalId
+
+
+Conditions:
+ CustomerManagedResource: !Equals [!Ref EndpointMode, 'No']
+ ServiceManagedResource: !Equals [!Ref EndpointMode, 'Yes']
+ TagCertDecryption: !Equals [!Ref DecryptionCertificate, 'TagBasedCertificate']
+
+
+Resources:
+ # This is the cross-account role that will be created to read VPC information
+ # With this role, the customer needs to create the VPC endpoint using the VPC endpoint service provided in the CloudNGFW UI
+  CustomerManagedEndpointRole:
+   Type: 'AWS::IAM::Role'
+   Condition: CustomerManagedResource
+   Properties:
+     RoleName: PaloAltoNetworks-CloudNGFW-CustomerManagedEndpointRole
+     AssumeRolePolicyDocument:
+       Statement:
+       - Action: 'sts:AssumeRole'
+         Effect: Allow
+         Principal:
+           AWS:
+             - Fn::Sub: arn:${AWS::Partition}:iam::${TrustedAccount}:root
+         Condition:
+           StringEquals:
+              sts:ExternalId: !Ref ExternalId
+         Sid: ''
+       Version: '2012-10-17'
+     Path: "/"
+     Policies:
+       - PolicyDocument:
+           Statement:
+           - Action:
+             - 'ec2:DescribeAvailabilityZones'
+             - 'ec2:DescribeVpcs'
+             - 'ec2:DescribeVpcEndpoints'
+             - 'ec2:DescribeSubnets'
+             Effect: Allow
+             Resource: "*"
+           Version: '2012-10-17'
+         PolicyName: CustomerManagedEndpoint
+
+
+  ServiceManagedEndpointRole:
+     Type: 'AWS::IAM::Role'
+     Condition: ServiceManagedResource
+     Properties:
+       RoleName: PaloAltoNetworks-CloudNGFW-ServiceManagedEndpointRole
+       AssumeRolePolicyDocument:
+         Statement:
+         - Action: 'sts:AssumeRole'
+           Effect: Allow
+           Principal:
+             AWS:
+               - Fn::Sub: arn:${AWS::Partition}:iam::${TrustedAccount}:root
+           Condition:
+             StringEquals:
+                sts:ExternalId: !Ref ExternalId
+           Sid: ''
+         Version: '2012-10-17'
+       Path: "/"
+       Policies:
+         - PolicyDocument:
+             Statement:
+             - Action:
+               - 'ec2:DescribeAvailabilityZones'
+               - 'ec2:DescribeVpcs'
+               - 'ec2:DescribeVpcEndpoints'
+               - 'ec2:DescribeSubnets'
+               Effect: Allow
+               Resource: "*"
+             - Action:
+               - 'ec2:CreateVpcEndpoint'
+               - 'ec2:DeleteVpcEndpoints'
+               Effect: Allow
+               Resource:
+               - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:vpc/*
+               - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:vpc-endpoint/*
+               - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:security-group/*
+               - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:subnet/*
+               - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:route-table/*
+             Version: '2012-10-17'
+           PolicyName: ServiceManagedEndpoint
+
+
+  NetworkMonitoringRole:
+   Type: 'AWS::IAM::Role'
+   Metadata:
+     cfn-lint:
+       config:
+         ignore_checks:
+           - EIAMPolicyWildcardResource
+         ignore_reasons:
+           EIAMPolicyWildcardResource: Resource '*' is required by 'elasticloadbalancing:DescribeTags'.
+   Properties:
+     RoleName: PaloAltoNetworks-CloudNGFW-NetworkMonitoringRole
+     AssumeRolePolicyDocument:
+       Statement:
+       - Action: 'sts:AssumeRole'
+         Effect: Allow
+         Principal:
+           AWS:
+             - Fn::Sub: arn:aws:iam::${TrustedAccount}:root
+         Condition:
+           StringEquals:
+              sts:ExternalId: !Ref ExternalId
+         Sid: ''
+       Version: '2012-10-17'
+     Path: "/"
+     Policies:
+       - PolicyDocument:
+           Statement:
+           - Action:
+             - 'ec2:DescribeVpcs'
+             - 'ec2:DescribeNetworkInterfaces'
+             - 'ec2:DescribeSecurityGroups'
+             - 'ec2:DescribeInstances'
+             - 'ec2:DescribeVpcEndpoints'
+             - 'ec2:DescribeSubnets'
+             - 'ec2:DescribeManagedPrefixLists'
+             - 'elasticloadbalancing:DescribeLoadBalancers'
+             - 'elasticloadbalancing:DescribeTags'
+             Effect: Allow
+             Resource: "*"
+           - Action:
+             - 'ec2:GetManagedPrefixListAssociations'
+             - 'ec2:GetManagedPrefixListEntries'
+             Effect: Allow
+             Resource:
+             - Fn::Sub: arn:${AWS::Partition}:ec2:*:*:prefix-list/*
+           Version: '2012-10-17'
+         PolicyName: NetworkMonitoring
+
+
+  DecryptionRole:
+   Type: 'AWS::IAM::Role'
+   Condition: TagCertDecryption
+   Properties:
+     RoleName: PaloAltoNetworks-CloudNGFW-DecryptionRole
+     AssumeRolePolicyDocument:
+       Statement:
+       - Action: 'sts:AssumeRole'
+         Effect: Allow
+         Principal:
+           AWS:
+             - Fn::Sub: arn:${AWS::Partition}:iam::${TrustedAccount}:root
+         Condition:
+           StringEquals:
+              sts:ExternalId: !Ref ExternalId
+         Sid: ''
+       Version: '2012-10-17'
+     Path: "/"
+     Policies:
+       - PolicyDocument:
+           Statement:
+           - Action:
+             - 'secretsmanager:GetSecretValue'
+             Effect: Allow
+             Resource: "*"
+             Condition:
+               StringEquals:
+                 aws:ResourceTag/PaloAltoCloudNGFW: 'true'
+           Version: '2012-10-17'
+         PolicyName: DecryptionTagBasedCert
+
+
+ # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+  LogMetricRole:
+   Type: 'AWS::IAM::Role'
+   Properties:
+     RoleName: PaloAltoNetworks-CloudNGFW-LogMetricRole
+     AssumeRolePolicyDocument:
+       Statement:
+       - Action: 'sts:AssumeRole'
+         Effect: Allow
+         Principal:
+           AWS:
+             - Fn::Sub: arn:${AWS::Partition}:iam::${TrustedAccount}:root
+         Condition:
+           StringEquals:
+              sts:ExternalId: !Ref ExternalId
+         Sid: ''
+       Version: '2012-10-17'
+     Path: "/"
+     Policies:
+       - PolicyDocument:
+           Statement:
+           - Action:
+             - 'cloudwatch:PutMetricData'
+             Effect: Allow
+             Resource: "*"
+             Condition:
+               StringEquals:
+                 cloudwatch:namespace: !Ref CloudwatchNamespace
+           - Action:
+             - firehose:putRecordBatch
+             Effect: Allow
+             Resource:
+             - Fn::Sub: arn:${AWS::Partition}:firehose:*:*:deliverystream/${KinesisFirehose}
+           - Action:
+             - 's3:PutObject'
+             - 's3:GetBucketLocation'
+             Effect: Allow
+             Resource:
+             - Fn::Sub: arn:${AWS::Partition}:s3:::${S3Bucket}
+             - Fn::Sub: arn:${AWS::Partition}:s3:::${S3Bucket}/*
+           - Action:
+             - 'logs:CreateLogStream'
+             - 'logs:DescribeLogStreams'
+             - 'logs:PutLogEvents'
+             Effect: Allow
+             Resource:
+             - Fn::Sub: arn:${AWS::Partition}:logs:*:*:log-group:${CloudwatchLog}
+             - Fn::Sub: arn:${AWS::Partition}:logs:*:*:log-group:${CloudwatchLog}:log-stream:*
+             - Fn::Sub: arn:${AWS::Partition}:logs:*:*:log-group:${AuditLogGroup}
+             - Fn::Sub: arn:${AWS::Partition}:logs:*:*:log-group:${AuditLogGroup}:log-stream:*
+           Version: '2012-10-17'
+         PolicyName: LogMetric
+
+  CustomNotificationLambda:
+   Type: AWS::Lambda::Function
+   Properties:
+     FunctionName: PaloAltoNetworks-CloudNGFW-CustomNotificationLambda
+     Role: !GetAtt CustomNotificationLambdaRole.Arn
+     Runtime: python3.8
+     Handler: index.handler
+     Timeout: 30
+     Code:
+       ZipFile: |
+           import boto3
+           import cfnresponse
+           import logging
+           import http.client
+           import json
+
+
+           logger = logging.getLogger(__name__)
+           logger.setLevel(logging.DEBUG)
+           logFormatter = logging.Formatter(
+               fmt='%(name)s : [%(levelname)s]  %(asctime)s.%(msecs)03dZ\t%(message)s\t|- %(module)s:%(lineno)s',
+               datefmt='%Y-%m-%dT%H:%M:%S',
+           )
+           streamHandler = logging.StreamHandler()
+           streamHandler.setFormatter(logFormatter)
+           logger.addHandler(streamHandler)
+           logger.propagate = False
+
+
+
+
+           def handler(event, context):
+               logger.info(f"Event: {event}")
+               logger.info(f"Context: {context}")
+
+
+               # Process Cloudformation Event
+               try:
+                   request_type = event['RequestType']
+                   logger.info(f"RequestType: {request_type}")
+
+
+                   resource_properties = event['ResourceProperties']
+                   logger.info(f"ResourceProps: {resource_properties}")
+
+                   sns_topic_arn = resource_properties['SNSTopicArn']
+                   logger.info(f"SnsTopicArn: {sns_topic_arn}")
+
+
+                   sns_region = sns_topic_arn.split(":")[3]
+                   logger.info(f"SnsRegion: {sns_region}")
+
+
+                   SESSION = boto3.Session()
+                   sns_client = SESSION.client("sns", region_name=sns_region)
+
+
+                   message_event = json.dumps(event)
+                   logger.info(f"MessageEvent: {message_event}")
+
+
+               except Exception as e:
+                   error_reason = "Failed to process cloudformation event"
+                   logger.error(f"{error_reason}, with error: {e}")
+                   cfnresponse.send(event=event, context=context, responseStatus=cfnresponse.FAILED, responseData={"Error": f"{error_reason}"})
+
+
+               # Publish message to Cloud NGFW SNS Topic
+               try:
+                   response = sns_client.publish(
+                       TopicArn=sns_topic_arn,
+                       Message=message_event,
+                   )
+
+
+                   message_id = response["MessageId"]
+                   logger.info(f"Successfully sent MessageId: {message_id}, to SNS Topic: {sns_topic_arn}")
+
+
+               except Exception as e:
+                   error_reason = "Failed to send SNS Message"
+                   logger.error(f"{error_reason}, with error: {e}")
+                   cfnresponse.send(event=event, context=context, responseStatus=cfnresponse.FAILED, responseData={"Error": f"{error_reason}"})
+   DependsOn:
+    - CustomNotificationLambdaRole
+
+  CustomNotificationLambdaRole:
+   Type: AWS::IAM::Role
+   Properties:
+     RoleName: PaloAltoNetworks-CloudNGFW-CustomNotificationLambdaRole
+     AssumeRolePolicyDocument:
+       Version: 2012-10-17
+       Statement:
+         - Effect: Allow
+           Principal:
+             Service: lambda.amazonaws.com
+           Action: 'sts:AssumeRole'
+     ManagedPolicyArns:
+       - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+     Policies:
+       - PolicyName: PublishSns
+         PolicyDocument:
+           Version: 2012-10-17
+           Statement:
+             - Effect: Allow
+               Resource: !Ref SNSTopicArn
+               Action:
+                   - 'sns:Publish'
+
+  # This resource notifies Cloud NGFW service from Palo Alto Networks the cross-account ARN information
+  NotificationToPaloAltoCloudNGFWV1:
+   Type: Custom::CloudNGFWNotificationLambdaResource
+   Version: '1.0'
+   Properties:
+     ServiceToken: !GetAtt CustomNotificationLambda.Arn
+     SNSTopicArn: !Ref SNSTopicArn
+     OnboardingRegion: !Ref "AWS::Region"
+     EndpointModeAnswer: !Ref EndpointMode
+     EndpointModeConf: !If [CustomerManagedResource, "CustomerManaged", "ServiceManaged"]
+     EndpointRoleCust: !If [CustomerManagedResource, !GetAtt CustomerManagedEndpointRole.Arn,!Ref "AWS::NoValue"]
+     EndpointRoleSvc: !If [ServiceManagedResource, !GetAtt ServiceManagedEndpointRole.Arn,!Ref "AWS::NoValue"]
+     LogMetricRoleConf: !GetAtt LogMetricRole.Arn
+     NetworkMonitoringRole: !GetAtt NetworkMonitoringRole.Arn
+     DecryptionRoleConf: !If [TagCertDecryption, !GetAtt DecryptionRole.Arn,!Ref "AWS::NoValue"]
+     ExternalId: !Ref ExternalId
+   DependsOn:
+    - CustomNotificationLambda
+    - CustomNotificationLambdaRole
+    - LogMetricRole
+    - DecryptionRole
+    - NetworkMonitoringRole
+
+Outputs:
+ EndpointModeConfig:
+   Description: "Endpoint mode configuration"
+   Value: !If [ CustomerManagedResource, "CustomerManaged", "ServiceManaged" ]
+ EndpointRole:
+   Description: "Endpoint role ARN"
+   Value: !If [ CustomerManagedResource, !GetAtt CustomerManagedEndpointRole.Arn, !GetAtt ServiceManagedEndpointRole.Arn ]
+ LogMetricRole:
+   Description: "LogMetric role ARN"
+   Value: !GetAtt LogMetricRole.Arn
+ NetworkMonitoringRole:
+   Description: "NetworkMonitoring role ARN"
+   Value: !GetAtt NetworkMonitoringRole.Arn
+ DecryptionRole:
+   Description: "Decryption role ARN"
+   Value: !If [ TagCertDecryption, !GetAtt DecryptionRole.Arn, "" ]
