@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
+	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 )
 
 var resourceTimeout = 120 * time.Minute
@@ -57,6 +57,8 @@ func New(version string) func() *schema.Provider {
 				"cloudngfwaws_rulestack":                        dataSourceRulestack(),
 				"cloudngfwaws_security_rule":                    dataSourceSecurityRule(),
 				"cloudngfwaws_validate_rulestack":               dataSourceValidateRulestack(),
+				"cloudngfwaws_account":                          dataSourceAccount(),
+				"cloudngfwaws_accounts":                         dataSourceAccounts(),
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
@@ -71,6 +73,9 @@ func New(version string) func() *schema.Provider {
 				"cloudngfwaws_prefix_list":                      resourcePrefixList(),
 				"cloudngfwaws_rulestack":                        resourceRulestack(),
 				"cloudngfwaws_security_rule":                    resourceSecurityRule(),
+				"cloudngfwaws_account":                          resourceAccount(),
+				"cloudngfwaws_account_onboarding":               resourceAccountOnboarding(),
+				"cloudngfwaws_account_onboarding_stack":         resourceAccountOnboardingStack(),
 			},
 		}
 
@@ -91,6 +96,15 @@ func providerSchema() map[string]*schema.Schema {
 				"The hostname of the API (default: `api.us-east-1.aws.cloudngfw.paloaltonetworks.com`).",
 				"CLOUDNGFWAWS_HOST",
 				"host",
+			),
+		},
+		"mp_region_host": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"AWS management plane MP region host",
+				"CLOUDNGFWAWS_MP_REGION_HOST",
+				"mp_region_host",
 			),
 		},
 		"access_key": {
@@ -138,6 +152,15 @@ func providerSchema() map[string]*schema.Schema {
 				"region",
 			),
 		},
+		"mp_region": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"AWS management plane region.",
+				"CLOUDNGFWAWS_MP_REGION",
+				"mp_region",
+			),
+		},
 		"arn": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -174,6 +197,15 @@ func providerSchema() map[string]*schema.Schema {
 				"gra-arn",
 			),
 		},
+		"account_admin_arn": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The ARN allowing account admin permissions.",
+				"CLOUDNGFWAWS_ACCT_ADMIN_ARN",
+				"account-admin-arn",
+			),
+		},
 		"protocol": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -191,7 +223,7 @@ func providerSchema() map[string]*schema.Schema {
 			Type:     schema.TypeInt,
 			Optional: true,
 			Description: addProviderParamDescription(
-				"The timeout for any single API call (default: `30s`).",
+				"The timeout for any single API call (default: `30`).",
 				"CLOUDNGFWAWS_TIMEOUT",
 				"timeout",
 			),
@@ -286,16 +318,19 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		con := &aws.Client{
 			Host:                  d.Get("host").(string),
+			MPRegionHost:          d.Get("mp_region_host").(string),
 			AccessKey:             d.Get("access_key").(string),
 			SecretKey:             d.Get("secret_key").(string),
 			Profile:               d.Get("profile").(string),
 			SyncMode:              d.Get("sync_mode").(bool),
 			ResourceTimeout:       d.Get("resource_timeout").(int),
 			Region:                d.Get("region").(string),
+			MPRegion:              d.Get("mp_region").(string),
 			Arn:                   d.Get("arn").(string),
 			LfaArn:                d.Get("lfa_arn").(string),
 			LraArn:                d.Get("lra_arn").(string),
 			GraArn:                d.Get("gra_arn").(string),
+			AcctAdminArn:          d.Get("account_admin_arn").(string),
 			AuthType:              aws.AuthTypeIAMRole,
 			Protocol:              d.Get("protocol").(string),
 			Timeout:               d.Get("timeout").(int),

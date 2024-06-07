@@ -17,3 +17,16 @@ const (
 	CandidateConfig = "candidate"
 	RunningConfig   = "running"
 )
+
+// Account onboarding related constants.
+const (
+	DefaultMPRegion     = "us-east-1"
+	DefaultCFTStackName = "PaloAltoNetworksCrossAccountRoleSetup-Programmatic"
+	DefaultMPRegionHost = "api.us-east-1.aws.cloudngfw.paloaltonetworks.com"
+)
+
+// Firewall resource constans
+const (
+	CustomerManagedEndpointMode = "CustomerManaged"
+	ServiceManagedEndpointMode  = "ServiceManaged"
+)
