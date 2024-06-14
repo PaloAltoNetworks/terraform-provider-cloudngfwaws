@@ -94,7 +94,7 @@ resource "aws_subnet" "subnet2" {
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
 - `description` (String) The description.
 - `global_rulestack` (String) The global rulestack for this NGFW.
-- `link_id` (String) The link ID.
+- `link_id` (String) A unique identifier for establishing and managing the link between the Cloud NGFW and other AWS resources.
 - `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
 - `tags` (Map of String) The tags.
 
