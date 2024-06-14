@@ -25,7 +25,7 @@ resource "cloudngfwaws_ngfw" "example" {
   vpc_id      = aws_vpc.example.id
   account_id  = "12345678"
   description = "Example description"
-
+  link_id = "Link-81e80ccc-357a-4e4e-8325-1ed1d830cba5"
   endpoint_mode = "ServiceManaged"
   subnet_mapping {
     subnet_id = aws_subnet.subnet1.id
