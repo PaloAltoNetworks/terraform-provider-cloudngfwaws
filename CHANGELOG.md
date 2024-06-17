@@ -1,3 +1,7 @@
+## 2.0.12 (Jun 17, 2024)
+
+* Add support for automated account onbarding
+
 ## 2.0.11 (May 29, 2024)
 
 * Add support to create firewall without a local rulestack
