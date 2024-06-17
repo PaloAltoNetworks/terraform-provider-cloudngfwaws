@@ -25,7 +25,7 @@ resource "cloudngfwaws_ngfw" "example" {
   vpc_id      = aws_vpc.example.id
   account_id  = "12345678"
   description = "Example description"
-
+  link_id = "Link-81e80ccc-357a-4e4e-8325-1ed1d830cba5"
   endpoint_mode = "ServiceManaged"
   subnet_mapping {
     subnet_id = aws_subnet.subnet1.id
@@ -93,7 +93,7 @@ resource "aws_subnet" "subnet2" {
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
 - `description` (String) The description.
 - `global_rulestack` (String) The global rulestack for this NGFW.
-- `link_id` (String) The link ID.
+- `link_id` (String) A unique identifier for establishing and managing the link between the Cloud NGFW and other AWS resources.
 - `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
 - `rulestack` (String) The rulestack for this NGFW.
 - `tags` (Map of String) The tags.
