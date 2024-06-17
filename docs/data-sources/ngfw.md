@@ -42,6 +42,7 @@ data "cloudngfwaws_ngfw" "example" {
 - `description` (String) The description.
 - `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
 - `endpoint_service_name` (String) The endpoint service name.
+- `firewall_id` (String) The Id of the NGFW.
 - `global_rulestack` (String) The global rulestack for this NGFW.
 - `id` (String) The ID of this resource.
 - `link_id` (String) The link ID.
