@@ -97,7 +97,9 @@ resource "aws_subnet" "subnet2" {
 
 ### Optional
 
+- `advanced_threat_log` (Boolean) Enable advanced threat logging.
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
+- `cloudwatch_metric_fields` (List of String) Cloudwatch metric fields.
 
 ### Read-Only
 

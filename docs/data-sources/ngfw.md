@@ -82,4 +82,5 @@ Read-Only:
 Read-Only:
 
 - `availability_zone` (String)
+- `availability_zone_id` (String)
 - `subnet_id` (String)

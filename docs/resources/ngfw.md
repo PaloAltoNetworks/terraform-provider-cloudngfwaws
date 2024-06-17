@@ -83,7 +83,6 @@ resource "aws_subnet" "subnet2" {
 
 - `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
 - `name` (String) The NGFW name.
-- `rulestack` (String) The rulestack for this NGFW.
 - `subnet_mapping` (Block List, Min: 1) Subnet mappings. (see [below for nested schema](#nestedblock--subnet_mapping))
 - `vpc_id` (String) The vpc id.
 
@@ -96,6 +95,7 @@ resource "aws_subnet" "subnet2" {
 - `global_rulestack` (String) The global rulestack for this NGFW.
 - `link_id` (String) The link ID.
 - `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
+- `rulestack` (String) The rulestack for this NGFW.
 - `tags` (Map of String) The tags.
 
 ### Read-Only
@@ -112,6 +112,7 @@ resource "aws_subnet" "subnet2" {
 Optional:
 
 - `availability_zone` (String) The availability zone, for when the endpoint mode is customer managed.
+- `availability_zone_id` (String) The availability zone ID, for when the endpoint mode is customer managed.
 - `subnet_id` (String) The subnet id, for when the endpoint mode is service managed.
 
 

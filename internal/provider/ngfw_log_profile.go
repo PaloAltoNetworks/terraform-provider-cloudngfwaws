@@ -143,8 +143,8 @@ func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.S
 	destinationTypes := []string{"S3", "CloudWatchLogs", "KinesisDataFirehose"}
 	logTypes := []string{"TRAFFIC", "THREAT", "DECRYPTION"}
 	cloudwatch_metric_fields := []string{"Dataplane_CPU_Utilization", "Dataplane_Packet_Buffer_Utilization", "Connection_Per_Second",
-										 "Session_Throughput_Kbps", "Session_Throughput_Pps", "Session_Active", "Session_Utilization",
-										 "BytesIn", "BytesOut", "PktsIn", "PktsOut"}
+		"Session_Throughput_Kbps", "Session_Throughput_Pps", "Session_Active", "Session_Utilization",
+		"BytesIn", "BytesOut", "PktsIn", "PktsOut"}
 	ans := map[string]*schema.Schema{
 		"ngfw": {
 			Type:        schema.TypeString,
@@ -172,7 +172,7 @@ func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.S
 			Optional:    true,
 			Description: "Cloudwatch metric fields.",
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
 				Description:  addStringInSliceValidation("Allowed metrics fields:", cloudwatch_metric_fields),
 				ValidateFunc: validation.StringInSlice(cloudwatch_metric_fields, false),
 			},
@@ -237,7 +237,7 @@ func loadNgfwLogProfile(d *schema.ResourceData) lp.Info {
 		Firewall:                  d.Get("ngfw").(string),
 		LogDestinations:           dests,
 		CloudWatchMetricNamespace: d.Get("cloud_watch_metric_namespace").(string),
-		AdvancedThreatLog: d.Get("advanced_threat_log").(bool),
+		AdvancedThreatLog:         d.Get("advanced_threat_log").(bool),
 	}
 	metricFieldList := d.Get("cloudwatch_metric_fields").([]interface{})
 	metricFields := make([]string, 0)
