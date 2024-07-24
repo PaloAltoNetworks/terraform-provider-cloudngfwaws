@@ -40,12 +40,19 @@ type accountOnboardingStackInput struct {
 	onboardingCft       string
 	stackId             string
 	region              string
+	profile             string
 }
 
 // CloudFormationClient returns a AWS cloudformation client by assuming the CFT role in the specified account.
-func CloudFormationClient(ctx context.Context, accountId string, cftRoleName string, region string) (*cloudformation.Client, error) {
+func CloudFormationClient(ctx context.Context, accountId, cftRoleName, region, profile string) (*cloudformation.Client, error) {
 	cftRoleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountId, cftRoleName)
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	options := []func(*config.LoadOptions) error{
+		config.WithRegion(region),
+	}
+	if profile != "" {
+		options = append(options, config.WithSharedConfigProfile(profile))
+	}
+	cfg, err := config.LoadDefaultConfig(ctx, options...)
 	if err != nil {
 		tflog.Info(ctx, "error: %s", err)
 		return nil, err
@@ -95,7 +102,7 @@ func FindStackByName(ctx context.Context, name string, nextToken *string,
 }
 
 func CreateAccountOnboardingStack(ctx context.Context, input accountOnboardingStackInput) (string, error) {
-	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region)
+	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region, input.profile)
 	if err != nil {
 		tflog.Info(ctx, "error: %s", err)
 		return "", err
@@ -232,7 +239,7 @@ func WaitForStackDeletion(ctx context.Context, svc *cloudformation.Client, stack
 }
 
 func DeleteStack(ctx context.Context, input accountOnboardingStackInput) error {
-	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region)
+	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region, input.profile)
 	if err != nil {
 		tflog.Info(ctx, "error: %s", err)
 		return err
@@ -254,7 +261,7 @@ func DeleteStack(ctx context.Context, input accountOnboardingStackInput) error {
 }
 
 func ReadStack(ctx context.Context, input accountOnboardingStackInput) (string, error) {
-	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region)
+	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region, input.profile)
 	if err != nil {
 		tflog.Info(ctx, "error: %s", err)
 		return "", err
@@ -293,6 +300,7 @@ func resourceAccountOnboardingStack() *schema.Resource {
 func createAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 	mpRegion := svc.GetMPRegion(ctx)
+	profile := svc.GetProfile(ctx)
 	accountId := d.Get("account_id").(string)
 	stackInput := accountOnboardingStackInput{
 		auditLogGroup:       d.Get("auditlog_group").(string),
@@ -309,6 +317,7 @@ func createAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, m
 		snsTopicArn:         d.Get("sns_topic_arn").(string),
 		accountId:           accountId,
 		region:              mpRegion,
+		profile:             profile,
 	}
 	stackId, err := CreateAccountOnboardingStack(ctx, stackInput)
 	if err != nil {
@@ -323,12 +332,14 @@ func createAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, m
 func deleteAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 	mpRegion := svc.GetMPRegion(ctx)
+	profile := svc.GetProfile(ctx)
 	accountId := d.Get("account_id").(string)
 	stackInput := accountOnboardingStackInput{
 		cftRoleName: d.Get("cft_role_name").(string),
 		stackId:     d.Get("stack_id").(string),
 		accountId:   accountId,
 		region:      mpRegion,
+		profile:     profile,
 	}
 	err := DeleteStack(ctx, stackInput)
 	if err != nil {
@@ -341,6 +352,7 @@ func deleteAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, m
 func readAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 	mpRegion := svc.GetMPRegion(ctx)
+	profile := svc.GetProfile(ctx)
 	accountId := d.Get("account_id").(string)
 	stackId := d.Get("stack_id").(string)
 	stackInput := accountOnboardingStackInput{
@@ -348,6 +360,7 @@ func readAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, met
 		stackId:     stackId,
 		accountId:   accountId,
 		region:      mpRegion,
+		profile:     profile,
 	}
 	stackStatus, err := ReadStack(ctx, stackInput)
 	if err != nil {

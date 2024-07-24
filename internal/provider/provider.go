@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
 )
 
 var resourceTimeout = 120 * time.Minute
