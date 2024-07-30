@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.28.12
 	github.com/hashicorp/terraform-plugin-log v0.2.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/paloaltonetworks/cloud-ngfw-aws-go v1.0.7
+	github.com/paloaltonetworks/cloud-ngfw-aws-go v1.0.8
 	go.uber.org/zap v1.25.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
