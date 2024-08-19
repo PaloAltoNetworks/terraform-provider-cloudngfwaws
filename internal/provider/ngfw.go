@@ -395,7 +395,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 			Description: "The endpoint service name.",
 		},
 		"subnet_mapping": {
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Required:    true,
 			MinItems:    1,
 			Description: "Subnet mappings.",
@@ -534,11 +534,12 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 
 func loadNgfw(d *schema.ResourceData) ngfw.Info {
 	var sm []ngfw.SubnetMapping
-	list := d.Get("subnet_mapping").([]interface{})
-	if len(list) > 0 {
-		sm = make([]ngfw.SubnetMapping, 0, len(list))
-		for i := range list {
-			x := list[i].(map[string]interface{})
+	smSet := d.Get("subnet_mapping").(*schema.Set)
+
+	if smSet.Len() > 0 {
+		sm = make([]ngfw.SubnetMapping, 0, smSet.Len())
+		for _, v := range smSet.List() {
+			x := v.(map[string]interface{})
 			mapping := ngfw.SubnetMapping{}
 			subnetId := x["subnet_id"].(string)
 			azName := x["availability_zone"].(string)
