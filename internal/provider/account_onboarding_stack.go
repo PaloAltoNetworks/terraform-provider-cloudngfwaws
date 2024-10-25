@@ -54,7 +54,7 @@ func CloudFormationClient(ctx context.Context, accountId, cftRoleName, region, p
 	}
 	cfg, err := config.LoadDefaultConfig(ctx, options...)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return nil, err
 	}
 	stsClient := sts.NewFromConfig(cfg)
@@ -63,7 +63,7 @@ func CloudFormationClient(ctx context.Context, accountId, cftRoleName, region, p
 		RoleSessionName: PtrToString("test"),
 	})
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return nil, err
 	}
 	creds := Creds{
@@ -71,7 +71,7 @@ func CloudFormationClient(ctx context.Context, accountId, cftRoleName, region, p
 	}
 	svc := cloudformation.NewFromConfig(aws.Config{Credentials: creds, Region: region})
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return nil, err
 	}
 	return svc, nil
@@ -104,7 +104,7 @@ func FindStackByName(ctx context.Context, name string, nextToken *string,
 func CreateAccountOnboardingStack(ctx context.Context, input accountOnboardingStackInput) (string, error) {
 	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region, input.profile)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return "", err
 	}
 	tflog.Info(ctx, "creating stack")
@@ -157,15 +157,15 @@ func CreateAccountOnboardingStack(ctx context.Context, input accountOnboardingSt
 		OnFailure:    types.OnFailureDelete,
 	}
 	createStackResponse, err := cfrClient.CreateStack(ctx, createStackInput)
-	tflog.Info(ctx, "creating stack response: %v", createStackResponse)
+	tflog.Info(ctx, "creating stack response:", map[string]interface{}{"createStackResponse": createStackResponse})
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return "", err
 	}
 	stackId := *createStackResponse.StackId
 	err = WaitForStackDeployment(ctx, stackId, cfrClient, input.accountId)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return "", err
 	}
 	return stackId, nil
@@ -220,7 +220,7 @@ func WaitForStackDeletion(ctx context.Context, svc *cloudformation.Client, stack
 		if err != nil {
 			return err
 		}
-		tflog.Info(ctx, "stacks: %v", res)
+		tflog.Info(ctx, "stacks: %v", map[string]interface{}{"stacks": res})
 		if len(res.Stacks) == 0 {
 			return nil
 		}
@@ -241,7 +241,7 @@ func WaitForStackDeletion(ctx context.Context, svc *cloudformation.Client, stack
 func DeleteStack(ctx context.Context, input accountOnboardingStackInput) error {
 	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region, input.profile)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return err
 	}
 	deleteStackInput := &cloudformation.DeleteStackInput{
@@ -249,12 +249,12 @@ func DeleteStack(ctx context.Context, input accountOnboardingStackInput) error {
 	}
 	_, err = cfrClient.DeleteStack(ctx, deleteStackInput)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return err
 	}
 	err = WaitForStackDeletion(ctx, cfrClient, input.stackId, input.accountId)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return err
 	}
 	return nil
@@ -263,7 +263,7 @@ func DeleteStack(ctx context.Context, input accountOnboardingStackInput) error {
 func ReadStack(ctx context.Context, input accountOnboardingStackInput) (string, error) {
 	cfrClient, err := CloudFormationClient(ctx, input.accountId, input.cftRoleName, input.region, input.profile)
 	if err != nil {
-		tflog.Info(ctx, "error: %s", err)
+		tflog.Info(ctx, "error:", map[string]interface{}{"err": err})
 		return "", err
 	}
 	describeStacksInput := &cloudformation.DescribeStacksInput{
