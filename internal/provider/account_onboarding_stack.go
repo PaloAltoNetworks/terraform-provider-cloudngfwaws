@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -332,14 +332,12 @@ func createAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, m
 func deleteAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 	mpRegion := svc.GetMPRegion(ctx)
-	profile := svc.GetProfile(ctx)
 	accountId := d.Get("account_id").(string)
 	stackInput := accountOnboardingStackInput{
 		cftRoleName: d.Get("cft_role_name").(string),
 		stackId:     d.Get("stack_id").(string),
 		accountId:   accountId,
 		region:      mpRegion,
-		profile:     profile,
 	}
 	err := DeleteStack(ctx, stackInput)
 	if err != nil {
@@ -352,7 +350,6 @@ func deleteAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, m
 func readAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 	mpRegion := svc.GetMPRegion(ctx)
-	profile := svc.GetProfile(ctx)
 	accountId := d.Get("account_id").(string)
 	stackId := d.Get("stack_id").(string)
 	stackInput := accountOnboardingStackInput{
@@ -360,7 +357,6 @@ func readAccountOnboardingStack(ctx context.Context, d *schema.ResourceData, met
 		stackId:     stackId,
 		accountId:   accountId,
 		region:      mpRegion,
-		profile:     profile,
 	}
 	stackStatus, err := ReadStack(ctx, stackInput)
 	if err != nil {

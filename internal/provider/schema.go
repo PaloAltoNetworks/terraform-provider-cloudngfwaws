@@ -1,9 +1,9 @@
 package provider
 
 import (
-	// "github.com/paloaltonetworks/cloud-ngfw-aws-go/api/permissions"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/tag"
-	permissions "github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
+	// "github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/permissions"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/tag"
+	permissions "github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/ngfw/aws"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -164,4 +164,94 @@ func dumpTags(list []tag.Details) map[string]interface{} {
 	}
 
 	return ans
+}
+
+func endpointsSchemaResource() *schema.Resource {
+	endpoint_mode_opts := []string{"ServiceManaged", "CustomerManaged"}
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"endpoint_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Endpoint ID of the security zone",
+			},
+			"egress_nat_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable egress NAT",
+			},
+			"prefixes": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"private_prefix": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cidrs": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The attachment status.",
+			},
+			"rejected_reason": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The rejected reason.",
+			},
+			"subnet_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The subnet id.",
+			},
+			"account_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The account id.",
+			},
+			"vpc_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The vpc id.",
+			},
+			"mode": {
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  addStringInSliceValidation("The endpoint mode.", endpoint_mode_opts),
+				ValidateFunc: validation.StringInSlice(endpoint_mode_opts, false),
+			},
+			"zone_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The AZ id.",
+			},
+		},
+	}
+
+}
+
+func checkNilSlice(slice []string) []string {
+	if slice == nil {
+		return make([]string, 0)
+	}
+	return slice
 }

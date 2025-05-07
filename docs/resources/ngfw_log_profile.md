@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_ngfw_log_profile Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_ngfw_log_profile Resource"
 subcategory: ""
 description: |-
   Resource for NGFW log profile manipulation.
@@ -91,19 +91,38 @@ resource "aws_subnet" "subnet2" {
 
 ### Required
 
-- `account_id` (String) The unique ID of the account.
-- `log_destination` (Block List, Min: 1) List of log destinations. (see [below for nested schema](#nestedblock--log_destination))
-- `ngfw` (String) The name of the NGFW.
+- `firewall_id` (String) The Firewall Id for the NGFW.
 
 ### Optional
 
+- `account_id` (String) The unique ID of the account.
 - `advanced_threat_log` (Boolean) Enable advanced threat logging.
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
-- `cloudwatch_metric_fields` (List of String) Cloudwatch metric fields.
+- `cloudwatch_metric_fields` (Set of String) Cloudwatch metric fields.
+- `log_config` (Block List, Max: 1) Log configuration details. (see [below for nested schema](#nestedblock--log_config))
+- `log_destination` (Block List) List of log destinations. (see [below for nested schema](#nestedblock--log_destination))
+- `ngfw` (String) The name of the NGFW.
+- `region` (String) The region of the NGFW.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `update_token` (String) The update token.
+
+<a id="nestedblock--log_config"></a>
+### Nested Schema for `log_config`
+
+Required:
+
+- `log_destination` (String) The log destination details.
+- `log_destination_type` (String) The log destination type. Valid values are `S3`, `CloudWatchLogs`, or `KinesisDataFirehose`.
+- `log_type` (Set of String) The list of different log types that are wanted
+
+Optional:
+
+- `account_id` (String) Type of Role for log configuration
+- `role_type` (String) Type of Role for log configuration
+
 
 <a id="nestedblock--log_destination"></a>
 ### Nested Schema for `log_destination`

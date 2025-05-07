@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_security_rule Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_security_rule Resource"
 subcategory: ""
 description: |-
   Resource for security rule manipulation.

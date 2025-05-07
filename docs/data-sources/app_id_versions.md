@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_app_id_versions Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_app_id_versions Data Source"
 subcategory: ""
 description: |-
   Data source get a list of AppId versions.

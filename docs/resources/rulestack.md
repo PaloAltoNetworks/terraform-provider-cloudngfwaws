@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_rulestack Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_rulestack Resource"
 subcategory: ""
 description: |-
   Resource for rulestack manipulation.

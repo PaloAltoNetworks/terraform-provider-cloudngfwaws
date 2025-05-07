@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_custom_url_category Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_custom_url_category Resource"
 subcategory: ""
 description: |-
   Resource for custom url category manipulation.

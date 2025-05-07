@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_security_rule Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_security_rule Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving security rule information.

@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_prefix_list Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_prefix_list Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving prefix list information.

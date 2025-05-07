@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_account_onboarding_stack Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_account_onboarding_stack Resource"
 subcategory: ""
 description: |-
   Resource for Account Onboarding.

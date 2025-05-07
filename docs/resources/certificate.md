@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_certificate Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_certificate Resource"
 subcategory: ""
 description: |-
   Resource for certificate manipulation.

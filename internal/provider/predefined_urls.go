@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
-	url "github.com/paloaltonetworks/cloud-ngfw-aws-go/api/predefinedurl"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api"
+	url "github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/predefinedurl"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

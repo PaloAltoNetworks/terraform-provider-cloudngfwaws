@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_prefix_list Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_prefix_list Resource"
 subcategory: ""
 description: |-
   Resource for prefix list manipulation.

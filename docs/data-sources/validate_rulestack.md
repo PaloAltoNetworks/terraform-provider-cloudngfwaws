@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_validate_rulestack Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_validate_rulestack Data Source"
 subcategory: ""
 description: |-
   Data source to validate the rulestack config.

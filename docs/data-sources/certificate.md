@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_certificate Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_certificate Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving certificate information.

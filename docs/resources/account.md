@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_account Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_account Resource"
 subcategory: ""
 description: |-
   Resource for Account manipulation.

@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_commit_rulestack Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_commit_rulestack Resource"
 subcategory: ""
 description: |-
   Resource for committing the rulestack config.

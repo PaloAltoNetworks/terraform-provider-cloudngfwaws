@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_account Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_account Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving account information.

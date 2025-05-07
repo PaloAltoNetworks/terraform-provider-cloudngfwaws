@@ -1,5 +1,7 @@
 module github.com/paloaltonetworks/terraform-provider-cloudngfwaws
 
+replace github.com/paloaltonetworks/cloud-ngfw-aws-go/v2 => /Users/ppalkar/Documents/panw/cloud-ngfw-aws-go
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.27.2
 	github.com/aws/aws-sdk-go-v2/config v1.27.18
@@ -7,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.28.12
 	github.com/hashicorp/terraform-plugin-log v0.2.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/paloaltonetworks/cloud-ngfw-aws-go v1.0.8
+	github.com/paloaltonetworks/cloud-ngfw-aws-go/v2 v2.0.0
 	go.uber.org/zap v1.25.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
@@ -32,6 +34,7 @@ require (
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
