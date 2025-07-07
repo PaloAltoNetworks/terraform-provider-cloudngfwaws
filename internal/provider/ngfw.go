@@ -195,7 +195,10 @@ func resourceNgfw() *schema.Resource {
 func createNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 	name := d.Get("name").(string)
-	o := loadNgfw(d)
+	o, err := loadNgfw(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tflog.Info(
 		ctx, "create ngfw",
@@ -264,7 +267,10 @@ func readNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) dia
 
 func updateNgfw(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
-	o := loadNgfw(d)
+	o, err := loadNgfw(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tflog.Info(
 		ctx, "update ngfw",
@@ -532,7 +538,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 	return ans
 }
 
-func loadNgfw(d *schema.ResourceData) ngfw.Info {
+func loadNgfw(d *schema.ResourceData) (ngfw.Info, error) {
 	var sm []ngfw.SubnetMapping
 	list := d.Get("subnet_mapping").([]interface{})
 	if len(list) > 0 {
@@ -543,6 +549,9 @@ func loadNgfw(d *schema.ResourceData) ngfw.Info {
 			subnetId := x["subnet_id"].(string)
 			azName := x["availability_zone"].(string)
 			azId := x["availability_zone_id"].(string)
+			if subnetId != "" && azName != "" {
+				return ngfw.Info{}, fmt.Errorf("cannot specify both subnet_id and availability_zone")
+			}
 			if subnetId != "" {
 				mapping.SubnetId = subnetId
 			}
@@ -578,7 +587,7 @@ func loadNgfw(d *schema.ResourceData) ngfw.Info {
 		LinkId:                       d.Get("link_id").(string),
 		LinkStatus:                   d.Get("link_status").(string),
 		Tags:                         loadTags(d.Get(TagsName)),
-	}
+	}, nil
 }
 
 func saveNgfw(d *schema.ResourceData, o ngfw.ReadResponse) {
