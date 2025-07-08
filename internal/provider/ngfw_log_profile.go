@@ -25,13 +25,14 @@ func dataSourceNgfwLogProfile() *schema.Resource {
 }
 
 func validateNgfwLogProfile(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
-	if diff.Get("account_id").(string) != "" || diff.Get("cloud_watch_metric_namespace").(string) != "" || len(diff.Get("cloudwatch_metric_fields").(*schema.Set).List()) > 0 {
+	if diff.Get("account_id").(string) != "" || diff.Get("cloud_watch_metric_namespace").(string) != "" || len(diff.Get("cloudwatch_metric_fields").([]interface{})) > 0 {
 		if diff.Get("account_id").(string) == "" || diff.Get("cloud_watch_metric_namespace").(string) == "" {
 			return fmt.Errorf("if cloudwatch_metric_fields or account_id or cloud_watch_metric_namespace is set, both account_id and cloud_watch_metric_namespace must be set \nOr if you are using an old deployment please use provider version 2.0.20 or below")
 		}
 	}
 	return nil
 }
+
 func readNgfwLogProfileDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 
@@ -153,7 +154,7 @@ func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.S
 			Description: "Enable advanced threat logging.",
 		},
 		"cloudwatch_metric_fields": {
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
 			Optional:    true,
 			Description: "Cloudwatch metric fields.",
 			Elem: &schema.Schema{
@@ -282,7 +283,7 @@ func loadNgfwLogProfile(d *schema.ResourceData) lp.Info {
 		cwMetrics.Namespace = d.Get("cloud_watch_metric_namespace").(string)
 	}
 
-	if len(d.Get("cloudwatch_metric_fields").(*schema.Set).List()) > 0 {
+	if len(d.Get("cloudwatch_metric_fields").([]interface{})) > 0 {
 		cwMetrics.Metrics = setToSlice(d.Get("cloudwatch_metric_fields"))
 	}
 	if cwMetrics.Namespace == "" && len(cwMetrics.Metrics) == 0 && cwMetrics.AccountId == "" {
@@ -290,7 +291,14 @@ func loadNgfwLogProfile(d *schema.ResourceData) lp.Info {
 	} else {
 		logProfile.CloudwatchMetrics = &cwMetrics
 	}
-
+	metricFieldList := d.Get("cloudwatch_metric_fields").([]interface{})
+	metricFields := make([]string, 0)
+	if len(metricFieldList) > 0 {
+		for _, metricField := range metricFieldList {
+			metricFields = append(metricFields, metricField.(string))
+		}
+		logProfile.CloudWatchMetricsFields = metricFields
+	}
 	logProfile.AdvancedThreatLog = d.Get("advanced_threat_log").(bool)
 	logProfile.Region = d.Get("region").(string)
 	logProfile.UpdateToken = d.Get("update_token").(string)
@@ -318,7 +326,7 @@ func saveNgfwLogProfile(d *schema.ResourceData, o lp.Info) {
 		d.Set("cloud_watch_metric_namespace", o.CloudwatchMetrics.Namespace)
 		d.Set("account_id", o.CloudwatchMetrics.AccountId)
 		if o.CloudwatchMetrics.Metrics != nil {
-			d.Set("cloudwatch_metric_fields", sliceToSet(o.CloudwatchMetrics.Metrics))
+			d.Set("cloudwatch_metric_fields", o.CloudwatchMetrics.Metrics)
 		}
 	}
 	d.Set("firewall_id", o.FirewallId)
