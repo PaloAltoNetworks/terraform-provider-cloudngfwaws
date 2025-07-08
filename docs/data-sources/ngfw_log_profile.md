@@ -37,7 +37,7 @@ data "cloudngfwaws_ngfw_log_profile" "example" {
 
 - `advanced_threat_log` (Boolean) Enable advanced threat logging.
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
-- `cloudwatch_metric_fields` (Set of String) Cloudwatch metric fields.
+- `cloudwatch_metric_fields` (List of String) Cloudwatch metric fields.
 - `firewall_id` (String) The Firewall Id for the NGFW.
 - `id` (String) The ID of this resource.
 - `log_config` (List of Object) Log configuration details. (see [below for nested schema](#nestedatt--log_config))

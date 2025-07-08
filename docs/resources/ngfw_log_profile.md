@@ -98,7 +98,7 @@ resource "aws_subnet" "subnet2" {
 - `account_id` (String) The unique ID of the account.
 - `advanced_threat_log` (Boolean) Enable advanced threat logging.
 - `cloud_watch_metric_namespace` (String) The CloudWatch metric namespace.
-- `cloudwatch_metric_fields` (Set of String) Cloudwatch metric fields.
+- `cloudwatch_metric_fields` (List of String) Cloudwatch metric fields.
 - `log_config` (Block List, Max: 1) Log configuration details. (see [below for nested schema](#nestedblock--log_config))
 - `log_destination` (Block List) List of log destinations. (see [below for nested schema](#nestedblock--log_destination))
 - `ngfw` (String) The name of the NGFW.
