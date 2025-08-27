@@ -268,6 +268,12 @@ func rulestackSchema(isResource bool, rmKeys []string) map[string]*schema.Schema
 			Computed:    true,
 			Description: "Lookup x forwarded for.",
 		},
+		"new_demo_field": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "New Demo Field",
+		},
 		TagsName: tagsSchema(true),
 		"profile_config": {
 			Type:     schema.TypeList,
@@ -355,6 +361,7 @@ func loadRulestack(d *schema.ResourceData) (stack.Info, stack.AddTagsInput) {
 			AccountGroup:        d.Get("account_group").(string),
 			MinimumAppIdVersion: d.Get("minimum_app_id_version").(string),
 			LookupXForwardedFor: d.Get("lookup_x_forwarded_for").(string),
+			NewDemoField:        d.Get("new_demo_field").(string),
 			Profile: stack.ProfileConfig{
 				AntiSpyware:                p["anti_spyware"].(string),
 				AntiVirus:                  p["anti_virus"].(string),
@@ -386,6 +393,7 @@ func saveRulestack(d *schema.ResourceData, name, state string, o stack.Details) 
 	d.Set("account_group", o.AccountGroup)
 	d.Set("minimum_app_id_version", o.MinimumAppIdVersion)
 	d.Set("lookup_x_forwarded_for", o.LookupXForwardedFor)
+	d.Set("new_demo_field", o.NewDemoField)
 	d.Set("profile_config", []interface{}{pc})
 	d.Set(TagsName, dumpTags(o.Tags))
 	d.Set("state", state)
