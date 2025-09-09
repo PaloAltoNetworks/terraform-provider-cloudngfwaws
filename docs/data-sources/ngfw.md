@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_ngfw Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_ngfw Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving NGFW information.
@@ -29,52 +29,106 @@ data "cloudngfwaws_ngfw" "example" {
 
 ### Required
 
-- `name` (String) The NGFW name.
-
-### Optional
-
-- `account_id` (String) The account ID. This field is mandatory if using multiple accounts.
+- `firewall_id` (String) The Firewall ID.
 
 ### Read-Only
 
+- `account_id` (String) The description.
+- `allowlist_accounts` (Set of String) The list of allowed accounts for this NGFW.
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number.
-- `description` (String) The description.
+- `az_list` (Set of String) The list of availability zones for this NGFW.
+- `change_protection` (Set of String) Enables or disables change protection for the NGFW.
+- `deployment_update_token` (String) The update token.
+- `description` (String) The NGFW description.
+- `egress_nat` (List of Object) (see [below for nested schema](#nestedatt--egress_nat))
 - `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
 - `endpoint_service_name` (String) The endpoint service name.
-- `firewall_id` (String) The Id of the NGFW.
+- `endpoints` (List of Object) (see [below for nested schema](#nestedatt--endpoints))
 - `global_rulestack` (String) The global rulestack for this NGFW.
 - `id` (String) The ID of this resource.
 - `link_id` (String) The link ID.
 - `link_status` (String) The link status.
 - `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
+- `name` (String) The NGFW name.
+- `private_access` (List of Object) (see [below for nested schema](#nestedatt--private_access))
 - `rulestack` (String) The rulestack for this NGFW.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `subnet_mapping` (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))
 - `tags` (Map of String) The tags.
 - `update_token` (String) The update token.
-- `vpc_id` (String) The vpc id.
+- `user_id` (List of Object) (see [below for nested schema](#nestedatt--user_id))
+- `vpc_id` (String) The VPC ID for the NGFW.
+
+<a id="nestedatt--egress_nat"></a>
+### Nested Schema for `egress_nat`
+
+Read-Only:
+
+- `enabled` (Boolean)
+- `settings` (List of Object) (see [below for nested schema](#nestedobjatt--egress_nat--settings))
+
+<a id="nestedobjatt--egress_nat--settings"></a>
+### Nested Schema for `egress_nat.settings`
+
+Read-Only:
+
+- `ip_pool_type` (String)
+- `ipam_pool_id` (String)
+
+
+
+<a id="nestedatt--endpoints"></a>
+### Nested Schema for `endpoints`
+
+Read-Only:
+
+- `account_id` (String)
+- `egress_nat_enabled` (Boolean)
+- `endpoint_id` (String)
+- `mode` (String)
+- `prefixes` (List of Object) (see [below for nested schema](#nestedobjatt--endpoints--prefixes))
+- `rejected_reason` (String)
+- `status` (String)
+- `subnet_id` (String)
+- `vpc_id` (String)
+- `zone_id` (String)
+
+<a id="nestedobjatt--endpoints--prefixes"></a>
+### Nested Schema for `endpoints.prefixes`
+
+Read-Only:
+
+- `private_prefix` (List of Object) (see [below for nested schema](#nestedobjatt--endpoints--prefixes--private_prefix))
+
+<a id="nestedobjatt--endpoints--prefixes--private_prefix"></a>
+### Nested Schema for `endpoints.prefixes.private_prefix`
+
+Read-Only:
+
+- `cidrs` (Set of String)
+
+
+
+
+<a id="nestedatt--private_access"></a>
+### Nested Schema for `private_access`
+
+Read-Only:
+
+- `resource_id` (String)
+- `type` (String)
+
 
 <a id="nestedatt--status"></a>
 ### Nested Schema for `status`
 
 Read-Only:
 
-- `attachment` (List of Object) (see [below for nested schema](#nestedobjatt--status--attachment))
+- `device_rulestack_commit_status` (String)
 - `failure_reason` (String)
 - `firewall_status` (String)
 - `rulestack_status` (String)
-
-<a id="nestedobjatt--status--attachment"></a>
-### Nested Schema for `status.attachment`
-
-Read-Only:
-
-- `endpoint_id` (String)
-- `rejected_reason` (String)
-- `status` (String)
-- `subnet_id` (String)
-
 
 
 <a id="nestedatt--subnet_mapping"></a>
@@ -85,3 +139,27 @@ Read-Only:
 - `availability_zone` (String)
 - `availability_zone_id` (String)
 - `subnet_id` (String)
+
+
+<a id="nestedatt--user_id"></a>
+### Nested Schema for `user_id`
+
+Read-Only:
+
+- `agent_name` (String)
+- `collector_name` (String)
+- `custom_include_exclude_network` (List of Object) (see [below for nested schema](#nestedobjatt--user_id--custom_include_exclude_network))
+- `enabled` (Boolean)
+- `port` (Number)
+- `secret_key_arn` (String)
+- `user_id_status` (String)
+
+<a id="nestedobjatt--user_id--custom_include_exclude_network"></a>
+### Nested Schema for `user_id.custom_include_exclude_network`
+
+Read-Only:
+
+- `discovery_include` (Boolean)
+- `enabled` (Boolean)
+- `name` (String)
+- `network_address` (String)

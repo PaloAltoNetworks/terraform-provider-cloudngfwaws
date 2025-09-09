@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/response"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/firewall"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/response"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -158,4 +159,45 @@ func structToMap(data interface{}) (map[string]interface{}, error) {
 
 func PtrToString(s string) *string {
 	return &s
+}
+
+func DefaultPrefixInfo() *firewall.PrefixInfo {
+	cidrs := make([]string, 0)
+	cidrs = append(cidrs, DefaultPrivPrefix...)
+	return &firewall.PrefixInfo{
+		PrivatePrefix: firewall.PrefixConfig{
+			Cidrs: cidrs,
+		},
+		PublicPrefix: firewall.PrefixConfig{
+			Cidrs: make([]string, 0),
+		},
+	}
+}
+
+func EpSubnetMap(eps []firewall.EndpointConfig) map[string]firewall.EndpointConfig {
+	if eps == nil {
+		return nil
+	}
+	res := make(map[string]firewall.EndpointConfig)
+	for _, ep := range eps {
+		if ep.SubnetId == "" {
+			continue
+		}
+		res[ep.SubnetId] = ep
+	}
+	return res
+}
+
+func GetEpId(curEpMap map[string]firewall.EndpointConfig, subnetId string) string {
+	if curEpMap == nil {
+		return ""
+	}
+	if subnetId == "" {
+		return ""
+	}
+	if _, ok := curEpMap[subnetId]; !ok {
+		return ""
+	}
+	reqEp := curEpMap[subnetId]
+	return reqEp.EndpointId
 }

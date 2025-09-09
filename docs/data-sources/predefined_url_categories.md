@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_predefined_url_categories Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_predefined_url_categories Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving the predefined URL categories.

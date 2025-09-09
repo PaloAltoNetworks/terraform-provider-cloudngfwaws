@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/certificate"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/certificate"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

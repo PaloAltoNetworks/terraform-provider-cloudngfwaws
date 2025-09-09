@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_fqdn_list Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_fqdn_list Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving fqdn list information.

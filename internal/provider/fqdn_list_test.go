@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api/fqdn"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/fqdn"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"

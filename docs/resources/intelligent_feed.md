@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_intelligent_feed Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_intelligent_feed Resource"
 subcategory: ""
 description: |-
   Resource for intelligent feed manipulation.

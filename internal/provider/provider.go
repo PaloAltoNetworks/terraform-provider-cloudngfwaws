@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/api"
-	"github.com/paloaltonetworks/cloud-ngfw-aws-go/ngfw/aws"
+	ngfw "github.com/paloaltonetworks/cloud-ngfw-aws-go/v2"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api"
+	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/ngfw/aws"
 )
 
 var resourceTimeout = 120 * time.Minute
@@ -96,6 +96,15 @@ func providerSchema() map[string]*schema.Schema {
 				"The hostname of the API (default: `api.us-east-1.aws.cloudngfw.paloaltonetworks.com`).",
 				"CLOUDNGFWAWS_HOST",
 				"host",
+			),
+		},
+		"v2_host": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: addProviderParamDescription(
+				"The hostname of the V2 API (default: `api.us-east-1.aws.cloudngfw.paloaltonetworks.com`).",
+				"CLOUDNGFWAWS_V2_HOST",
+				"v2_host",
 			),
 		},
 		"mp_region_host": {
@@ -228,15 +237,6 @@ func providerSchema() map[string]*schema.Schema {
 				"timeout",
 			),
 		},
-		"resource_timeout": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			Description: addProviderParamDescription(
-				"The timeout for terraform resource create/update/delete operations (default: `7200s`).",
-				"CLOUDNGFWAWS_RESOURCE_TIMEOUT",
-				"timeout",
-			),
-		},
 		"headers": {
 			Type:     schema.TypeMap,
 			Optional: true,
@@ -319,11 +319,11 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		con := &aws.Client{
 			Host:                  d.Get("host").(string),
 			MPRegionHost:          d.Get("mp_region_host").(string),
+			V2Host:                d.Get("v2_host").(string),
 			AccessKey:             d.Get("access_key").(string),
 			SecretKey:             d.Get("secret_key").(string),
 			Profile:               d.Get("profile").(string),
 			SyncMode:              d.Get("sync_mode").(bool),
-			ResourceTimeout:       d.Get("resource_timeout").(int),
 			Region:                d.Get("region").(string),
 			MPRegion:              d.Get("mp_region").(string),
 			Arn:                   d.Get("arn").(string),
@@ -341,6 +341,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 			CheckEnvironment: true,
 			Agent:            p.UserAgent("terraform-provider-cloudngfwaws", version),
+			Origin:           aws.OriginPA,
 		}
 
 		if err := con.Setup(); err != nil {
@@ -354,8 +355,6 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		apiClient := api.NewAPIClient(con, ctx, 5000, "", false)
 		api.Logger.Infof("sync_mode:%+v", apiClient.IsSyncModeEnabled(ctx))
-		resourceTimeout = time.Duration(apiClient.GetResourceTimeout(ctx)) * time.Second
-		api.Logger.Infof("resource_timeout:%+v", resourceTimeout)
 		return apiClient, nil
 	}
 }

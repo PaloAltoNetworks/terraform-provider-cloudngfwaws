@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_country Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_country Data Source"
 subcategory: ""
 description: |-
   Data source get a list of countries and their country codes.

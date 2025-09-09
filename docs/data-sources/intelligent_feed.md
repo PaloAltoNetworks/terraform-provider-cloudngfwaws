@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_intelligent_feed Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_intelligent_feed Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving intelligent feed information.

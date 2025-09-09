@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_fqdn_list Resource"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_fqdn_list Resource"
 subcategory: ""
 description: |-
   Resource for fqdn list manipulation.

@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_predefined_url_category_override Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_predefined_url_category_override Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving a predefined URL category override.

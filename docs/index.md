@@ -38,8 +38,8 @@ Terraform 0.13 and later:
 terraform {
   required_providers {
     cloudngfwaws = {
-      source = "PaloAltoNetworks/cloudngfwaws"
-      version = "2.0.6"
+      source  = "paloaltonetworks/terraform-provider-cloudngfwaws"
+      version = "1.0.8"
     }
   }
 }
@@ -93,7 +93,8 @@ There are multiple ways to specify the provider's parameters.  If overlapping va
 - `skip_verify_certificate` (Boolean) Skip verifying the SSL certificate. Environment variable: `CLOUDNGFWAWS_SKIP_VERIFY_CERTIFICATE`. JSON conf file variable: `skip-verify-certificate`.
 - `sync_mode` (Boolean) Enable synchronous mode while creating resources Environment variable: `CLOUDNGFWAWS_SYNC_MODE`. JSON conf file variable: `sync_mode`.
 - `timeout` (Number) The timeout for any single API call (default: `30`). Environment variable: `CLOUDNGFWAWS_TIMEOUT`. JSON conf file variable: `timeout`.
-- `resource_timeout` (Number) The timeout for terraform resource create/update/delete operations (default: `7200s`). Environment variable: `CLOUDNGFWAWS_RESOURCE_TIMEOUT`. JSON conf file variable: `resource_timeout`.
+- `v2_host` (String) The hostname of the V2 API (default: `api.us-east-1.aws.cloudngfw.paloaltonetworks.com`). Environment variable: `CLOUDNGFWAWS_V2_HOST`. JSON conf file variable: `v2_host`.
+
 
 ## ezrulestack Module
 

@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_ngfws Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_ngfws Data Source"
 subcategory: ""
 description: |-
   Data source get a list of NGFWs.
@@ -27,6 +27,7 @@ data "cloudngfwaws_ngfws" "example" {}
 
 ### Optional
 
+- `region` (String) The region to filter on.
 - `rulestack` (String) The rulestack to filter on.
 - `vpc_ids` (List of String) List of vpc ids to filter on.
 
@@ -40,5 +41,5 @@ data "cloudngfwaws_ngfws" "example" {}
 
 Read-Only:
 
-- `account_id` (String)
-- `name` (String)
+- `firewall_id` (String)
+- `region` (String)

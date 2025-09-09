@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_custom_url_category Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_custom_url_category Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving custom url category information.

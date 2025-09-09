@@ -1,5 +1,5 @@
 ---
-page_title: "cloudngfwaws: cloudngfwaws_rulestack Data Source"
+page_title: "terraform-provider-cloudngfwaws: cloudngfwaws_rulestack Data Source"
 subcategory: ""
 description: |-
   Data source for retrieving rulestack information.
