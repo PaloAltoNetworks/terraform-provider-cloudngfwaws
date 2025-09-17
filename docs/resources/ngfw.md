@@ -22,17 +22,13 @@ Resource for NGFW manipulation.
 ```terraform
 resource "cloudngfwaws_ngfw" "example" {
   name        = "example-instance"
-  vpc_id      = aws_vpc.example.id
-  account_id  = "12345678"
   description = "Example description"
 
-  endpoint_mode = "ServiceManaged"
-  subnet_mapping {
+  endpoints {
     subnet_id = aws_subnet.subnet1.id
-  }
-
-  subnet_mapping {
-    subnet_id = aws_subnet.subnet2.id
+    mode = "ServiceManaged"
+    vpc_id =  aws_vpc.example.id
+    account_id = "12345678"
   }
 
   rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
