@@ -1,34 +1,19 @@
 resource "cloudngfwaws_ngfw_log_profile" "example" {
-  ngfw       = cloudngfwaws_ngfw.x.name
-  account_id = cloudngfwaws_ngfw.x.account_id
-  log_destination {
-    destination_type = "S3"
-    destination      = "my-s3-bucket"
-    log_type         = "TRAFFIC"
-  }
-  log_destination {
-    destination_type = "CloudWatchLogs"
-    destination      = "panw-log-group"
-    log_type         = "THREAT"
+  firewall_id = cloudngfwaws_ngfw.x.firewall_id
+  log_config {
+    log_destination      = "S3"
+    log_destination_type = "my-s3-bucket"
+    log_type             = ["TRAFFIC", "THREAT"]
+    account_id           = ["123456789012"]
   }
 }
 
 resource "cloudngfwaws_ngfw" "x" {
   name        = "example-instance"
-  vpc_id      = aws_vpc.example.id
-  account_id  = "12345678"
   description = "Example description"
+  az_list     = ["use1-az1"]
 
-  endpoint_mode = "ServiceManaged"
-  subnet_mapping {
-    subnet_id = aws_subnet.subnet1.id
-  }
-
-  subnet_mapping {
-    subnet_id = aws_subnet.subnet2.id
-  }
-
-  rulestack = "example-rulestack"
+  rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
 
   tags = {
     Foo = "bar"

@@ -23,13 +23,7 @@ Resource for NGFW manipulation.
 resource "cloudngfwaws_ngfw" "example" {
   name        = "example-instance"
   description = "Example description"
-
-  endpoints {
-    subnet_id = aws_subnet.subnet1.id
-    mode = "ServiceManaged"
-    vpc_id =  aws_vpc.example.id
-    account_id = "12345678"
-  }
+  az_list     = ["use1-az1"]
 
   rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
 
@@ -77,7 +71,7 @@ resource "aws_subnet" "subnet2" {
 
 ### Required
 
-- `az_list` (Set of String) The list of availability zones for this NGFW.
+- `az_list` (Set of String) The list of availability zone IDs for this NGFW.
 - `name` (String) The NGFW name.
 
 ### Optional

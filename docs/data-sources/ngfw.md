@@ -37,7 +37,7 @@ data "cloudngfwaws_ngfw" "example" {
 - `allowlist_accounts` (Set of String) The list of allowed accounts for this NGFW.
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number.
-- `az_list` (Set of String) The list of availability zones for this NGFW.
+- `az_list` (Set of String) The list of availability zone IDs for this NGFW.
 - `change_protection` (Set of String) Enables or disables change protection for the NGFW.
 - `deployment_update_token` (String) The update token.
 - `description` (String) The NGFW description.
