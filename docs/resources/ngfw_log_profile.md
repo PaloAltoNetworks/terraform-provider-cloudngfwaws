@@ -19,37 +19,22 @@ Resource for NGFW log profile manipulation.
 
 ```terraform
 resource "cloudngfwaws_ngfw_log_profile" "example" {
-  firewall_id       = cloudngfwaws_ngfw.x.firewall_id
-  account_id = cloudngfwaws_ngfw.x.account_id
-  advanced_threat_log = true
-  cloudwatch_metric_fields = ["Dataplane_CPU_Utilization", "Session_Throughput_Kbps", "BytesIn", "BytesOut"]
-  cloud_watch_metric_namespace = "PaloAltoCloudNGFW"
+  firewall_id = cloudngfwaws_ngfw.x.firewall_id
   log_config {
-      log_destination = "panw-log-group"
-      log_destination_type = "CloudWatchLogs"
-      log_type = ["THREAT"]
-      account_id = "251583708250"
-      role_type = "IamBased"
-  }
-  log_config {
-      log_destination = "my-s3-bucket"
-      log_destination_type = "S3"
-      log_type = ["TRAFFIC"]
-      account_id = "251583708250"
-      role_type = "IamBased"
+    log_destination      = "S3"
+    log_destination_type = "my-s3-bucket"
+    log_type             = ["TRAFFIC", "THREAT"]
+    account_id           = ["123456789012"]
   }
 }
 
 resource "cloudngfwaws_ngfw" "x" {
   name        = "example-instance"
   description = "Example description"
-  endpoints {
-    subnet_id = aws_subnet.subnet1.id
-    mode = "ServiceManaged"
-    vpc_id =  aws_vpc.example.id
-    account_id = "12345678"
-  }
-  rulestack = "example-rulestack"
+  az_list     = ["use1-az1"]
+
+  rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
+
   tags = {
     Foo = "bar"
   }

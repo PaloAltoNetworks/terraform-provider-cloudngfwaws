@@ -348,7 +348,7 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 			Required:    true,
-			Description: "The list of availability zones for this NGFW.",
+			Description: "The list of availability zone IDs for this NGFW.",
 		},
 		"subnet_mapping": {
 			Type:        schema.TypeList,
