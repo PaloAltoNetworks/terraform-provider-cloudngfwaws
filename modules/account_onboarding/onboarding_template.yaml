@@ -407,7 +407,6 @@ Resources:
     - CustomNotificationLambda
     - CustomNotificationLambdaRole
     - LogMetricRole
-    - DecryptionRole
     - NetworkMonitoringRole
 
 Outputs:
