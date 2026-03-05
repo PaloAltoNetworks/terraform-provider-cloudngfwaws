@@ -133,6 +133,7 @@ func providerSchema() map[string]*schema.Schema {
 				"CLOUDNGFWAWS_SECRET_KEY",
 				"secret-key",
 			),
+			Sensitive: true,
 		},
 		"profile": {
 			Type:     schema.TypeString,
@@ -142,6 +143,7 @@ func providerSchema() map[string]*schema.Schema {
 				"CLOUDNGFWAWS_PROFILE",
 				"profile",
 			),
+			Sensitive: true,
 		},
 		"sync_mode": {
 			Type:     schema.TypeBool,
