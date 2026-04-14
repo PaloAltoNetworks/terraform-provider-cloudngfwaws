@@ -8,6 +8,7 @@ import (
 	"github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api"
 	lp "github.com/paloaltonetworks/cloud-ngfw-aws-go/v2/api/logprofile"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -24,15 +25,6 @@ func dataSourceNgfwLogProfile() *schema.Resource {
 	}
 }
 
-func validateNgfwLogProfile(ctx context.Context, diff *schema.ResourceDiff, v interface{}) error {
-	if diff.Get("account_id").(string) != "" || diff.Get("cloud_watch_metric_namespace").(string) != "" || len(diff.Get("cloudwatch_metric_fields").([]interface{})) > 0 {
-		if diff.Get("account_id").(string) == "" || diff.Get("cloud_watch_metric_namespace").(string) == "" {
-			return fmt.Errorf("if cloudwatch_metric_fields or account_id or cloud_watch_metric_namespace is set, both account_id and cloud_watch_metric_namespace must be set \nOr if you are using an old deployment please use provider version 2.0.20 or below")
-		}
-	}
-	return nil
-}
-
 func readNgfwLogProfileDataSource(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 
@@ -41,7 +33,23 @@ func readNgfwLogProfileDataSource(ctx context.Context, d *schema.ResourceData, m
 	req := lp.ReadInput{
 		FirewallId: firewallId,
 	}
-
+	var aid string
+	var ngfw string
+	version := getLogProfileSchemaVersion(d)
+	ctx = context.WithValue(ctx, SchemaVersion, version)
+	if version == SchemaVersionV1 {
+		aid := d.Get("account_id").(string)
+		ngfw := d.Get("ngfw").(string)
+		if aid == "" || ngfw == "" {
+			return diag.Errorf("account id and firewall name must be set")
+		}
+		req = lp.ReadInput{
+			Firewall:  ngfw,
+			AccountId: aid,
+		}
+	} else if req.FirewallId == "" {
+		return diag.Errorf("firewall id must be set")
+	}
 	res, err := svc.ReadFirewallLogProfile(ctx, req)
 	if err != nil {
 		if isObjectNotFound(err) {
@@ -51,10 +59,27 @@ func readNgfwLogProfileDataSource(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(buildNgfwLogProfileId("log_profile", firewallId))
+	if version == SchemaVersionV1 {
+		d.SetId(buildNgfwLogProfileId("log_profile", firewallId))
+	} else {
+		d.SetId(buildNgfwLogProfileId(aid, ngfw))
+	}
 
 	saveNgfwLogProfile(d, *res.Response)
 
+	return nil
+}
+
+func customizeDiffNgfwLogProfile(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	version := getLogProfileSchemaVersionFromDiff(d)
+	old, new := d.GetChange("firewall_id")
+	oldVal := old.(string)
+	newVal := new.(string)
+	if version == SchemaVersionV2 && oldVal != newVal {
+		if err := d.ForceNew("firewall_id"); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -73,30 +98,104 @@ func resourceNgfwLogProfile() *schema.Resource {
 		},
 
 		Schema:        ngfwLogProfileSchema(true, nil),
-		CustomizeDiff: validateNgfwLogProfile,
+		CustomizeDiff: customizeDiffNgfwLogProfile,
 	}
+}
+
+func getLogProfileSchemaVersionFromDiff(d *schema.ResourceDiff) string {
+	tflog.Info(
+		context.TODO(), "getting schema version",
+		map[string]interface{}{},
+	)
+	logDest := d.Get("log_destination").([]interface{})
+	if len(logDest) > 0 {
+		return SchemaVersionV1
+	}
+	accountId := d.Get("account_id").(string)
+	fwName := d.Get("ngfw").(string)
+	if accountId != "" && fwName != "" {
+		return SchemaVersionV1
+	}
+	return SchemaVersionV2
+}
+
+func getLogProfileSchemaVersion(d *schema.ResourceData) string {
+	tflog.Info(
+		context.TODO(), "getting schema version",
+		map[string]interface{}{},
+	)
+	logDest := d.Get("log_destination").([]interface{})
+	if len(logDest) > 0 {
+		return SchemaVersionV1
+	}
+	accountId := d.Get("account_id").(string)
+	fwName := d.Get("ngfw").(string)
+	if accountId != "" && fwName != "" {
+		return SchemaVersionV1
+	}
+	return SchemaVersionV2
+}
+
+func validateLogProfileSchema(d *schema.ResourceData) error {
+	tflog.Info(
+		context.TODO(), "validating schema",
+		map[string]interface{}{},
+	)
+	logDest := d.Get("log_destination").([]interface{})
+	logConfig := d.Get("log_config").([]interface{})
+	if len(logDest) > 0 && len(logConfig) > 0 {
+		return fmt.Errorf("cannot use both log_destination and log_config blocks simultaneously")
+	}
+	accountId := d.Get("account_id").(string)
+	fwName := d.Get("ngfw").(string)
+	fwId := d.Get("firewall_id").(string)
+	if (accountId == "" || fwName == "") && fwId == "" {
+		return fmt.Errorf("account_id and ngfw or firewall_id must be provided")
+	}
+	return nil
 }
 
 func createUpdateNgfwLogProfile(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
+	if err := validateLogProfileSchema(d); err != nil {
+		return diag.FromErr(err)
+	}
 	o := loadNgfwLogProfile(d)
-
+	version := getLogProfileSchemaVersion(d)
+	ctx = context.WithValue(ctx, SchemaVersion, version)
 	if err := svc.UpdateFirewallLogProfile(ctx, o); err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(buildNgfwLogProfileId("log_profile", o.FirewallId))
-
+	if version == SchemaVersionV1 {
+		d.SetId(buildNgfwLogProfileId(o.AccountId, o.Firewall))
+	} else {
+		d.SetId(buildNgfwLogProfileId("log_profile", o.FirewallId))
+	}
 	return readNgfwLogProfile(ctx, d, meta)
 }
 
 func readNgfwLogProfile(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	svc := meta.(*api.ApiClient)
 
+	if err := validateLogProfileSchema(d); err != nil {
+		return diag.FromErr(err)
+	}
+
 	firewallId := d.Get("firewall_id").(string)
 
 	req := lp.ReadInput{
 		FirewallId: firewallId,
+	}
+
+	version := getLogProfileSchemaVersion(d)
+	ctx = context.WithValue(ctx, SchemaVersion, version)
+	if version == SchemaVersionV1 {
+		aid := d.Get("account_id").(string)
+		ngfw := d.Get("ngfw").(string)
+		req = lp.ReadInput{
+			Firewall:  ngfw,
+			AccountId: aid,
+		}
 	}
 
 	res, err := svc.ReadFirewallLogProfile(ctx, req)
@@ -134,9 +233,8 @@ func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.S
 		},
 		"firewall_id": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "The Firewall Id for the NGFW.",
-			ForceNew:    true,
 		},
 		"account_id": {
 			Type:        schema.TypeString,
@@ -247,7 +345,7 @@ func ngfwLogProfileSchema(isResource bool, rmKeys []string) map[string]*schema.S
 	}
 
 	if !isResource {
-		computed(ans, "", []string{"ngfw", "account_id"})
+		computed(ans, "", []string{"ngfw", "account_id", "firewall_id"})
 	}
 
 	return ans
@@ -275,12 +373,26 @@ func loadNgfwLogProfile(d *schema.ResourceData) lp.Info {
 			logProfile.LogConfig = &logConfig
 		}
 	}
+	l := d.Get("log_destination").([]interface{})
+	var dests []lp.LogDestination
+	if len(l) > 0 {
+		dests = make([]lp.LogDestination, 0, len(l))
+		for i := range l {
+			x := l[i].(map[string]interface{})
+			dests = append(dests, lp.LogDestination{
+				Destination:     x["destination"].(string),
+				DestinationType: x["destination_type"].(string),
+				LogType:         x["log_type"].(string),
+			})
+		}
+	}
 	cwMetrics := lp.CloudwatchMetrics{}
 	if d.Get("account_id") != nil {
 		cwMetrics.AccountId = d.Get("account_id").(string)
 	}
 	if d.Get("cloud_watch_metric_namespace") != nil {
 		cwMetrics.Namespace = d.Get("cloud_watch_metric_namespace").(string)
+		logProfile.CloudWatchMetricNamespace = d.Get("cloud_watch_metric_namespace").(string)
 	}
 
 	if len(d.Get("cloudwatch_metric_fields").([]interface{})) > 0 {
@@ -303,6 +415,9 @@ func loadNgfwLogProfile(d *schema.ResourceData) lp.Info {
 	logProfile.Region = d.Get("region").(string)
 	logProfile.UpdateToken = d.Get("update_token").(string)
 	logProfile.FirewallId = d.Get("firewall_id").(string)
+	logProfile.LogDestinations = dests
+	logProfile.AccountId = d.Get("account_id").(string)
+	logProfile.Firewall = d.Get("ngfw").(string)
 
 	return logProfile
 }
@@ -322,6 +437,18 @@ func saveNgfwLogProfile(d *schema.ResourceData, o lp.Info) {
 		logConfig = append(logConfig, logConfigMap)
 		d.Set("log_config", logConfig)
 	}
+	var dests []interface{}
+	if len(o.LogDestinations) > 0 {
+		dests = make([]interface{}, 0, len(o.LogDestinations))
+		for _, x := range o.LogDestinations {
+			dests = append(dests, map[string]interface{}{
+				"destination":      x.Destination,
+				"destination_type": x.DestinationType,
+				"log_type":         x.LogType,
+			})
+		}
+	}
+	d.Set("log_destination", dests)
 	if o.CloudwatchMetrics != nil {
 		d.Set("cloud_watch_metric_namespace", o.CloudwatchMetrics.Namespace)
 		d.Set("account_id", o.CloudwatchMetrics.AccountId)
@@ -329,6 +456,12 @@ func saveNgfwLogProfile(d *schema.ResourceData, o lp.Info) {
 			d.Set("cloudwatch_metric_fields", o.CloudwatchMetrics.Metrics)
 		}
 	}
+	d.Set("cloud_watch_metric_namespace", o.CloudWatchMetricNamespace)
+	if len(o.CloudWatchMetricsFields) > 0 {
+		d.Set("cloudwatch_metric_fields", o.CloudWatchMetricsFields)
+	}
+	d.Set("account_id", o.AccountId)
+	d.Set("ngfw", o.Firewall)
 	d.Set("firewall_id", o.FirewallId)
 	d.Set("region", o.Region)
 	d.Set("advanced_threat_log", o.AdvancedThreatLog)

@@ -22,8 +22,18 @@ Resource for NGFW manipulation.
 ```terraform
 resource "cloudngfwaws_ngfw" "example" {
   name        = "example-instance"
+  vpc_id      = aws_vpc.example.id
+  account_id  = "12345678"
   description = "Example description"
-  az_list     = ["use1-az1"]
+
+  endpoint_mode = "ServiceManaged"
+  subnet_mapping {
+    subnet_id = aws_subnet.subnet1.id
+  }
+
+  subnet_mapping {
+    subnet_id = aws_subnet.subnet2.id
+  }
 
   rulestack = cloudngfwaws_commit_rulestack.rs.rulestack
 
@@ -71,27 +81,30 @@ resource "aws_subnet" "subnet2" {
 
 ### Required
 
-- `az_list` (Set of String) The list of availability zone IDs for this NGFW.
 - `name` (String) The NGFW name.
 
 ### Optional
 
-- `account_id` (String) The description.
+- `account_id` (String) The Account Id.
 - `allowlist_accounts` (Set of String) The list of allowed accounts for this NGFW.
 - `app_id_version` (String) App-ID version number.
 - `automatic_upgrade_app_id_version` (Boolean) Automatic App-ID upgrade version number. Defaults to `true`.
+- `az_list` (Set of String) The list of availability zone IDs for this NGFW.
 - `change_protection` (Set of String) Enables or disables change protection for the NGFW.
 - `description` (String) The NGFW description.
 - `egress_nat` (Block List) (see [below for nested schema](#nestedblock--egress_nat))
 - `endpoint_mode` (String) Set endpoint mode from the following options. Valid values are `ServiceManaged` or `CustomerManaged`.
 - `endpoints` (Block List) (see [below for nested schema](#nestedblock--endpoints))
+- `firewall_id` (String) The Firewall ID.
 - `global_rulestack` (String) The global rulestack for this NGFW.
 - `link_id` (String) The link ID.
 - `multi_vpc` (Boolean) Share NGFW with Multiple VPCs. This feature can be enabled only if the endpoint_mode is CustomerManaged.
 - `private_access` (Block List) (see [below for nested schema](#nestedblock--private_access))
 - `rulestack` (String) The rulestack for this NGFW.
+- `security_zones` (Block List) (see [below for nested schema](#nestedblock--security_zones))
 - `subnet_mapping` (Block List) Subnet mappings. (see [below for nested schema](#nestedblock--subnet_mapping))
 - `tags` (Map of String) The tags.
+- `tier` (String) Firewall Instance Tier. Allowed values are 'base', 'standard', or 'premium'.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `user_id` (Block List) (see [below for nested schema](#nestedblock--user_id))
 - `vpc_id` (String) The VPC ID for the NGFW.
@@ -100,7 +113,6 @@ resource "aws_subnet" "subnet2" {
 
 - `deployment_update_token` (String) The update token.
 - `endpoint_service_name` (String) The endpoint service name.
-- `firewall_id` (String) The Firewall ID.
 - `id` (String) The ID of this resource.
 - `link_status` (String) The link status.
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
@@ -175,6 +187,45 @@ Required:
 - `type` (String) Type of Private Access
 
 
+<a id="nestedblock--security_zones"></a>
+### Nested Schema for `security_zones`
+
+Required:
+
+- `endpoint_id` (String) Endpoint ID of the security zone
+
+Optional:
+
+- `account_id` (String) The account id.
+- `egress_nat_enabled` (Boolean) Enable egress NAT
+- `mode` (String) The endpoint mode. Valid values are `ServiceManaged` or `CustomerManaged`.
+- `prefixes` (Block List) (see [below for nested schema](#nestedblock--security_zones--prefixes))
+- `subnet_id` (String) The subnet id.
+- `vpc_id` (String) The vpc id.
+- `zone_id` (String) The AZ id.
+
+Read-Only:
+
+- `rejected_reason` (String) The rejected reason.
+- `status` (String) The attachment status.
+
+<a id="nestedblock--security_zones--prefixes"></a>
+### Nested Schema for `security_zones.prefixes`
+
+Optional:
+
+- `private_prefix` (Block List) (see [below for nested schema](#nestedblock--security_zones--prefixes--private_prefix))
+
+<a id="nestedblock--security_zones--prefixes--private_prefix"></a>
+### Nested Schema for `security_zones.prefixes.private_prefix`
+
+Optional:
+
+- `cidrs` (Set of String)
+
+
+
+
 <a id="nestedblock--subnet_mapping"></a>
 ### Nested Schema for `subnet_mapping`
 
@@ -233,10 +284,21 @@ Required:
 
 Read-Only:
 
+- `attachment` (List of Object) (see [below for nested schema](#nestedobjatt--status--attachment))
 - `device_rulestack_commit_status` (String)
 - `failure_reason` (String)
 - `firewall_status` (String)
 - `rulestack_status` (String)
+
+<a id="nestedobjatt--status--attachment"></a>
+### Nested Schema for `status.attachment`
+
+Read-Only:
+
+- `endpoint_id` (String)
+- `rejected_reason` (String)
+- `status` (String)
+- `subnet_id` (String)
 
 
 ## Import
