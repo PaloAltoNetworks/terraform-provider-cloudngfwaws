@@ -41,5 +41,7 @@ data "cloudngfwaws_ngfws" "example" {}
 
 Read-Only:
 
+- `account_id` (String)
 - `firewall_id` (String)
+- `name` (String)
 - `region` (String)
