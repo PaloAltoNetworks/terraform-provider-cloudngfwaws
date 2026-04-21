@@ -11,22 +11,40 @@ Resource for NGFW manipulation.
 
 -> **NOTE:** Having the `rulestack` param reference the rulestack name from `cloudngfwaws_commit_rulestack` ensures that Terraform will only try to spin up a NGFW instance if the commit is successful.
 
-
 ## Admin Permission Type
 
 * `Firewall`
 
+## Configuration Guide
 
-## Example Usage
+---
+
+### V1 Schema — Existing Deployments Only
+
+> **Important:** V1 schema is for existing customers who already have firewalls deployed with Terraform.
+> New firewalls must be created using the [V2 schema](#v2-schema--new-firewalls).
+
+---
+
+#### 1. Managing an Existing Firewall (no configuration changes)
+
+Use the V1 schema as-is. No steps required beyond ensuring your existing state is in sync.
+
+**Steps:**
+
+1. Verify there is no unintended drift:
+   2. If the plan is clean, no action needed. If drift is detected, review and apply:
+   
+**Full example — existing V1 firewall:**
 
 ```terraform
 resource "cloudngfwaws_ngfw" "example" {
-  name        = "example-instance"
-  vpc_id      = aws_vpc.example.id
-  account_id  = "12345678"
-  description = "Example description"
-
+  name          = "example-instance"
+  vpc_id        = aws_vpc.example.id
+  account_id    = "111111111111"
+  description   = "Example description"
   endpoint_mode = "ServiceManaged"
+
   subnet_mapping {
     subnet_id = aws_subnet.subnet1.id
   }
@@ -45,36 +63,331 @@ resource "cloudngfwaws_ngfw" "example" {
 resource "cloudngfwaws_commit_rulestack" "rs" {
   rulestack = "my-rulestack"
 }
+```
 
-resource "aws_vpc" "example" {
-  cidr_block = "172.16.0.0/16"
+---
 
-  tags = {
-    Name = "tf-example"
+#### 2. Configuring Egress NAT on an Existing Firewall (V1)
+
+Egress NAT can be added to an existing V1 firewall without recreating the resource.
+
+> `ip_pool_type` accepts `AWSService` or `BYOIP`. Use `BYOIP` together with `ipam_pool_id`
+> if bringing your own IP pool.
+
+**Steps:**
+
+1. Add the `egress_nat` block to your existing resource.
+
+**Full example — existing V1 firewall with Egress NAT enabled:**
+
+```terraform
+resource "cloudngfwaws_ngfw" "example" {
+  name          = "example-instance"
+  vpc_id        = "vpc-0a1b2c3d4e5f00001"
+  account_id    = "111111111111"
+  description   = "Example description"
+  endpoint_mode = "CustomerManaged"
+
+  subnet_mapping {
+    availability_zone = "us-east-1a"
   }
-}
 
-resource "aws_subnet" "subnet1" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "172.16.10.0/24"
-  availability_zone = "us-west-2a"
-
-  tags = {
-    Name = "tf-example"
+  subnet_mapping {
+    availability_zone = "us-east-1c"
   }
-}
 
-resource "aws_subnet" "subnet2" {
-  vpc_id            = aws_vpc.my_vpc.id
-  cidr_block        = "172.16.20.0/24"
-  availability_zone = "us-west-2b"
+  rulestack = "my-rulestack"
+
+  egress_nat {
+    enabled = true
+    settings {
+      ip_pool_type = "AWSService"
+    }
+  }
 
   tags = {
-    Name = "tf-example"
+    Foo = "bar"
   }
 }
 ```
 
+**To disable Egress NAT:** set `enabled = false` and re-apply.
+
+---
+
+#### 3. Configuring Security Zones on an Existing Firewall (V1)
+
+Security zones let you enable or disable Egress NAT per endpoint and add or remove private CIDR prefixes.
+
+> **Prerequisite:** Endpoints must be successfully created and in `ACCEPTED` state before
+> security zones can be configured. Check `status.attachment[*].status` in Terraform state
+> or the AWS console before proceeding.
+
+**Steps:**
+
+1. Confirm endpoint status is `ACCEPTED`:
+   ```shell
+   terraform show | grep -A 10 "attachment"
+   ```
+2. Copy the `endpoint_id` value from the `status.attachment` output.
+3. Add the `security_zones` block to your existing resource referencing that endpoint ID.
+
+**Full example — existing V1 firewall with Egress NAT and security zones:**
+
+```terraform
+resource "cloudngfwaws_ngfw" "example" {
+  name          = "example-instance"
+  vpc_id        = "vpc-0a1b2c3d4e5f00001"
+  account_id    = "111111111111"
+  description   = "Example description"
+  endpoint_mode = "CustomerManaged"
+
+  subnet_mapping {
+    availability_zone = "us-east-1a"
+  }
+
+  subnet_mapping {
+    availability_zone = "us-east-1c"
+  }
+
+  rulestack = "my-rulestack"
+
+  egress_nat {
+    enabled = true
+    settings {
+      ip_pool_type = "AWSService"
+    }
+  }
+
+  # Add after endpoint is ACCEPTED — use endpoint_id from status.attachment[*].endpoint_id
+  security_zones {
+    endpoint_id        = "vpce-0a1b2c3d4e5f00001"
+    egress_nat_enabled = true
+    prefixes {
+      private_prefix {
+        cidrs = [
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16",
+          "100.64.0.0/10"
+        ]
+      }
+    }
+  }
+
+  tags = {
+    Foo = "bar"
+  }
+}
+```
+
+**To remove private prefixes:** remove the CIDR entries from `cidrs` and re-apply.
+**To disable Egress NAT for a specific zone:** set `egress_nat_enabled = false` and re-apply.
+
+---
+
+### V2 Schema — New Firewalls
+
+> **Important:** New firewalls can only be created using the V2 schema. Use `az_list`
+> instead of `subnet_mapping`, and `endpoints` instead of `endpoint_mode`/`subnet_mapping`.
+
+---
+
+#### 1. Creating a New Firewall (V2)
+
+Firewall creation uses `az_list` to specify availability zones.
+**Do not include `endpoints` during creation** — they must be added in a separate update after the firewall is running.
+
+**Steps:**
+
+1. Define the resource with `az_list` and no `endpoints` block.
+4. Proceed to **Step 2** once the firewall reaches `RUNNING` state.
+
+**Full example — new V2 firewall (creation only):**
+
+```terraform
+resource "cloudngfwaws_ngfw" "example" {
+  name               = "my-firewall"
+  description        = "My new firewall"
+  az_list            = ["use1-az1", "use1-az4"]
+  allowlist_accounts = ["111111111111"]
+
+  tags = {
+    Owner = "my-team"
+  }
+}
+```
+
+---
+
+#### 2. Adding Endpoints to a V2 Firewall
+
+Endpoints connect the firewall to customer VPCs. They must be added in a separate
+a separate update after the firewall is running.
+
+**Steps:**
+
+1. Confirm the firewall status is `RUNNING`:
+   ```shell
+   terraform show | grep firewall_status
+   ```
+2. Add one or more `endpoints` blocks to the existing resource.
+5. Wait for each endpoint's `status` to reach `ACCEPTED` before proceeding to configure
+   Egress NAT or private prefixes:
+   ```shell
+   terraform show | grep -A 10 "endpoints"
+   ```
+
+**Full example — V2 firewall with endpoints added:**
+
+```terraform
+resource "cloudngfwaws_ngfw" "example" {
+  name               = "my-firewall"
+  description        = "My new firewall"
+  az_list            = ["use1-az1", "use1-az4"]
+  allowlist_accounts = ["111111111111"]
+
+  endpoints {
+    account_id = "111111111111"
+    vpc_id     = "vpc-0a1b2c3d4e5f00002"
+    subnet_id  = "subnet-0a1b2c3d4e5f00001"
+    mode       = "ServiceManaged"
+  }
+
+  endpoints {
+    account_id = "111111111111"
+    vpc_id     = "vpc-0a1b2c3d4e5f00003"
+    subnet_id  = "subnet-0a1b2c3d4e5f00002"
+    mode       = "ServiceManaged"
+  }
+
+  tags = {
+    Owner = "my-team"
+  }
+}
+```
+
+---
+
+#### 3. Configuring Egress NAT on a V2 Firewall
+
+Egress NAT can be enabled at the firewall level once at least one endpoint is accepted.
+
+> **Prerequisite:** At least one endpoint must be in `ACCEPTED` state.
+
+**Steps:**
+
+1. Add the `egress_nat` block to the resource.
+
+**Full example — V2 firewall with Egress NAT enabled:**
+
+```terraform
+resource "cloudngfwaws_ngfw" "example" {
+  name               = "my-firewall"
+  description        = "My new firewall"
+  az_list            = ["use1-az1", "use1-az4"]
+  allowlist_accounts = ["111111111111"]
+
+  endpoints {
+    account_id = "111111111111"
+    vpc_id     = "vpc-0a1b2c3d4e5f00002"
+    subnet_id  = "subnet-0a1b2c3d4e5f00001"
+    mode       = "ServiceManaged"
+  }
+
+  endpoints {
+    account_id = "111111111111"
+    vpc_id     = "vpc-0a1b2c3d4e5f00003"
+    subnet_id  = "subnet-0a1b2c3d4e5f00002"
+    mode       = "ServiceManaged"
+  }
+
+  egress_nat {
+    enabled = true
+    settings {
+      ip_pool_type = "AWSService"
+    }
+  }
+
+  tags = {
+    Owner = "my-team"
+  }
+}
+```
+
+**To disable Egress NAT:** set `enabled = false` and re-apply.
+
+---
+
+#### 4. Configuring Private Prefixes and Per-Endpoint Egress NAT (V2)
+
+Once an endpoint is accepted, you can enable or disable Egress NAT and configure private
+CIDR prefixes on a per-endpoint basis within the `endpoints` block.
+
+> **Prerequisite:** The endpoint must be in `ACCEPTED` state. The `endpoint_id`
+> is a read-only computed value — retrieve it from Terraform state after apply:
+> ```shell
+> terraform show | grep -A 15 "endpoints"
+> ```
+
+**Steps:**
+
+1. Update the relevant `endpoints` block with `egress_nat_enabled` and `prefixes`.
+   The `endpoint_id` field is read-only and is populated automatically by the provider
+   once the endpoint is accepted — do not set it manually.
+
+**Full example — V2 firewall with per-endpoint Egress NAT and private prefixes:**
+
+```terraform
+resource "cloudngfwaws_ngfw" "example" {
+  name               = "my-firewall"
+  description        = "My new firewall"
+  az_list            = ["use1-az1", "use1-az4"]
+  allowlist_accounts = ["111111111111"]
+
+  endpoints {
+    account_id         = "111111111111"
+    vpc_id             = "vpc-0a1b2c3d4e5f00002"
+    subnet_id          = "subnet-0a1b2c3d4e5f00001"
+    mode               = "ServiceManaged"
+    egress_nat_enabled = true
+    prefixes {
+      private_prefix {
+        cidrs = [
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16",
+          "100.64.0.0/10"
+        ]
+      }
+    }
+  }
+
+  endpoints {
+    account_id         = "111111111111"
+    vpc_id             = "vpc-0a1b2c3d4e5f00003"
+    subnet_id          = "subnet-0a1b2c3d4e5f00002"
+    mode               = "ServiceManaged"
+    egress_nat_enabled = false
+  }
+
+  egress_nat {
+    enabled = true
+    settings {
+      ip_pool_type = "AWSService"
+    }
+  }
+
+  tags = {
+    Owner = "my-team"
+  }
+}
+```
+
+**To remove private prefixes:** remove the CIDR entries from `cidrs` and re-apply.
+**To disable per-endpoint Egress NAT:** set `egress_nat_enabled = false` and re-apply.
+
+---
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -137,8 +450,6 @@ Optional:
 - `ip_pool_type` (String) Set ip pool type from the following options. Valid values are `AWSService` or `BYOIP`.
 - `ipam_pool_id` (String) The IP pool ID
 
-
-
 <a id="nestedblock--endpoints"></a>
 ### Nested Schema for `endpoints`
 
@@ -175,9 +486,6 @@ Optional:
 
 - `cidrs` (Set of String)
 
-
-
-
 <a id="nestedblock--private_access"></a>
 ### Nested Schema for `private_access`
 
@@ -185,7 +493,6 @@ Required:
 
 - `resource_id` (String) AWS ResourceID
 - `type` (String) Type of Private Access
-
 
 <a id="nestedblock--security_zones"></a>
 ### Nested Schema for `security_zones`
@@ -223,9 +530,6 @@ Optional:
 
 - `cidrs` (Set of String)
 
-
-
-
 <a id="nestedblock--subnet_mapping"></a>
 ### Nested Schema for `subnet_mapping`
 
@@ -234,7 +538,6 @@ Optional:
 - `availability_zone` (String) The availability zone, for when the endpoint mode is customer managed.
 - `availability_zone_id` (String) The availability zone ID, for when the endpoint mode is customer managed.
 - `subnet_id` (String) The subnet id, for when the endpoint mode is service managed.
-
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -246,7 +549,6 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
-
 
 <a id="nestedblock--user_id"></a>
 ### Nested Schema for `user_id`
@@ -277,8 +579,6 @@ Required:
 - `name` (String) Name of subnet filter
 - `network_address` (String) Network IP address of the subnet filter
 
-
-
 <a id="nestedatt--status"></a>
 ### Nested Schema for `status`
 
@@ -299,7 +599,6 @@ Read-Only:
 - `rejected_reason` (String)
 - `status` (String)
 - `subnet_id` (String)
-
 
 ## Import
 
