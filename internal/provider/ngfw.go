@@ -564,12 +564,6 @@ func ngfwSchema(isResource bool, rmKeys []string) map[string]*schema.Schema {
 			Optional:    true,
 			Description: "App-ID version number.",
 		},
-		"tier": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "Firewall Instance Tier. Allowed values are 'base', 'standard', or 'premium'.",
-		},
 		"automatic_upgrade_app_id_version": {
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -1185,7 +1179,6 @@ func loadNgfw(d *schema.ResourceData, curEps []firewall.EndpointConfig) (ngfw.In
 		EndpointMode:          d.Get("endpoint_mode").(string),
 		LinkId:                d.Get("link_id").(string),
 		LinkStatus:            d.Get("link_status").(string),
-		Tier:                  d.Get("tier").(string),
 		Tags:                  tags,
 		AllowListAccounts:     checkNilSlice(allowListAccounts),
 		ChangeProtection:      setChangeProtection(d),
@@ -1423,7 +1416,6 @@ func saveNgfw(ctx context.Context, d *schema.ResourceData, o ngfw.ReadResponse) 
 	d.Set(TagsName, dumpTags(o.Firewall.Tags))
 	d.Set("update_token", o.Firewall.UpdateToken)
 	d.Set("deployment_update_token", o.Firewall.DeploymentUpdateToken)
-	d.Set("tier", o.Firewall.Tier)
 	d.Set("allowlist_accounts", sliceToSet(o.Firewall.AllowListAccounts))
 	d.Set("change_protection", sliceToSet(o.Firewall.ChangeProtection))
 	d.Set("az_list", sliceToSet(o.Firewall.CustomerZoneIdList))

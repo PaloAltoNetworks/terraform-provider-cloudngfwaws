@@ -34,7 +34,7 @@ Use the V1 schema as-is. No steps required beyond ensuring your existing state i
 
 1. Verify there is no unintended drift:
    2. If the plan is clean, no action needed. If drift is detected, review and apply:
-   
+
 **Full example — existing V1 firewall:**
 
 ```terraform
@@ -417,7 +417,6 @@ resource "cloudngfwaws_ngfw" "example" {
 - `security_zones` (Block List) (see [below for nested schema](#nestedblock--security_zones))
 - `subnet_mapping` (Block List) Subnet mappings. (see [below for nested schema](#nestedblock--subnet_mapping))
 - `tags` (Map of String) The tags.
-- `tier` (String) Firewall Instance Tier. Allowed values are 'base', 'standard', or 'premium'.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `user_id` (Block List) (see [below for nested schema](#nestedblock--user_id))
 - `vpc_id` (String) The VPC ID for the NGFW.
