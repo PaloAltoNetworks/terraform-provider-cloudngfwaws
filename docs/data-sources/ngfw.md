@@ -57,7 +57,6 @@ data "cloudngfwaws_ngfw" "example" {
 - `status` (List of Object) (see [below for nested schema](#nestedatt--status))
 - `subnet_mapping` (List of Object) Subnet mappings. (see [below for nested schema](#nestedatt--subnet_mapping))
 - `tags` (Map of String) The tags.
-- `tier` (String) Firewall Instance Tier. Allowed values are 'base', 'standard', or 'premium'.
 - `update_token` (String) The update token.
 - `user_id` (List of Object) (see [below for nested schema](#nestedatt--user_id))
 - `vpc_id` (String) The VPC ID for the NGFW.
