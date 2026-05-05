@@ -124,7 +124,7 @@ func isObjectNotFound(e error) bool {
 		return e2.ObjectNotFound()
 	}
 
-	return false
+	return strings.Contains(e.Error(), "does not exist")
 }
 
 func isBadRequest(e error) bool {
